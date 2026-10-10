@@ -120,3 +120,77 @@ public boolean blocksWirelessReopen() {
 
 C 已经拿掉了「自己把开关开回来」这条自伤路径，A 只是把「让用户手动去关」变成一键完成，
 因此可以先上 C，观察一段时间再决定是否需要 A。
+
+## 4. C 的真机验证（虚拟屏，2026-10-11 00:0x）
+
+被测包：`/sdcard/Download/install-170-c.apk`
+（sha256 `4e72da0874902d41715a9df98fbe0b6ae4e7be949dec363f706dc118ea679628`，
+291 102 004 字节，versionCode **170**，versionName 0.2.21-20261009.0750-dsh0.2.0-rc.2，
+271 项资产，含 `runtime-descriptor.json` / `adb-wheels.bin` 与 `WIRELESS_DEBUG_IN_USE`、
+`blocksWirelessReopen`、`root_bootstrap_dev_options` 三处新代码）。
+覆盖安装到 `com.dsh.clienu.SunsetRNE` 后，设备复读 `base.apk` 的 sha256 与构建产物一致。
+
+### 4.1 先复现「应用自己把无线调试开起来」
+
+在设备授权页打开「启用 ADB 设备通道」（ADB 通道，非自举）后：
+
+```
+adb_wifi_enabled          0 → 1
+persist.adb.tls_server.enable  0 → 1
+service.adb.tls.port      '' → 40955
+```
+
+这台设备对 user 0 的 `WRITE_SECURE_SETTINGS` 是 `granted=true`，所以
+`DeviceBridgeService.tryReopenWirelessDebug()` 真的能写 `adb_wifi_enabled=1`——
+即用户手动关掉无线调试后，保活确实会把它开回来。这正是 C 要拆掉的环。
+
+### 4.2 C1/C2：拒绝码与文案（已生效）
+
+无线调试开启状态下「一键自举 ADB（免配对）」→「确认自举」，卡片原文：
+
+```
+请求：授权本应用公钥
+本次请求被拒绝
+上次观测：2026/10/10 23:59:16
+公钥：未知   监听：未知   双栈防护：未知
+系统「无线调试」正在运行（ADB TLS 入口），DSHA 不会接管它。请先关闭无线调试，再执行自举；在你处理期间 DSHA 不会自动重开它。
+[按钮] 打开开发者选项关闭无线调试
+```
+
+即：仍是拒绝、仍然零写入（公钥/监听/双栈三项未知），但用户现在看得懂该去关哪个开关。
+
+按钮实测可点：点击后系统「开发者选项」在虚拟屏内打开（虚拟屏 `package` 变为
+`com.android.settings`）。注：应用跑在虚拟屏上时，它发出的设置 Intent 也开在虚拟屏
+（Android 的 display 归属行为）；真机在主屏使用时会开在主屏。
+
+### 4.3 C3：保活不再自动重开（拦停已实测）
+
+logcat 抓到保活的自动重开路径被拦（`pid 7574` = 该包进程，线程为 ADB 保活线程）：
+
+```
+10-11 00:08:26.966  7574 16408 I DSHA-ADB: 保活：自举需要无线调试关闭，跳过自动重开
+```
+
+即 `blocksWirelessReopen()` 在真实 watchdog 周期里返回 true，跳过了后面唯一的写入点。
+
+### 4.4 C3 观测窗口（4 分 12 秒）
+
+把无线调试关到 `0/0`（用户手动关闭）后，重新打开该包的「启用 ADB 设备通道」，让保活
+重新开始探活并失败——每个重试周期都会走到自动重开那一步。每 18 秒采样一次：
+
+| 采样 | adb_wifi_enabled | persist.adb.tls_server.enable | service.adb.tls.port |
+|---|---|---|---|
+| T+18s … T+252s（14 次） | 0 | 0 | 空 |
+
+整段窗口内无线调试**没有**被开回来。对照 §4.1：同一个开关在**没有 C** 时的行为是
+`0→1` 且立刻出现 TLS 端口，所以这里的「保持 0」是 C 生效的结果，而不是保活没跑。
+
+拦停是自解除的：卡片上点「只读刷新状态」或重跑自举都会换掉 `detail`，
+保活随之恢复正常（那时若仍在自举场景，会再次被拦）。
+
+### 4.5 本轮真机结论
+
+- C1（独立拒绝码）：✅ 生效，`WIRELESS_DEBUG_IN_USE` 走到了卡片。
+- C2（文案 + 入口）：✅ 文案正确，按钮可点且真的打开开发者选项。
+- C3（保活不自动重开）：✅ 日志证明拦停执行；观测窗口证明结果保持关闭。
+- **A 未做**：无线调试仍需用户手动关闭；本轮无人为绕过设备策略。

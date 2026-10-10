@@ -9,6 +9,8 @@
 
 主流程已在 Android 13 完成真实系统配对码 TLS 配对，App 通道 `id` 返回 `uid=2000(shell)`，关闭/重新开启无线调试后无需重新配对。完整测试 **170 条断言通过**，最终门控及 wheel 改动后连接复验 **10 条通过**。真实缺失路径退出码为 1，无响应 socket 在 2.563 秒退出 124，命令尚未发送；23 项 Python 故障场景另通过。配对码仅经私有临时输入传送，不进入日志或报告。见[完整功能验收](functional-audit-rc1.4.md)。
 
+> 范围限定（2026-10-10 修订）：`uid=2000(shell)` 只对应该台 Android 13 设备及原捕获窗口。TB321FU 历史记录分别捕获了 daemon UID 0 与一次强制 ADB 会话 UID 0；不能由 daemon 身份推导所有会话同权。分项判据与证据范围见 [root 支持评估](audits/root-adb-bringup-20261009/README.md)。本节其余数字仍仅对应原日期与设备。
+
 以下保留复现步骤与实现边界；入口创建时的“没有操作设备”仅描述协作者当时分工。
 
 入口：`com.dsh.client/com.deepseekharness.app.ui.AdbFlowAudit`，已在 `app/src/debug/AndroidManifest.xml` 注册。同一个 debug APK 自插桩，不需要单独测试 APK；release 不包含此入口。没有运行 Gradle 或操作设备，以下命令由主线程/测试者执行。

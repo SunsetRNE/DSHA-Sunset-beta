@@ -1577,6 +1577,26 @@
       "args": []
     },
     {
+      "path": "tools/test-root-bootstrap-endpoint.py",
+      "stage": "fast",
+      "reason": "当前脚本与假 ADB 连接器的固定回环端点回归；不访问设备、网络或真实凭据",
+      "args": [],
+      "timeoutSeconds": 300,
+      "requires": ["python39"],
+      "environment": {},
+      "cli": "no positional arguments; see explicit environment/requirements"
+    },
+    {
+      "path": "tools/test-root-support.py",
+      "stage": "support",
+      "reason": "离线真实 JUnit/JSON 执行 root 策略、生产事务与授权代次；需锁定 JUnit/Hamcrest/JSON 缓存，双 flavor Gradle 自动发现同一组测试",
+      "requires": ["python39", "jdk17"],
+      "environment": {},
+      "timeoutSeconds": 240,
+      "args": [],
+      "cli": "--gradle-user-home PATH 指向已核验缓存；不操作 Android 设备"
+    },
+    {
       "path": "tools/test-native-device-policy.py",
       "stage": "fast",
       "reason": "Compile current native DeviceShellPolicy and execute protected-command rejection, allowed reads and SMS dry plans; no Android/device",

@@ -1,0 +1,149 @@
+build.sh: line 262: warning: command substitution: ignored null byte in input
+==> 备份原生 aidl（x86_64，本机不可执行）：/root/Android/build-tools/36.0.0//aidl -> aidl.x86_64.disabled
+==> 已安装 aidl shim：/root/Android/build-tools/36.0.0//aidl
+==> build-tools 与主机架构不符（/root/Android/build-tools/36.0.0:62!=183）：已换 shim，AIDL 产物取自 tools/aidl-stub/
+==> locale=C.utf8  (JVM sun.jnu.encoding=UTF-8)
+==> JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64  (openjdk version "17.0.20.1" 2026-08-18)
+==> ANDROID_SDK=/root/Android
+==> GRADLE_USER_HOME=/root/Documents/deepseek-harness/default-workspace/DSHA/app/build/root-bootstrap-gradle-home
+==> DSHA_PYTHON=python3  (Python 3.12.3)
+==> Gradle 堆 -Xmx768m
+==> task: -Pandroid.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2 --project-cache-dir app/build/root-bootstrap-project-cache --init-script app/build/root-support-validation/verification.init.gradle :app:testStandardDebugUnitTest :app:testLowDebugUnitTest -x :app:prepareStandardAssets -x :app:prepareBackupAssets -x :app:prepareRuntimeDescriptor -x :app:prepareRecoveryAssets --offline --continue --console=plain --no-daemon --max-workers=1
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Shared read-only dependency cache is an incubating feature.
+
+> Configure project :app
+WARNING: The option setting 'android.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2' is experimental.
+签名：未配置历史发布证书；正式 APK 打包将被阻止
+
+> Task :app:prepareUiLanguages UP-TO-DATE
+> Task :app:verifyBuiltinRegistry
+
+> Task :app:verifyBundledIdentities
+PASS runtime tools identity
+
+> Task :app:verifyCredentialRegistry
+Credential paths JSON/Java scope table PASS
+
+> Task :app:preBuild
+> Task :app:preStandardDebugBuild
+> Task :app:compileStandardDebugAidl UP-TO-DATE
+> Task :app:generateStandardDebugBuildConfig UP-TO-DATE
+> Task :app:generateStandardDebugResValues UP-TO-DATE
+> Task :app:generateStandardDebugResources UP-TO-DATE
+> Task :app:packageStandardDebugResources
+> Task :app:processStandardDebugNavigationResources UP-TO-DATE
+> Task :app:parseStandardDebugLocalResources UP-TO-DATE
+> Task :app:generateStandardDebugRFile UP-TO-DATE
+> Task :app:compileStandardDebugKotlin NO-SOURCE
+> Task :app:javaPreCompileStandardDebug UP-TO-DATE
+> Task :app:verifyBackupDependencies
+> Task :app:compileStandardDebugJavaWithJavac UP-TO-DATE
+> Task :app:checkStandardDebugAarMetadata UP-TO-DATE
+> Task :app:mapStandardDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileStandardDebugNavigationResources UP-TO-DATE
+> Task :app:mergeStandardDebugResources
+> Task :app:createStandardDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksStandardDebug UP-TO-DATE
+> Task :app:processStandardDebugMainManifest UP-TO-DATE
+> Task :app:processStandardDebugManifest UP-TO-DATE
+> Task :app:processStandardDebugManifestForPackage UP-TO-DATE
+> Task :app:processStandardDebugResources UP-TO-DATE
+> Task :app:bundleStandardDebugClassesToRuntimeJar
+> Task :app:bundleStandardDebugClassesToCompileJar
+> Task :app:preStandardDebugUnitTestBuild
+> Task :app:compileStandardDebugUnitTestKotlin NO-SOURCE
+> Task :app:javaPreCompileStandardDebugUnitTest UP-TO-DATE
+
+> Task :app:compileStandardDebugUnitTestJavaWithJavac
+Note: /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/backup/DataFormatEvidenceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :app:processStandardDebugJavaRes NO-SOURCE
+> Task :app:processStandardDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:testStandardDebugUnitTest
+Requesting stop of task ':app:testStandardDebugUnitTest' as it has exceeded its configured timeout of 4m.
+
+ConfigurationSnapshotsTest > configurationOperationsPast65And129RemainAvailable SKIPPED
+
+> Task :app:testStandardDebugUnitTest FAILED
+> Task :app:preLowDebugBuild
+> Task :app:compileLowDebugAidl UP-TO-DATE
+> Task :app:generateLowDebugBuildConfig UP-TO-DATE
+> Task :app:generateLowDebugResValues UP-TO-DATE
+> Task :app:generateLowDebugResources UP-TO-DATE
+> Task :app:packageLowDebugResources
+> Task :app:processLowDebugNavigationResources UP-TO-DATE
+> Task :app:parseLowDebugLocalResources UP-TO-DATE
+> Task :app:generateLowDebugRFile UP-TO-DATE
+> Task :app:compileLowDebugKotlin NO-SOURCE
+> Task :app:javaPreCompileLowDebug UP-TO-DATE
+> Task :app:compileLowDebugJavaWithJavac UP-TO-DATE
+> Task :app:checkLowDebugAarMetadata UP-TO-DATE
+> Task :app:mapLowDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileLowDebugNavigationResources UP-TO-DATE
+> Task :app:mergeLowDebugResources
+> Task :app:createLowDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksLowDebug UP-TO-DATE
+> Task :app:processLowDebugMainManifest UP-TO-DATE
+> Task :app:processLowDebugManifest UP-TO-DATE
+> Task :app:processLowDebugManifestForPackage UP-TO-DATE
+> Task :app:processLowDebugResources UP-TO-DATE
+> Task :app:bundleLowDebugClassesToRuntimeJar
+> Task :app:bundleLowDebugClassesToCompileJar
+> Task :app:preLowDebugUnitTestBuild
+> Task :app:compileLowDebugUnitTestKotlin NO-SOURCE
+> Task :app:javaPreCompileLowDebugUnitTest UP-TO-DATE
+
+> Task :app:compileLowDebugUnitTestJavaWithJavac
+Note: /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/backup/DataFormatEvidenceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :app:processLowDebugJavaRes NO-SOURCE
+> Task :app:processLowDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:testLowDebugUnitTest
+Requesting stop of task ':app:testLowDebugUnitTest' as it has exceeded its configured timeout of 4m.
+
+ConfigurationSnapshotsTest > configurationOperationsPast65And129RemainAvailable SKIPPED
+
+> Task :app:testLowDebugUnitTest FAILED
+
+[Incubating] Problems report is available at: file:///root/Documents/deepseek-harness/default-workspace/DSHA/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:testStandardDebugUnitTest'.
+> Timeout has been exceeded
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:testLowDebugUnitTest'.
+> Timeout has been exceeded
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 9m 15s
+57 actionable tasks: 16 executed, 41 up-to-date

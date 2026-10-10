@@ -1,0 +1,39 @@
+build.sh: line 262: warning: command substitution: ignored null byte in input
+==> 备份原生 aidl（x86_64，本机不可执行）：/root/Android/build-tools/36.0.0//aidl -> aidl.x86_64.disabled
+==> 已安装 aidl shim：/root/Android/build-tools/36.0.0//aidl
+==> build-tools 与主机架构不符（/root/Android/build-tools/36.0.0:62!=183）：已换 shim，AIDL 产物取自 tools/aidl-stub/
+==> locale=C.utf8  (JVM sun.jnu.encoding=UTF-8)
+==> JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64  (openjdk version "17.0.20.1" 2026-08-18)
+==> ANDROID_SDK=/root/Android
+==> GRADLE_USER_HOME=/root/Documents/deepseek-harness/default-workspace/DSHA/app/build/root-bootstrap-gradle-home
+==> DSHA_PYTHON=python3  (Python 3.12.3)
+==> Gradle 堆 -Xmx768m
+==> task: --project-cache-dir app/build/root-bootstrap-project-cache --init-script app/build/root-support-validation/verification.init.gradle :app:testStandardDebugUnitTest :app:testLowDebugUnitTest :app:lintStandardRelease :app:lintLowRelease -x :app:prepareStandardAssets -x :app:prepareBackupAssets -x :app:prepareRuntimeDescriptor -x :app:prepareRecoveryAssets --offline --continue --console=plain --no-daemon --max-workers=1
+Downloading https://services.gradle.org/distributions/gradle-9.3.1-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%...
+Exception in thread "main" java.io.IOException: Downloading from https://services.gradle.org/distributions/gradle-9.3.1-bin.zip failed: timeout (10000ms)
+	at org.gradle.wrapper.Install.forceFetch(SourceFile:4)
+	at org.gradle.wrapper.Install$1.call(SourceFile:8)
+	at org.gradle.wrapper.GradleWrapperMain.main(SourceFile:67)
+Caused by: java.net.SocketTimeoutException: Read timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedRead(NioSocketImpl.java:288)
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:314)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:355)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:808)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:966)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:484)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.readFully(SSLSocketInputRecord.java:467)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decodeInputRecord(SSLSocketInputRecord.java:243)
+	at java.base/sun.security.ssl.SSLSocketInputRecord.decode(SSLSocketInputRecord.java:181)
+	at java.base/sun.security.ssl.SSLTransport.decode(SSLTransport.java:111)
+	at java.base/sun.security.ssl.SSLSocketImpl.decode(SSLSocketImpl.java:1512)
+	at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1483)
+	at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1069)
+	at java.base/java.io.BufferedInputStream.read1(BufferedInputStream.java:282)
+	at java.base/java.io.BufferedInputStream.read(BufferedInputStream.java:343)
+	at java.base/sun.net.www.MeteredStream.read(MeteredStream.java:141)
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:132)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection$HttpInputStream.read(HttpURLConnection.java:3777)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection$HttpInputStream.read(HttpURLConnection.java:3770)
+	at org.gradle.wrapper.Install.forceFetch(SourceFile:2)
+	... 2 more

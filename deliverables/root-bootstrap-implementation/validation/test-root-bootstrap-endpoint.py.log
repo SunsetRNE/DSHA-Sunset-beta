@@ -1,0 +1,20 @@
+test_bootstrap_mode_rejects_command_identity_endpoint_and_timeout_overrides (__main__.BootstrapEndpointTest.test_bootstrap_mode_rejects_command_identity_endpoint_and_timeout_overrides) ... ok
+test_bridge_invokes_the_fixed_mode_with_no_extra_arguments (__main__.BootstrapEndpointTest.test_bridge_invokes_the_fixed_mode_with_no_extra_arguments) ... ok
+test_changed_or_elevated_plan_is_rejected_before_connecting (__main__.BootstrapEndpointTest.test_changed_or_elevated_plan_is_rejected_before_connecting) ... ok
+test_connect_fail_does_not_try_another_host_or_port (__main__.BootstrapEndpointTest.test_connect_fail_does_not_try_another_host_or_port) ... ok
+test_execution_unknown_never_replays (__main__.BootstrapEndpointTest.test_execution_unknown_never_replays) ... ok
+test_failed_handshake_is_terminal_without_discovery (__main__.BootstrapEndpointTest.test_failed_handshake_is_terminal_without_discovery) ... ok
+test_missing_exit_marker_is_unknown_without_replay (__main__.BootstrapEndpointTest.test_missing_exit_marker_is_unknown_without_replay) ... ok
+test_native_completed_failure_is_preserved_without_connecting (__main__.BootstrapEndpointTest.test_native_completed_failure_is_preserved_without_connecting) ... ok
+test_native_completed_success_cannot_prove_the_fixed_endpoint (__main__.BootstrapEndpointTest.test_native_completed_success_cannot_prove_the_fixed_endpoint) ... ok
+test_native_policy_denial_cannot_be_bypassed (__main__.BootstrapEndpointTest.test_native_policy_denial_cannot_be_bypassed) ... ok
+test_native_unknown_does_not_start_adb (__main__.BootstrapEndpointTest.test_native_unknown_does_not_start_adb) ... ok
+test_ordinary_explicit_endpoint_still_uses_existing_connector (__main__.BootstrapEndpointTest.test_ordinary_explicit_endpoint_still_uses_existing_connector) ... ok
+test_parse_args_retains_the_existing_seven_tuple_contract (__main__.BootstrapEndpointTest.test_parse_args_retains_the_existing_seven_tuple_contract) ... ok
+test_remote_nonzero_exit_is_preserved_without_retry (__main__.BootstrapEndpointTest.test_remote_nonzero_exit_is_preserved_without_retry) ... ok
+test_success_only_connects_loopback_5555_and_sends_id_once (__main__.BootstrapEndpointTest.test_success_only_connects_loopback_5555_and_sends_id_once) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.032s
+
+OK

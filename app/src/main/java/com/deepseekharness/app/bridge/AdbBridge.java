@@ -387,6 +387,19 @@ public final class AdbBridge {
     }
   }
 
+  /** 自举后仅核验一次固定回环 ADB 会话；不发现地址、不回退或重放，不申请额外系统权限。 */
+  public static String verifyBootstrap(ProotBootstrap proot) {
+    return environmentResult(
+        proot,
+        "verify-root-adb-bootstrap",
+        () -> {
+          if (!proot.bundledDeviceScriptsMatch()) return "SCRIPTS_UNVERIFIED\n[EXIT=126]";
+          String result =
+              execOwned(proot, "python3 /root/.dsh/adb-shell.py --bootstrap-verify", 20000);
+          return proot.bundledDeviceScriptsMatch() ? result : "SCRIPTS_CHANGED\n[EXIT=125]";
+        });
+  }
+
   public static String verify(ProotBootstrap proot, String connectPort, String host) {
     return environmentResult(
         proot,

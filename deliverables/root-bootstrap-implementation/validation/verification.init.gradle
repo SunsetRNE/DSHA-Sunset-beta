@@ -1,0 +1,9 @@
+import java.time.Duration
+allprojects {
+  tasks.withType(Test).configureEach {
+    maxParallelForks = 1
+    maxHeapSize = '256m'
+    timeout = Duration.ofSeconds(240)
+    testLogging { events 'failed', 'skipped'; exceptionFormat 'short' }
+  }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.util.AdbBootstrapEngineTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:25:55.996Z" hostname="localhost" time="0.005">
+  <properties/>
+  <testcase name="refusedAndPendingRequestsPerformNoMutation" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.001"/>
+  <testcase name="unknownMutationIsNotReplayedOrSilentlyCompensated" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.0"/>
+  <testcase name="requiresBothNetworkTablesAndTracksRemainingConnections" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.001"/>
+  <testcase name="statusIsReadOnlyAndCleanupDoesNotReauthorize" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.0"/>
+  <testcase name="firewallRuleMustBeFirstAndOwnedAcrossBothFamilies" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.002"/>
+  <testcase name="protectionPrecedesAuthorizationAndOpening" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.0"/>
+  <testcase name="revokedGrantCannotAuthorizeAfterGuardSetup" classname="com.deepseekharness.app.util.AdbBootstrapEngineTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

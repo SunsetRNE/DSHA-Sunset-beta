@@ -137,6 +137,7 @@ bash build.sh :app:testStandardDebugUnitTest   # 全量单测
 - **虚拟屏**（Standard，API 30+）：App 持有认证连接和心跳；每次输入必须带最新 frameSeq（`util/VirtualScreenPolicy.fresh`）；动作失败**绝不换通道重放**。
 - **麦克风**：清单同时声明 `RECORD_AUDIO` 与 `MODIFY_AUDIO_SETTINGS`；由 `BrowserMicrophone` 按网页请求申请，不能在普通启动时预授权；只放行当前本机页面的纯音频请求，摄像头 / 屏幕音频拒绝；旧回调不能批准新页。
 - **设备验收经验**：`uiautomator dump` 会抑制其他无障碍服务；截图授权绑定 DSH generation，停止 / 断连 / 撤销后失效；截图存应用私有 Pictures/DSHA，无需所有文件访问；PiP 可能盖住底部控件，自动化必须核对实际可见区域与屏幕方向；截图 / 读屏不可将敏感值写入公开取证文件。
+- **ADB 通道经验**：保持 Root → Shizuku → ADB 的发送前选择，显式 `--host`/`--port` 强制 ADB 计划。daemon UID/域与客户端会话分别取证，固定列捕获须有真实退出码、完整性和 PID 出生身份；不能由 daemon UID 0 推导所有会话同权。属性回显不证明 loopback 绑定，IPv4 规则不证明 IPv6 防护。自举默认关闭、双栈先防护后授权/监听，撤销仅移除本应用拥有的公钥。已接通固定原生命名入口、短期授权与 UI，通用命令白名单不放宽；历史脚本已停用，设备矩阵仍须独立验收；修订设计与本轮验证见 [root 支持评估](docs/audits/root-adb-bringup-20261009/README.md)。
 - Shizuku 必须注册 `rikka.shizuku.ShizukuProvider`；标准版 13.1.5 / 兼容版 12.2.0（不用 overrideLibrary 掩盖 minSdk 24）。回调严格核对管理器 UID、Binder 描述符、单次请求与超时。
 - 内置移动插件 `dsh-web-mobile` 标 3.0.3，源码固定到 `a094288883b343e848d7f9cf302d73ad8ed4794b`；`tools/apply-mobile-client-patches.mjs` 管理本地差异，不恢复上游已撤回的整批改动；上游已接管的 rc1 导航补丁不要重新套回。
 

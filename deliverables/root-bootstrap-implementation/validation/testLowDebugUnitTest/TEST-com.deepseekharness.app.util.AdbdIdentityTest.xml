@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.util.AdbdIdentityTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:26:05.018Z" hostname="localhost" time="0.012">
+  <properties/>
+  <testcase name="acceptsMlsRangeAndCategoryListContexts" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="preservesUnknownForUnexpectedAdbdUid" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="requiresSuccessfulEvidenceCommands" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="rejectsConflictingHistoricalUserAndDuplicatePid" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="acceptsExplicitPidContextNameRows" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.001"/>
+  <testcase name="absenceRequiresCompleteFixedTables" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="unknownIsStickyForMissingMismatchedOrDuplicateEvidence" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.001"/>
+  <testcase name="identifiesRegularShellAdbdFromHistoricalPsZShape" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="doesNotTreatCommandArgumentsContainingAdbdAsTheProcessName" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="identifiesRootAdbdFromTheSamePidInBothViews" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="acceptsCanonicalMlsBothEndpointsAndOtherProcesses" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="rejectsOversizeOverflowAndZeroPidEvidence" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.009"/>
+  <testcase name="rejectsClientIdOutputAndMalformedControlData" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <testcase name="rejectsTruncationFailureMarkersAndUnsupportedHeaders" classname="com.deepseekharness.app.util.AdbdIdentityTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

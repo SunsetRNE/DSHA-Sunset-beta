@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.RootBootstrapExecutorTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:25:55.227Z" hostname="localhost" time="0.151">
+  <properties/>
+  <testcase name="secondStackFailureCannotAuthorizeAndKeepsFirstStackEvidence" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.042"/>
+  <testcase name="daemonAlreadyStoppedStillAllowsSelectiveRevoke" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.027"/>
+  <testcase name="revokeUnknownRestartNeverResendsEvenWhenKeyReappears" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.022"/>
+  <testcase name="fiveActionsUseProductionTransactionAndStatusWritesNothing" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.017"/>
+  <testcase name="closeUnknownRestartIsObservedAcrossNewExecutorWithoutResend" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.012"/>
+  <testcase name="otherDaemonPortsRefuseBeforeAnyWriteOnEitherStack" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.001"/>
+  <testcase name="failedKeyCommitAndRevokedGrantRetainRecoveryEvidence" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.009"/>
+  <testcase name="conflictsCannotBeReportedOwnedAndDoNotHideListenerEvidence" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.005"/>
+  <testcase name="existingKeyIsNotClaimedAndCleanupDoesNotEraseKeyPending" classname="com.deepseekharness.app.RootBootstrapExecutorTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

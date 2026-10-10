@@ -4,6 +4,7 @@
 """设备 shell：原生白名单判定、有限时连接、发送后不重放、真实远端退出码。
 
 用法：adb-shell.py [--host 本机IP] [--port 端口] [--timeout 秒] [--su] 命令
+自举验证：adb-shell.py --bootstrap-verify（仅 127.0.0.1:5555 的 id，不接受附加参数或回退）
 失败码：124=连接失败/超时，125=已发送但执行结果未知，126=策略拦截。
 命令正常结束时，本地退出码与 [EXIT=n] 都使用远端退出码。
 """
@@ -431,14 +432,30 @@ def request_native_execution(cmd, use_su=False, force_adb=False):
 
 
 def main():
+    bootstrap_verify = sys.argv[1:2] == ['--bootstrap-verify']
     try:
-        port, host, timeout, connect_timeout, use_su, vscreen_launch, cmd = parse_args(sys.argv[1:])
+        if bootstrap_verify:
+            if len(sys.argv) != 2:
+                raise ValueError('--bootstrap-verify 不接受附加参数')
+            # 专用入口不改变 parse_args 的七元组契约，也不开放端点或命令覆盖。
+            port, host, timeout, connect_timeout, use_su, vscreen_launch, cmd = (
+                5555, '127.0.0.1', 8, 8, False, False, 'id')
+        else:
+            port, host, timeout, connect_timeout, use_su, vscreen_launch, cmd = parse_args(sys.argv[1:])
         launch_ticket = read_vscreen_ticket() if vscreen_launch else ''
     except ValueError as e:
         print('INVALID_ARGUMENT: %s\n[EXIT=2]' % e)
         return 2
     try:
         plan = request_native_vscreen_start(cmd, launch_ticket) if vscreen_launch else request_native_execution(cmd, use_su, bool(port or host))
+        if bootstrap_verify:
+            if isinstance(plan, ShellResult):
+                if plan.exit_code == 0:
+                    raise ExecutionUnknown('未取得固定端点的 ADB 计划，无法确认自举会话')
+            elif (not isinstance(plan, dict) or plan.get('version') != 1
+                    or plan.get('kind') != 'READ' or plan.get('argv') != ['id']
+                    or plan.get('su', False)):
+                raise policy.Blocked('自举验证只接受无 su 的原生 id 只读计划')
     except policy.Blocked as error:
         print('[POLICY_BLOCKED] %s\n[EXIT=126]' % error)
         return 126
@@ -472,7 +489,12 @@ def main():
         except OSError:
             pass
     try:
-        result = connect_with_retry(AdbDeviceTls, PythonRSASigner, plan, port, host, connect_timeout, timeout)
+        if bootstrap_verify:
+            # 固定端点只尝试一次；ConnectFail/ExecutionUnknown 均直接返回，禁止发现或重放。
+            result = run_on_endpoint(AdbDeviceTls, PythonRSASigner, plan,
+                host, port, time.monotonic() + connect_timeout, timeout)
+        else:
+            result = connect_with_retry(AdbDeviceTls, PythonRSASigner, plan, port, host, connect_timeout, timeout)
     except policy.Blocked as error:
         print('[POLICY_BLOCKED] %s\n[EXIT=126]' % error)
         return 126

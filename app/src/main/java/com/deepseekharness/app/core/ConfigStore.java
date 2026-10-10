@@ -200,6 +200,7 @@ public class ConfigStore {
   }
 
   public void setRootShellAllowed(boolean v) {
+    com.deepseekharness.app.RootShell.authorizationChanged();
     prefs.edit().putBoolean(Constants.KEY_ALLOW_ROOT_SHELL, v).apply();
   }
 

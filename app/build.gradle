@@ -346,4 +346,5 @@ dependencies {
     // 宿主凭据 YAML 仅使用 data-only SafeConstructor；来源、JAR 和许可由备份锁核验。
     implementation 'org.yaml:snakeyaml:2.4'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
 }

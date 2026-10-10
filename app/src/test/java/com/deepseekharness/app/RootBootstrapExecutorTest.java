@@ -1,0 +1,335 @@
+package com.deepseekharness.app;
+
+import static org.junit.Assert.*;
+import com.deepseekharness.app.util.*;
+import com.deepseekharness.app.util.AdbBootstrapPolicy.Action;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import org.json.JSONObject;
+import org.junit.Test;
+
+/** 执行生产事务代码；替换系统 I/O，无 Android、shell、网络或真实文件访问。 */
+public final class RootBootstrapExecutorTest {
+  private static final String BOOT = "11111111-1111-4111-8111-111111111111";
+  private static final String HEADER =
+      "sl local_address rem_address st tx_queue rx_queue tr tm->when retrnsmt uid timeout inode\n";
+  private static final String RULE =
+      "-A INPUT ! -i lo -p tcp -m tcp --dport 5555 -m comment --comment dsha-bootstrap-10281 -j DROP\n";
+  private static final String KEY = com.deepseekharness.app.util.AdbAuthorizedKeysTest.key(3);
+
+  private static byte[] bytes(String value) {
+    return value.getBytes(StandardCharsets.US_ASCII);
+  }
+
+  private static final class Device
+      implements RootBootstrapExecutor.Store, RootBootstrapExecutor.SystemAccess {
+    JSONObject journal =
+        new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+    byte[] table = bytes("other-key owner\n");
+    String port = "", persistent = "", tls = "", tcp = HEADER, tcp6 = HEADER;
+    boolean v4,
+        v6,
+        grant = true,
+        daemon = true,
+        failPs,
+        failV6,
+        failRestart,
+        failReplace,
+        revokeBeforeCommit;
+    int restarts, replacements, saves;
+    long time, started = 100;
+    final List<String> writes = new ArrayList<>();
+    final Set<String> inodes = new HashSet<>(Set.of("123"));
+
+    Device() throws Exception {}
+
+    public JSONObject load() throws Exception {
+      return new JSONObject(journal.toString());
+    }
+
+    public void save(JSONObject state) throws Exception {
+      Map<String, Object> values = new HashMap<>();
+      Iterator<String> keys = state.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        values.put(key, state.get(key));
+      }
+      AdbBootstrapJournal.validate(values, "com.dsh.client", 10281);
+      journal = new JSONObject(state.toString());
+      saves++;
+    }
+
+    public byte[] keys() {
+      return table.clone();
+    }
+
+    public void replaceKeys(
+        AdbAuthorizedKeys.Change change,
+        JSONObject state,
+        String phase,
+        RootBootstrapExecutor.GrantCheck check)
+        throws Exception {
+      state
+          .put("keyPending", phase)
+          .put("keyBeforeSha", AdbBootstrapJournal.sha256(change.before))
+          .put("keyAfterSha", AdbBootstrapJournal.sha256(change.after))
+          .put("keyBackup", "keys-" + BOOT + ".before");
+      save(state);
+      if (revokeBeforeCommit) grant = false;
+      check.check();
+      if (failReplace) throw new IOException("KEY_TABLE_CHANGED");
+      assertArrayEquals(table, change.before);
+      replacements++;
+      table = change.after.clone();
+      writes.add("keys:" + phase);
+    }
+
+    public String grant(Action action) throws Exception {
+      if (!grant) throw new AdbBootstrapEngine.Refused("NATIVE_GRANT_REVOKED");
+      return KEY;
+    }
+
+    public String read(String path, int limit) throws Exception {
+      if (path.equals("/proc/sys/kernel/random/boot_id")) return BOOT;
+      if (path.equals("/proc/net/tcp")) return tcp;
+      if (path.equals("/proc/net/tcp6")) return tcp6;
+      if (path.equals("/proc/321/comm")) return "adbd\n";
+      if (path.equals("/proc/321/stat")) {
+        if (!daemon) throw new java.io.FileNotFoundException();
+        return "321 (adbd) S 1 321 321" + " 0".repeat(15) + " " + started + " 0 0\n";
+      }
+      throw new AssertionError("unexpected read: " + path);
+    }
+
+    public Set<String> socketInodes(int pid) {
+      assertEquals(321, pid);
+      return inodes;
+    }
+
+    public long now() {
+      return time;
+    }
+
+    public void pause() {
+      time += 150;
+    }
+
+    public RootSupportProbe run(List<String> args) throws Exception {
+      String tool = args.get(0), body = "";
+      int exit = 0;
+      if (tool.endsWith("/getprop")) {
+        body =
+            switch (args.get(1)) {
+              case "service.adb.tcp.port" -> port;
+              case "persist.adb.tcp.port" -> persistent;
+              case "service.adb.tls.port" -> tls;
+              case "persist.adb.tls_server.enable" -> "0";
+              case "ro.adb.secure" -> "1";
+              default -> throw new AssertionError(args);
+            };
+      } else if (tool.endsWith("/setprop")) {
+        assertTrue(grant);
+        writes.add(String.join(" ", args));
+        if (args.get(1).equals("service.adb.tcp.port")) port = args.get(2);
+        else if (args.get(1).equals("ctl.restart")) {
+          restarts++;
+          if (failRestart) throw new IOException("COMMAND_RESULT_UNKNOWN");
+          started++;
+          tcp = port.equals("5555") ? HEADER + row(false, "15B3") : HEADER;
+        } else throw new AssertionError(args);
+      } else if (tool.endsWith("/ps")) {
+        if (failPs) return RootSupportProbe.parse("permission denied\n[EXIT=1]");
+        body =
+            args.get(3).contains("UID")
+                ? "PID UID NAME\n1 0 init\n"
+                : "PID CONTEXT NAME\n1 u:r:init:s0 init\n";
+        if (daemon) body += args.get(3).contains("UID") ? "321 0 adbd\n" : "321 u:r:adbd:s0 adbd\n";
+      } else if (tool.endsWith("tables")) {
+        boolean ipv6 = tool.endsWith("ip6tables"), exists = ipv6 ? v6 : v4;
+        String op = args.get(3);
+        if (op.equals("-S")) body = "-P INPUT ACCEPT\n" + (exists ? RULE : "");
+        else if (op.equals("-C")) exit = exists ? 0 : 1;
+        else if (op.equals("-I") || op.equals("-D")) {
+          assertTrue(grant);
+          writes.add((ipv6 ? "v6:" : "v4:") + op);
+          if (ipv6 && failV6) throw new IOException("COMMAND_RESULT_UNKNOWN");
+          if (ipv6) v6 = op.equals("-I");
+          else v4 = op.equals("-I");
+        } else throw new AssertionError(args);
+      } else throw new AssertionError(args);
+      return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
+    }
+
+    AdbBootstrapEngine.Outcome execute(Action action) throws Exception {
+      SelfPackageIdentity identity =
+          SelfPackageIdentity.launch(
+              "com.dsh.client",
+              10281,
+              "/data/app/com.dsh.client-1/base.apk",
+              "/data/app/com.dsh.client-1/base.apk");
+      return AdbBootstrapEngine.execute(
+          action, new RootBootstrapExecutor(identity, action, this, this));
+    }
+
+    void authorized() throws Exception {
+      assertEquals("OK", execute(Action.AUTHORIZE).status);
+    }
+
+    void opened() throws Exception {
+      authorized();
+      assertEquals("OK", execute(Action.OPEN).status);
+    }
+  }
+
+  private static String row(boolean ipv6, String port) {
+    String address = ipv6 ? "0".repeat(32) : "00000000";
+    return "0: "
+        + address
+        + ":"
+        + port
+        + " "
+        + address
+        + ":0000 0A 0000:0000 00:0000 0000 0 0 123\n";
+  }
+
+  @Test
+  public void fiveActionsUseProductionTransactionAndStatusWritesNothing() throws Exception {
+    Device d = new Device();
+    assertEquals("OK", d.execute(Action.NARROW).status);
+    d.opened();
+    assertTrue(d.writes.indexOf("v6:-I") < d.writes.indexOf("keys:AUTHORIZE"));
+    int saves = d.saves, writes = d.writes.size();
+    assertEquals("OK", d.execute(Action.STATUS).status);
+    assertEquals(saves, d.saves);
+    assertEquals(writes, d.writes.size());
+    assertEquals("OK", d.execute(Action.CLOSE).status);
+    assertFalse(d.v4 || d.v6);
+    assertEquals("OK", d.execute(Action.REVOKE).status);
+    assertArrayEquals(bytes("other-key owner\n"), d.table);
+  }
+
+  @Test
+  public void otherDaemonPortsRefuseBeforeAnyWriteOnEitherStack() throws Exception {
+    for (boolean ipv6 : new boolean[] {false, true}) {
+      Device d = new Device();
+      if (ipv6) d.tcp6 += row(true, "15B4");
+      else d.tcp += row(false, "15B4");
+      assertEquals("REFUSED", d.execute(Action.AUTHORIZE).status);
+      assertTrue(d.writes.isEmpty());
+      assertEquals(0, d.replacements);
+    }
+    for (String field : new String[] {"port", "persistent", "tls"}) {
+      Device d = new Device();
+      if (field.equals("port")) d.port = "5556";
+      if (field.equals("persistent")) d.persistent = "5555";
+      if (field.equals("tls")) d.tls = "37123";
+      assertEquals("REFUSED", d.execute(Action.AUTHORIZE).status);
+      assertTrue(d.writes.isEmpty());
+    }
+  }
+
+  @Test
+  public void secondStackFailureCannotAuthorizeAndKeepsFirstStackEvidence() throws Exception {
+    Device d = new Device();
+    d.failV6 = true;
+    assertEquals("UNKNOWN", d.execute(Action.AUTHORIZE).status);
+    assertEquals(0, d.replacements);
+    assertTrue(d.v4);
+    assertFalse(d.v6);
+    assertEquals("NARROW", d.journal.getString("pending"));
+    assertEquals("REFUSED", d.execute(Action.OPEN).status);
+  }
+
+  @Test
+  public void closeUnknownRestartIsObservedAcrossNewExecutorWithoutResend() throws Exception {
+    Device d = new Device();
+    d.opened();
+    d.failRestart = true;
+    assertEquals("UNKNOWN", d.execute(Action.CLOSE).status);
+    int restarts = d.restarts;
+    assertEquals("CLOSE_RESTART_SENT", d.journal.getString("pending"));
+    assertEquals("ADBD_RESTART_RESULT_UNKNOWN", d.execute(Action.CLOSE).code);
+    assertEquals(restarts, d.restarts);
+    assertTrue(d.v4 && d.v6);
+    d.tcp = HEADER;
+    assertEquals("OK", d.execute(Action.CLOSE).status);
+    assertEquals(restarts, d.restarts);
+  }
+
+  @Test
+  public void revokeUnknownRestartNeverResendsEvenWhenKeyReappears() throws Exception {
+    Device d = new Device();
+    d.authorized();
+    byte[] original = d.table.clone();
+    d.failRestart = true;
+    assertEquals("UNKNOWN", d.execute(Action.REVOKE).status);
+    int restarts = d.restarts, changes = d.replacements;
+    assertEquals("ADBD_RESTART_RESULT_UNKNOWN", d.execute(Action.REVOKE).code);
+    d.table = original;
+    assertEquals("KEY_REAPPEARED_AFTER_REVOKE", d.execute(Action.REVOKE).code);
+    assertEquals(restarts, d.restarts);
+    assertEquals(changes, d.replacements);
+    assertEquals("REVOKE_RESTART_SENT", d.journal.getString("keyPending"));
+  }
+
+  @Test
+  public void daemonAlreadyStoppedStillAllowsSelectiveRevoke() throws Exception {
+    Device d = new Device();
+    d.authorized();
+    d.daemon = false;
+    assertEquals("OK", d.execute(Action.REVOKE).status);
+    assertArrayEquals(bytes("other-key owner\n"), d.table);
+    assertEquals(0, d.restarts);
+    d = new Device();
+    d.authorized();
+    d.failPs = true;
+    int changes = d.replacements;
+    assertEquals("COMMAND_FAILED", d.execute(Action.REVOKE).code);
+    assertEquals(changes, d.replacements);
+  }
+
+  @Test
+  public void failedKeyCommitAndRevokedGrantRetainRecoveryEvidence() throws Exception {
+    for (boolean revoke : new boolean[] {false, true}) {
+      Device d = new Device();
+      d.failReplace = !revoke;
+      d.revokeBeforeCommit = revoke;
+      assertEquals("UNKNOWN", d.execute(Action.AUTHORIZE).status);
+      assertEquals(0, d.replacements);
+      assertEquals("AUTHORIZE", d.journal.getString("keyPending"));
+      d.grant = true;
+      assertEquals("OK", d.execute(Action.REVOKE).status);
+      assertEquals(0, d.restarts);
+    }
+  }
+
+  @Test
+  public void conflictsCannotBeReportedOwnedAndDoNotHideListenerEvidence() throws Exception {
+    Device d = new Device();
+    d.authorized();
+    d.table =
+        bytes(
+            new String(d.table, StandardCharsets.US_ASCII).replace("dsha:com.dsh.client", "other"));
+    var state = d.execute(Action.STATUS).snapshot;
+    assertEquals("UNKNOWN", state.key);
+    assertEquals("CLOSED", state.listener);
+    assertEquals("KEY_OWNERSHIP_CONFLICT", d.execute(Action.REVOKE).code);
+  }
+
+  @Test
+  public void existingKeyIsNotClaimedAndCleanupDoesNotEraseKeyPending() throws Exception {
+    Device d = new Device();
+    d.table = bytes("  " + KEY + " original-owner\n");
+    assertEquals("OK", d.execute(Action.AUTHORIZE).status);
+    assertFalse(d.journal.getBoolean("keyOwned"));
+    assertEquals(0, d.replacements);
+    assertEquals("PREEXISTING_KEY_NOT_OWNED", d.execute(Action.REVOKE).code);
+    d = new Device();
+    d.failReplace = true;
+    d.execute(Action.AUTHORIZE);
+    assertEquals("AUTHORIZE", d.journal.getString("keyPending"));
+    d.execute(Action.CLOSE);
+    assertEquals("AUTHORIZE", d.journal.getString("keyPending"));
+  }
+}

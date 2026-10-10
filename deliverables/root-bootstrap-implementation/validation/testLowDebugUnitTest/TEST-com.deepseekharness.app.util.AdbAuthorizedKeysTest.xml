@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.util.AdbAuthorizedKeysTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:26:04.940Z" hostname="localhost" time="0.009">
+  <properties/>
+  <testcase name="addsSeparatorBeforeAppendingToMissingNewline" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.001"/>
+  <testcase name="appendsAndSelectivelyRevokesWithoutChangingOtherKeys" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.002"/>
+  <testcase name="preexistingKeyIsNeverClaimedAsOwned" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.001"/>
+  <testcase name="refusesAmbiguousOrChangedOwnership" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.001"/>
+  <testcase name="rejectsMalformedPublicKeysAndOversizedTables" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.002"/>
+  <testcase name="preservesConcurrentUnrelatedEntries" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.001"/>
+  <testcase name="externallyRemovedOwnedKeyIsAnIdempotentNoOp" classname="com.deepseekharness.app.util.AdbAuthorizedKeysTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# DSHA_ADB_SCRIPT_VERSION=20
+# DSHA_ADB_SCRIPT_VERSION=21
 """设备 shell：原生白名单判定、有限时连接、发送后不重放、真实远端退出码。
 
 用法：adb-shell.py [--host 本机IP] [--port 端口] [--timeout 秒] [--su] 命令
@@ -415,7 +415,13 @@ def request_native_execution(cmd, use_su=False, force_adb=False):
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(request, timeout=155) as response:
             envelope = json.loads(response.read(1024 * 1024))
-        value = json.loads(envelope['result'])
+        raw = envelope.get('result') if isinstance(envelope, dict) else None
+        if isinstance(raw, str) and raw.strip() == '[UNAUTHORIZED]':
+            # 3090 桥固定属于启动它的那个实例：同机存在第二个 DSHA 时，本容器的 token 会被
+            # 对端的桥拒掉，而报错过去只剩一个 JSONDecodeError，看不出真正原因。
+            raise policy.Blocked(
+                '3090 桥拒绝了这个 token：本机可能有另一个 DSHA 实例占用着桥（桥只属于启动它的实例）')
+        value = json.loads(raw)
         if value.get('state') == 'completed':
             code = value.get('exit')
             if not isinstance(code, int) or not 0 <= code <= 255 or not isinstance(value.get('output'), str):
@@ -427,6 +433,8 @@ def request_native_execution(cmd, use_su=False, force_adb=False):
         if plan.get('kind') not in ('READ', 'FILE', 'STOP'):
             raise ValueError('invalid ADB plan')
         return plan
+    except policy.Blocked:
+        raise
     except Exception as error:
         raise ExecutionUnknown('设备桥响应不完整，命令可能已执行，不会切换通道重试（' + type(error).__name__ + '）') from error
 

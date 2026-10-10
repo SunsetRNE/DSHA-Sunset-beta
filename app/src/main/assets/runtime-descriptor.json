@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "runtimeId": "cf72a5d856a3c78de31332546a63a974b9fd155bf5dbeecbd7264010d1a351ab",
+  "runtimeId": "78f36912c33f1634ad1073e642d0f70a0a309411ab343d7a103b764d16a29df0",
   "baseVersion": "10",
   "dshVersion": "0.2.0-rc.2",
   "launcherContract": "DSHA_ARM64_V2",
@@ -113,7 +113,7 @@
     "bridge/AdbBridge.java": "088bd5113ce1b236abad23530c0fccee8d16641776ebc7ec11defb7db931641b",
     "bridge/AndroidDeviceFiles.java": "27aa6142716b37c602f87a9ae31eb9de1804f460afbaacfb2aa18016ddc1e0a2",
     "bridge/AppDeviceActions.java": "226a1a5217944ee7a33d591101f4bdba115d89c6d51c782918c062a5803bd178",
-    "core/AdbBootstrapController.java": "5bdbe5e9cb7f9e3538fdf4885b6a54dc101e13880553f3fb40d051ba2468e966",
+    "core/AdbBootstrapController.java": "c8fdf15b6c655499c3dfec8918f7a111f320b1a055d2f1b63bbe55cf3a832ab3",
     "core/BackupTask.java": "59c698950d49d332d69243d227539cdeb360c8074c6d44608f8c9aef8569c5b6",
     "core/ConfigStore.java": "cf2a214ad6535d4557b9d23f35f94098694781c2cf431d8b619ec34f64bc5d89",
     "core/DeviceGrants.java": "9300a2263b3cc9f75d0358b7526f0fd7b8599763101cdbff85b0c00294716e48",

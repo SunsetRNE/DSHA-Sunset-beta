@@ -216,7 +216,11 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     if (state.optBoolean("keyOwned") && !key.equals(prior))
       throw new IOException("CLIENT_KEY_CHANGED_REVOKE_FIRST");
     if (state.optBoolean("keyOwned") && AdbAuthorizedKeys.count(table, key) > 0) {
-      AdbAuthorizedKeys.revoke(table, state.getString("ownedLine"));
+      // 已经是本应用拥有且在位的公钥：幂等成功，不动任何字节。
+      // （原来的实现在这里撤销自己，等于重跑一次授权就把链子的前提删掉：第二次运行时
+      // OPEN 的会话核验必然拿不到已授权公钥。）
+      state.put("pending", "");
+      save();
       return;
     }
     AdbAuthorizedKeys.Change change = AdbAuthorizedKeys.authorize(table, key, identity.name);

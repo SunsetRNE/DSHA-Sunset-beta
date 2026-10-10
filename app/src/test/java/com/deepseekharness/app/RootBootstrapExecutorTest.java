@@ -317,6 +317,20 @@ public final class RootBootstrapExecutorTest {
   }
 
   @Test
+  public void repeatedAuthorizeKeepsTheOwnedKey() throws Exception {
+    // 幂等：重跑 AUTHORIZE 不能撤销自己刚写入的公钥，否则第二次链子的会话核验必然失败。
+    Device d = new Device();
+    d.authorized();
+    assertEquals(1, AdbAuthorizedKeys.count(d.table, KEY));
+    var again = d.execute(Action.AUTHORIZE);
+    assertEquals("OK", again.status);
+    assertEquals(1, AdbAuthorizedKeys.count(d.table, KEY));
+    assertTrue(d.journal.optBoolean("keyOwned"));
+    assertEquals("OK", d.execute(Action.REVOKE).status);
+    assertEquals(0, AdbAuthorizedKeys.count(d.table, KEY));
+  }
+
+  @Test
   public void psContextColumnsFallBackToLabelOnToybox() throws Exception {
     // 真机 Android 16 复现：`ps -o PID,CONTEXT,NAME` 报 bad -o；换 LABEL 后授权必须成功。
     Device d = new Device();

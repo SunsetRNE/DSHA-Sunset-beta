@@ -329,11 +329,17 @@ public final class AdbBootstrapController {
       String output = RootShell.bootstrap(app, action, authority.ticket);
       if (action == AdbBootstrapPolicy.Action.OPEN && RootSupportProbe.parse(output).succeeded()) {
         if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
+        // 监听已确认打开。桥只对「已开启的 ADB 通道」下发 ADB 计划，而「三步全成功才开启」
+        // 的顺序会让这里的会话核验永远拿不到计划（实机返回 [DEVICE_CHANNEL_UNAVAILABLE]）。
+        // 因此先开启通道再核验；核验失败时保留开关与监听，由卡片提示刷新或按需关闭。
+        enableAdbChannel();
         String session = AdbBridge.verifyBootstrap(HarnessController.get(app).proot());
         if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
         RootSupportProbe identity = RootSupportProbe.parse(session);
         if (!identity.succeeded() || identity.executionLevel() == AdbdIdentity.Level.UNKNOWN)
-          throw new IOException("ADB_SESSION_UNVERIFIED");
+          // 会话核验失败也要留下原文（脚本版本不符、模块缺失、超时、握手被拒都在这里现形）。
+          throw new AdbBootstrapEngine.BootstrapFailure(
+              "ADB_SESSION_UNVERIFIED", AdbFirewallTool.head(session));
         JSONObject verified = new JSONObject(RootSupportProbe.parse(output).body);
         verified.put(
             "code",
@@ -350,7 +356,9 @@ public final class AdbBootstrapController {
     if (action == AdbBootstrapPolicy.Action.AUTHORIZE) {
       String ready = AdbBridge.ensureReady(app, HarnessController.get(app).proot());
       if (!AdbResult.marker(ready, "SETUP_DONE"))
-        throw new IOException("ADB_ENVIRONMENT_NOT_READY");
+        // 环境准备失败的具体原因（SETTINGS_PENDING / WHEELS_* / SETUP_FAILED…）必须可见。
+        throw new AdbBootstrapEngine.BootstrapFailure(
+            "ADB_ENVIRONMENT_NOT_READY", AdbFirewallTool.head(ready));
     }
     AndroidBackupFileSystem fs = new AndroidBackupFileSystem();
     File data = new UserDataLayout(fs, app.getFilesDir()).current().getCanonicalFile();

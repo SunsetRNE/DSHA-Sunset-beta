@@ -42,6 +42,8 @@ public final class AdbBootstrapController {
     public final boolean busy;
     public final AdbBootstrapPolicy.Action action;
     public final String outcome, detail, keyState, listenerState, guardState;
+    /** 失败时设备命令的原文（argv / 退出码 / 输出首行）；只用于显示与诊断记录。 */
+    public final String evidence;
     public final long observedAt;
 
     Snapshot(
@@ -52,6 +54,7 @@ public final class AdbBootstrapController {
         String key,
         String listener,
         String guard,
+        String evidence,
         long observedAt) {
       this.busy = busy;
       this.action = action;
@@ -60,6 +63,7 @@ public final class AdbBootstrapController {
       keyState = key;
       listenerState = listener;
       guardState = guard;
+      this.evidence = evidence == null ? "" : evidence;
       this.observedAt = observedAt;
     }
   }
@@ -142,6 +146,7 @@ public final class AdbBootstrapController {
               before.keyState,
               before.listenerState,
               before.guardState,
+              "",
               before.observedAt);
       final RootBootstrapAuthority authority = prepared;
       worker.execute(() -> perform(action, authority));
@@ -223,13 +228,32 @@ public final class AdbBootstrapController {
               reply.getString("keyState"),
               reply.getString("listenerState"),
               reply.getString("guardState"),
+              reply.optString("evidence", ""),
               System.currentTimeMillis());
+      // 诊断页也留一份：设备上出问题时不必再让它复现一次。
+      if (!result.evidence.isEmpty())
+        com.deepseekharness.app.runtime.RuntimeHostPorts.fromOwner(app)
+            .record("BOOTSTRAP_" + result.detail, AdbFirewallTool.head(result.evidence));
     } catch (Throwable error) {
       if (error instanceof InterruptedException) Thread.currentThread().interrupt();
       // 不能由异常推断“未执行”；保留未知并要求显式刷新/清理。
       String code = error.getMessage();
       if (code == null || !code.matches("[A-Z0-9_]{1,96}")) code = "REQUEST_OUTCOME_UNKNOWN";
-      result = unknown(action, rootRequestSent ? "UNKNOWN" : "FAILED", code);
+      String evidence =
+          error instanceof AdbBootstrapEngine.BootstrapFailure
+              ? ((AdbBootstrapEngine.BootstrapFailure) error).evidence
+              : "";
+      result =
+          new Snapshot(
+              false,
+              action,
+              rootRequestSent ? "UNKNOWN" : "FAILED",
+              code,
+              "UNKNOWN",
+              "UNKNOWN",
+              "UNKNOWN",
+              evidence,
+              0);
     }
     try {
       unresolved =
@@ -328,6 +352,6 @@ public final class AdbBootstrapController {
   }
 
   private static Snapshot unknown(AdbBootstrapPolicy.Action action, String outcome, String detail) {
-    return new Snapshot(false, action, outcome, detail, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0);
+    return new Snapshot(false, action, outcome, detail, "UNKNOWN", "UNKNOWN", "UNKNOWN", "", 0);
   }
 }

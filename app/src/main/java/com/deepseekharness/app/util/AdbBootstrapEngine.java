@@ -50,18 +50,40 @@ public final class AdbBootstrapEngine {
   public static final class Outcome {
     public final String status, code;
     public final Snapshot snapshot;
+    /** 失败时的可显示原文（通常是失败的设备命令）；成功或未采集时为空。 */
+    public final String evidence;
 
-    private Outcome(String status, String code, Snapshot snapshot) {
+    private Outcome(String status, String code, Snapshot snapshot, String evidence) {
       this.status = status;
       this.code = code;
       this.snapshot = snapshot;
+      this.evidence = evidence == null ? "" : evidence;
+    }
+  }
+
+  /**
+   * 带可显示证据的失败。
+   *
+   * <p>码本身必须保持 {@code [A-Z0-9_]{1,96}} 才能进事务日志；原因（哪条命令、退出码、
+   * stderr 首行）另走 evidence，只用于界面与诊断记录，不参与任何门禁判断。
+   */
+  public static class BootstrapFailure extends IOException {
+    public final String evidence;
+
+    public BootstrapFailure(String code, String evidence) {
+      super(code);
+      this.evidence = evidence == null ? "" : evidence;
     }
   }
 
   /** 在任何改动发生前可确定的拒绝。适配器一旦已派发，不得用此类型掩盖未知结果。 */
-  public static final class Refused extends IOException {
+  public static final class Refused extends BootstrapFailure {
     public Refused(String code) {
-      super(code);
+      super(code, "");
+    }
+
+    public Refused(String code, String evidence) {
+      super(code, evidence);
     }
   }
 
@@ -109,7 +131,8 @@ public final class AdbBootstrapEngine {
       return new Outcome(
           observed.complete() || action == AdbBootstrapPolicy.Action.STATUS ? "OK" : "UNKNOWN",
           observed.complete() ? "COMPLETE" : "OBSERVATION_INCOMPLETE",
-          observed);
+          observed,
+          "");
     } catch (Throwable error) {
       if (error instanceof InterruptedException) Thread.currentThread().interrupt();
       // 不隐式重试、补做相反动作或切通道；后续只能显式观察/清理。
@@ -119,7 +142,9 @@ public final class AdbBootstrapEngine {
               : error instanceof Refused ? "REFUSED" : "FAILED";
       String code = error.getMessage();
       if (code == null || !code.matches("[A-Z0-9_]{1,96}")) code = "BOOTSTRAP_IO_FAILED";
-      return new Outcome(status, code, new Snapshot("UNKNOWN", "UNKNOWN", "UNKNOWN"));
+      // evidence 只用于显示与诊断；门禁、事务日志与未知语义仍只看 status/code。
+      String evidence = error instanceof BootstrapFailure ? ((BootstrapFailure) error).evidence : "";
+      return new Outcome(status, code, new Snapshot("UNKNOWN", "UNKNOWN", "UNKNOWN"), evidence);
     }
   }
 

@@ -43,6 +43,7 @@ final class RootBootstrapNative implements RootBootstrapExecutor.SystemAccess {
                 .put("keyState", result.snapshot.key)
                 .put("listenerState", result.snapshot.listener)
                 .put("guardState", result.snapshot.guard)
+                .put("evidence", result.evidence)
                 .toString()
             + "\n[EXIT="
             + (result.status.equals("OK") ? 0 : result.status.equals("REFUSED") ? 126 : 125)
@@ -52,11 +53,18 @@ final class RootBootstrapNative implements RootBootstrapExecutor.SystemAccess {
       if (error instanceof InterruptedException) Thread.currentThread().interrupt();
       String code = error.getMessage();
       if (code == null || !code.matches("[A-Z0-9_]{1,96}")) code = "BOOTSTRAP_PREFLIGHT_FAILED";
+      String evidence =
+          error instanceof com.deepseekharness.app.util.AdbBootstrapEngine.BootstrapFailure
+              ? ((com.deepseekharness.app.util.AdbBootstrapEngine.BootstrapFailure) error).evidence
+              : "";
+      // 预检失败也要有原文：JSON 手工拼装，evidence 必须转义后再进字符串。
       return "{\"status\":\""
           + (dispatched ? "UNKNOWN" : "REFUSED")
           + "\",\"code\":\""
           + code
-          + "\",\"keyState\":\"UNKNOWN\",\"listenerState\":\"UNKNOWN\",\"guardState\":\"UNKNOWN\"}\n[EXIT="
+          + "\",\"keyState\":\"UNKNOWN\",\"listenerState\":\"UNKNOWN\",\"guardState\":\"UNKNOWN\",\"evidence\":"
+          + org.json.JSONObject.quote(evidence)
+          + "}\n[EXIT="
           + (dispatched ? 125 : 126)
           + "]";
     }

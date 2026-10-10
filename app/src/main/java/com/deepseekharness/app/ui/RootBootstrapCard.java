@@ -36,6 +36,7 @@ public final class RootBootstrapCard {
   private final MaterialSwitch allowed;
   private final Button chain;
   private final Button devOptions;
+  private final Button evidenceButton;
   private boolean updating;
   private boolean detached;
   private boolean resumed;
@@ -70,6 +71,9 @@ public final class RootBootstrapCard {
     devOptions = card.findViewById(R.id.root_bootstrap_dev_options);
     devOptions.setVisibility(android.view.View.GONE);
     devOptions.setOnClickListener(button -> openDeveloperOptions());
+    evidenceButton = card.findViewById(R.id.root_bootstrap_evidence);
+    evidenceButton.setVisibility(android.view.View.GONE);
+    evidenceButton.setOnClickListener(button -> showEvidence());
     render();
   }
 
@@ -151,6 +155,13 @@ public final class RootBootstrapCard {
       text(
           R.id.root_bootstrap_dev_options,
           UiText.choose("打开开发者选项关闭无线调试", "Open developer options to turn it off"));
+    // 失败原文只在有证据时出现；门禁与事务日志仍只看错误码。
+    boolean hasEvidence = snapshot.evidence != null && !snapshot.evidence.isEmpty();
+    evidenceButton.setVisibility(hasEvidence ? android.view.View.VISIBLE : android.view.View.GONE);
+    if (hasEvidence)
+      text(
+          R.id.root_bootstrap_evidence,
+          UiText.choose("查看失败原文", "View failure details"));
     text(
         R.id.root_bootstrap_cleanup,
         UiText.choose(
@@ -192,6 +203,7 @@ public final class RootBootstrapCard {
     allowed.setOnCheckedChangeListener(null);
     for (int id : BUTTONS) card.findViewById(id).setOnClickListener(null);
     devOptions.setOnClickListener(null);
+    evidenceButton.setOnClickListener(null);
   }
 
   /** 只打开系统开发者选项，不改任何设置；关掉无线调试仍由用户自己确认。 */
@@ -206,6 +218,22 @@ public final class RootBootstrapCard {
               "打不开开发者选项：请在 设置 → 系统 → 开发者选项 里关闭无线调试。",
               "Could not open developer options: turn wireless debugging off in Settings → System → Developer options."));
     }
+  }
+
+  /**
+   * 展示本次失败原文（哪条命令、退出码、输出首行）。
+   *
+   * <p>只读展示，不重放动作；文本可选可滚，短屏与大字体下不会截断关键信息。
+   */
+  private void showEvidence() {
+    AdbBootstrapController.Snapshot snapshot = controller.snapshot();
+    String evidence = snapshot.evidence == null ? "" : snapshot.evidence.trim();
+    if (evidence.isEmpty()) return;
+    new DshaDialogBuilder(card.getContext())
+        .setTitle(UiText.choose("失败原文", "Failure details"))
+        .setMessage(evidence)
+        .setPositiveButton(UiText.choose("知道了", "Close"), null)
+        .show();
   }
 
   private void reviewGrant() {

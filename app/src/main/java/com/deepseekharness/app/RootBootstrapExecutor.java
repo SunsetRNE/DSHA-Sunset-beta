@@ -47,6 +47,8 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
   private final JSONObject state;
   private String publicKey;
   private boolean dispatched;
+  /** 本事务解析出来的防火墙调用形式；同一事务内查询与增删必须一致。 */
+  private AdbFirewallTool.Form v4Form, v6Form;
 
   @Override
   public boolean dispatched() {
@@ -96,8 +98,9 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
   @Override
   public void narrow() throws Exception {
     // 两族都要可查询；不以 IPv6 工具缺失代替 IPv6 不存在。
-    command(false, "/system/bin/iptables", "-w", "2", "-S", "INPUT");
-    command(false, "/system/bin/ip6tables", "-w", "2", "-S", "INPUT");
+    // 调用形式先探测再复用：`-w 2` 不被接受时退回 `-w` / 不带等待，两种情况都失败就明确拒绝。
+    form("/system/bin/iptables");
+    form("/system/bin/ip6tables");
     verifyListenerScope();
     String observed = listener();
     if (!observed.equals("CLOSED")
@@ -110,8 +113,24 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     save();
   }
 
-  private List<String> rule(String tool, String operation) {
-    List<String> args = new ArrayList<>(Arrays.asList(tool, "-w", "2", operation, "INPUT"));
+  /** 解析（并缓存）该工具的可用调用形式；全部形式都不可用时带着证据拒绝，不写任何东西。 */
+  private AdbFirewallTool.Form form(String tool) throws Exception {
+    AdbFirewallTool.Form cached = tool.endsWith("ip6tables") ? v6Form : v4Form;
+    if (cached != null) return cached;
+    AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(tool, args -> system.run(args));
+    if (!resolved.ok())
+      throw new AdbBootstrapEngine.Refused(
+          "GUARD_TOOL_UNAVAILABLE", tool + " 不可用：" + resolved.evidence);
+    if (tool.endsWith("ip6tables")) v6Form = resolved.form;
+    else v4Form = resolved.form;
+    return resolved.form;
+  }
+
+  /** 用已解析的调用形式拼装本事务的哨兵规则（查询 / 插入 / 删除共用同一形式）。 */
+  private List<String> rule(String tool, String operation) throws Exception {
+    List<String> args = new ArrayList<>();
+    args.add(operation);
+    args.add("INPUT");
     if (operation.equals("-I")) args.add("1");
     args.addAll(
         Arrays.asList(
@@ -128,30 +147,34 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
             tag,
             "-j",
             "DROP"));
-    return args;
+    return form(tool).command(args.toArray(new String[0]));
   }
 
   private void narrowFamily(String tool, String field) throws Exception {
-    RootSupportProbe exists = raw(rule(tool, "-C"), false);
+    AdbFirewallTool.Form form = form(tool);
+    List<String> probe = rule(tool, "-C");
+    RootSupportProbe exists = raw(probe, false);
     if (exists.exitCode != 0 && exists.exitCode != 1)
-      throw new IOException("FIREWALL_QUERY_FAILED");
+      throw new AdbBootstrapEngine.BootstrapFailure(
+          "FIREWALL_QUERY_FAILED", AdbFirewallTool.evidence(probe, exists));
     if (exists.exitCode == 0 && !state.optBoolean(field))
       throw new IOException("FIREWALL_OWNER_UNKNOWN");
-    String listing = command(false, tool, "-w", "2", "-S", "INPUT");
+    String listing = command(false, form.listing());
     if (exists.exitCode == 0 && AdbBootstrapEngine.firstRuleProtects(listing, tag)) return;
     state.put(field, true).put("pending", "NARROW");
     save();
-    require(raw(rule(tool, "-I"), true));
-    if (!AdbBootstrapEngine.firstRuleProtects(command(false, tool, "-w", "2", "-S", "INPUT"), tag))
+    command(true, rule(tool, "-I"));
+    if (!AdbBootstrapEngine.firstRuleProtects(command(false, form.listing()), tag))
       throw new IOException("FIREWALL_ORDER_UNVERIFIED");
   }
 
   @Override
   public void verifyGuard() throws Exception {
-    for (String tool : new String[] {"/system/bin/iptables", "/system/bin/ip6tables"})
-      if (!AdbBootstrapEngine.firstRuleProtects(
-          command(false, tool, "-w", "2", "-S", "INPUT"), tag))
+    for (String tool : new String[] {"/system/bin/iptables", "/system/bin/ip6tables"}) {
+      AdbFirewallTool.Form form = form(tool);
+      if (!AdbBootstrapEngine.firstRuleProtects(command(false, form.listing()), tag))
         throw new IOException("DUAL_STACK_GUARD_UNVERIFIED");
+    }
   }
 
   private boolean ownsPort() {
@@ -293,14 +316,17 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     if (!state.optBoolean(field)) return;
     if (!listener().equals("CLOSED")) throw new IOException("LISTENER_NOT_CLOSED");
     for (int attempt = 0; attempt < 8; attempt++) {
-      RootSupportProbe exists = raw(rule(tool, "-C"), false);
+      List<String> probe = rule(tool, "-C");
+      RootSupportProbe exists = raw(probe, false);
       if (exists.exitCode == 1) {
         state.put(field, false);
         save();
         return;
       }
-      if (!exists.succeeded()) throw new IOException("FIREWALL_QUERY_FAILED");
-      require(raw(rule(tool, "-D"), true));
+      if (!exists.succeeded())
+        throw new AdbBootstrapEngine.BootstrapFailure(
+            "FIREWALL_QUERY_FAILED", AdbFirewallTool.evidence(probe, exists));
+      command(true, rule(tool, "-D"));
     }
     throw new IOException("FIREWALL_CLEANUP_INCOMPLETE");
   }
@@ -445,8 +471,9 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     } catch (Exception unavailable) {
     }
     try {
-      String v4 = command(false, "/system/bin/iptables", "-w", "2", "-S", "INPUT");
-      String v6 = command(false, "/system/bin/ip6tables", "-w", "2", "-S", "INPUT");
+      // 观测也必须复用本事务解析出来的调用形式，否则回退后的形式会被这里判成失败。
+      String v4 = command(false, form("/system/bin/iptables").listing());
+      String v6 = command(false, form("/system/bin/ip6tables").listing());
       if (AdbBootstrapEngine.firewallListingComplete(v4)
           && AdbBootstrapEngine.firewallListingComplete(v6)) {
         guard = "UNPROTECTED";
@@ -483,12 +510,19 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
   }
 
   private String command(boolean mutation, String... args) throws Exception {
-    return require(raw(Arrays.asList(args), mutation));
+    return command(mutation, Arrays.asList(args));
   }
 
-  private static String require(RootSupportProbe value) throws IOException {
+  /**
+   * 执行一条设备命令；失败时把**命令原文、退出码与输出首行**作为证据带出去，
+   * 而不是只给一个 COMMAND_FAILED（设备上曾经因此完全无法排查）。
+   */
+  private String command(boolean mutation, List<String> args) throws Exception {
+    RootSupportProbe value = raw(args, mutation);
     if (!value.succeeded())
-      throw new IOException(value.exitCode < 0 ? "COMMAND_RESULT_UNKNOWN" : "COMMAND_FAILED");
+      throw new AdbBootstrapEngine.BootstrapFailure(
+          value.exitCode < 0 ? "COMMAND_RESULT_UNKNOWN" : "COMMAND_FAILED",
+          AdbFirewallTool.evidence(args, value));
     return value.body;
   }
 

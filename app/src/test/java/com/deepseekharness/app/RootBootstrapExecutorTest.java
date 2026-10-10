@@ -36,7 +36,13 @@ public final class RootBootstrapExecutorTest {
         failV6,
         failRestart,
         failReplace,
-        revokeBeforeCommit;
+        revokeBeforeCommit,
+        /** 模拟只接受 `-w`（不接受 `-w 2`）的 iptables。 */
+        rejectWaitSeconds,
+        /** 模拟 iptables 完全不可用（例如权限被拒）。 */
+        firewallBroken,
+        /** 模拟插入规则失败，用来检查失败原文是否带出去。 */
+        failInsert;
     int restarts, replacements, saves;
     long time, started = 100;
     final List<String> writes = new ArrayList<>();
@@ -147,15 +153,37 @@ public final class RootBootstrapExecutorTest {
         if (daemon) body += args.get(3).contains("UID") ? "321 0 adbd\n" : "321 u:r:adbd:s0 adbd\n";
       } else if (tool.endsWith("tables")) {
         boolean ipv6 = tool.endsWith("ip6tables"), exists = ipv6 ? v6 : v4;
-        String op = args.get(3);
+        int wait = args.indexOf("-w");
+        if (firewallBroken) {
+          body = "iptables: Permission denied (are you root?)";
+          exit = 1;
+          return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
+        }
+        if (rejectWaitSeconds && wait >= 0 && wait + 1 < args.size() && args.get(wait + 1).equals("2")) {
+          body = "iptables v1.8.9 (legacy): unrecognized option '-w 2'";
+          exit = 2;
+          return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
+        }
+        String op = null;
+        for (String candidate : new String[] {"-S", "-C", "-I", "-D"})
+          if (args.contains(candidate)) {
+            op = candidate;
+            break;
+          }
+        if (op == null) throw new AssertionError(args);
         if (op.equals("-S")) body = "-P INPUT ACCEPT\n" + (exists ? RULE : "");
         else if (op.equals("-C")) exit = exists ? 0 : 1;
         else if (op.equals("-I") || op.equals("-D")) {
           assertTrue(grant);
-          writes.add((ipv6 ? "v6:" : "v4:") + op);
-          if (ipv6 && failV6) throw new IOException("COMMAND_RESULT_UNKNOWN");
-          if (ipv6) v6 = op.equals("-I");
-          else v4 = op.equals("-I");
+          if (op.equals("-I") && failInsert) {
+            body = "iptables: Permission denied";
+            exit = 1;
+          } else {
+            writes.add((ipv6 ? "v6:" : "v4:") + op);
+            if (ipv6 && failV6) throw new IOException("COMMAND_RESULT_UNKNOWN");
+            if (ipv6) v6 = op.equals("-I");
+            else v4 = op.equals("-I");
+          }
         } else throw new AssertionError(args);
       } else throw new AssertionError(args);
       return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
@@ -227,6 +255,42 @@ public final class RootBootstrapExecutorTest {
       assertEquals("REFUSED", d.execute(Action.AUTHORIZE).status);
       assertTrue(d.writes.isEmpty());
     }
+  }
+
+  @Test
+  public void iptablesWithoutSecondsWaitStillAuthorizes() throws Exception {
+    // 本机实测 `-w 2` 被拒：适配后退到 `-w`，链子必须照常走完，而不是报 COMMAND_FAILED。
+    Device d = new Device();
+    d.rejectWaitSeconds = true;
+    assertEquals("OK", d.execute(Action.AUTHORIZE).status);
+    assertTrue(d.v4 && d.v6);
+  }
+
+  @Test
+  public void unusableFirewallRefusesWithCommandEvidence() throws Exception {
+    Device d = new Device();
+    d.firewallBroken = true;
+    var outcome = d.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", outcome.status);
+    assertEquals("GUARD_TOOL_UNAVAILABLE", outcome.code);
+    assertTrue(outcome.evidence.contains("/system/bin/iptables"));
+    assertTrue(outcome.evidence.contains("[EXIT=1]"));
+    assertTrue(outcome.evidence.contains("Permission denied"));
+    assertTrue(d.writes.isEmpty());
+    assertEquals(0, d.replacements);
+  }
+
+  @Test
+  public void failingMutationCarriesArgvExitAndOutput() throws Exception {
+    Device d = new Device();
+    d.failInsert = true;
+    var outcome = d.execute(Action.AUTHORIZE);
+    // 已经派发过写入：结果按未知处理，但失败原文必须带出来。
+    assertEquals("UNKNOWN", outcome.status);
+    assertEquals("COMMAND_FAILED", outcome.code);
+    assertTrue(outcome.evidence.contains("-I"));
+    assertTrue(outcome.evidence.contains("[EXIT=1]"));
+    assertTrue(outcome.evidence.contains("Permission denied"));
   }
 
   @Test

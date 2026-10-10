@@ -7,6 +7,7 @@
 | [本轮验证回执](validation-20261010.json) | 精确命令、通过/受阻范围、源码与日志摘要 |
 | [实现与验证说明](implementation-20261010.md) | 本轮入口、状态、事务、UI、兼容分支及验证限制 |
 | [虚拟屏真机验证](device-vscreen-verification-20261010.md) | 在另一包（SunsetRNE）上跑一键自举的真实结果、三处阻塞与待修缺陷 |
+| [打通到 OPEN：四个真因](guard-visibility-20261011.md) | 失败可见 + 证据通路；`ps` 列名/空格、证据污染、幂等与通道顺序四个真因；真机已到 OPEN 的回执 |
 | [同步上游 build170 与 C 方案](fix-c-wireless-debug-20261010.md) | 合并上游 7 个提交（含 ADB 冷目录修复）的冲突处置，以及无线调试冲突的 C 实现 |
 | [设计](design.md) | 原生授权、固定操作、密钥所有权与双栈顺序 |
 | [工作量与阶段](workload-assessment.md) | 已实现范围、剩余设备矩阵与历史估算边界 |

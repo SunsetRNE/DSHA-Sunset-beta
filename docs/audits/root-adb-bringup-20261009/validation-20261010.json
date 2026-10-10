@@ -1,0 +1,604 @@
+{
+  "schema": 1,
+  "createdAt": "2026-10-10T17:33:12+08:00",
+  "head": "70e37a7dbcae83b32fc92a8a37b33af88befc0e0",
+  "scope": "SOURCE_AND_HOST_VALIDATION_ONLY",
+  "deviceOperations": false,
+  "apkBuiltOrInstalled": false,
+  "environment": {
+    "java": "17.0.20.1",
+    "gradle": "9.3.1",
+    "androidSdk": "37.0",
+    "standardMinSdk": 30,
+    "lowMinSdk": 23,
+    "abi": "arm64-v8a",
+    "ANDROID_SDK_ROOT": "/root/Android",
+    "GRADLE_USER_HOME": "/root/Documents/deepseek-harness/default-workspace/DSHA/app/build/root-bootstrap-gradle-home",
+    "GRADLE_RO_DEP_CACHE": "/root/.gradle/caches",
+    "GRADLE_BIN": "/root/.gradle/wrapper/dists/gradle-9.3.1-bin/23ovyewtku6u96viwx3xl3oks/gradle-9.3.1/bin/gradle",
+    "DSHA_JVM_MB": 768,
+    "aidl": "repository fixed tools/aidl-stub through build.sh architecture shim",
+    "aapt2": "/opt/aapt2-arm64/aapt2",
+    "testMaxParallelForks": 1,
+    "testHeap": "256m",
+    "testTimeoutSeconds": 240
+  },
+  "gradleTargetedCommand": [
+    "bash",
+    "build.sh",
+    "-Pandroid.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2",
+    "--project-cache-dir",
+    "app/build/root-bootstrap-project-cache",
+    "--init-script",
+    "app/build/root-support-validation/verification.init.gradle",
+    ":app:testStandardDebugUnitTest",
+    "--tests",
+    "*RootBootstrapExecutorTest",
+    "--tests",
+    "*AdbBootstrap*Test",
+    "--tests",
+    "*AdbAuthorizedKeysTest",
+    "--tests",
+    "*AdbdIdentityTest",
+    "--tests",
+    "*RootSupportProbeTest",
+    "--tests",
+    "*DeviceShellPolicyTest",
+    "--tests",
+    "*RootShellCandidatesTest",
+    "--tests",
+    "*SelfPackageIdentityTest",
+    ":app:testLowDebugUnitTest",
+    "--tests",
+    "*RootBootstrapExecutorTest",
+    "--tests",
+    "*AdbBootstrap*Test",
+    "--tests",
+    "*AdbAuthorizedKeysTest",
+    "--tests",
+    "*AdbdIdentityTest",
+    "--tests",
+    "*RootSupportProbeTest",
+    "--tests",
+    "*DeviceShellPolicyTest",
+    "--tests",
+    "*RootShellCandidatesTest",
+    "--tests",
+    "*SelfPackageIdentityTest",
+    "-x",
+    ":app:prepareStandardAssets",
+    "-x",
+    ":app:prepareBackupAssets",
+    "-x",
+    ":app:prepareRuntimeDescriptor",
+    "-x",
+    ":app:prepareRecoveryAssets",
+    "--offline",
+    "--continue",
+    "--console=plain",
+    "--no-daemon",
+    "--max-workers=1"
+  ],
+  "gradleTargetedExitCode": 0,
+  "gradleTargeted": [
+    {
+      "flavor": "standard",
+      "task": ":app:testStandardDebugUnitTest",
+      "totals": {
+        "tests": 89,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "classes": [
+        {
+          "class": "com.deepseekharness.app.RootBootstrapExecutorTest",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbAuthorizedKeysTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapEngineTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapGrantTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapJournalTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapPolicyTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbdIdentityTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.DeviceShellPolicyTest",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.RootShellCandidatesTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.RootSupportProbeTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.SelfPackageIdentityTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    {
+      "flavor": "low",
+      "task": ":app:testLowDebugUnitTest",
+      "totals": {
+        "tests": 89,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "classes": [
+        {
+          "class": "com.deepseekharness.app.RootBootstrapExecutorTest",
+          "tests": 9,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbAuthorizedKeysTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapEngineTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapGrantTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapJournalTest",
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbBootstrapPolicyTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.AdbdIdentityTest",
+          "tests": 14,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.DeviceShellPolicyTest",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.RootShellCandidatesTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.RootSupportProbeTest",
+          "tests": 6,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "class": "com.deepseekharness.app.util.SelfPackageIdentityTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    }
+  ],
+  "releaseLint": [
+    {
+      "flavor": "standard",
+      "counts": {
+        "Warning": 235
+      },
+      "path": "deliverables/root-bootstrap-implementation/validation/lint-results-standardRelease.xml",
+      "sha256": "0f55a8ce052272b747e46c830b6871d40d0e9f9d37686b927f6b6c8a39f84354"
+    },
+    {
+      "flavor": "low",
+      "counts": {
+        "Warning": 160
+      },
+      "path": "deliverables/root-bootstrap-implementation/validation/lint-results-lowRelease.xml",
+      "sha256": "50cd056f38098d4fe67329884e31a7753cdb2c4db595514796fd6fccc046ee16"
+    }
+  ],
+  "compilation": {
+    "standardDebug": "PASS",
+    "standardRelease": "PASS",
+    "lowDebug": "PASS",
+    "lowRelease": "PASS",
+    "scope": "Java compilation; asset tasks excluded"
+  },
+  "fullJvmSuite": {
+    "status": "INCOMPLETE_TIMEOUT",
+    "exitCode": 1,
+    "flavors": [
+      "standard",
+      "low"
+    ],
+    "lastReportedTest": "ConfigurationSnapshotsTest.configurationOperationsPast65And129RemainAvailable",
+    "perTaskBudgetSeconds": 240,
+    "note": "No full-suite pass claimed. The timeout log is retained; targeted reports do not replace it."
+  },
+  "fullBuild": {
+    "status": "NOT_COMPLETED",
+    "blockedBy": "missing app/src/main/assets/dsh-runtime.bin in prepareBackupAssets",
+    "excludedTasksForCodeChecks": [
+      ":app:prepareStandardAssets",
+      ":app:prepareBackupAssets",
+      ":app:prepareRuntimeDescriptor",
+      ":app:prepareRecoveryAssets"
+    ]
+  },
+  "hostChecks": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-root-support.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-root-bootstrap-endpoint.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-native-device-policy.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-device-shell-policy.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-adb-flow.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/test-ui-i18n.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/check-ui-i18n.py"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tools/check-source-hygiene.py"
+      ],
+      "exitCode": 1
+    }
+  ],
+  "hostManifest": {
+    "status": "PASS_MANIFEST",
+    "tests": 127
+  },
+  "sourceProof": {
+    "checkedAssets": 108,
+    "checkedLaunchers": 291,
+    "deferredArchives": [
+      "dsh-runtime.bin",
+      "offline-rootfs.bin",
+      "ubuntu-tools.bin"
+    ],
+    "note": "Only available bytes verified; missing archive digests retained from the previous internally consistent descriptor, not reverified.",
+    "runtimeId": "bc136bb903968cd922b192ea35bfda88248d3599e04b8e72fc9f6ed419a107c7"
+  },
+  "knownHygieneFailures": {
+    "unchangedSinceBaseline": true,
+    "CRLF": [
+      "app/src/main/assets/ubuntu-tools.layout",
+      "app/src/main/assets/ubuntu-tools.manifest.json",
+      "tools/i18n/ui-source-baseline.json",
+      "tools/recovery-runtime/lock.json"
+    ],
+    "unpinnedAction": ".github/workflows/star-history.yml"
+  },
+  "preservedBaselineSha256": {
+    "app/src/main/java/com/deepseekharness/app/util/DeviceShellPolicy.java": "ee6f0368d0cab9c0194de4a9b37d3a1861956d063e224ae59aaa24c6eb732ec7",
+    "app/src/main/assets/device-shell-policy.py": "71dbb3054a0fd7b7abe5483417ed1aeb979dd7de60ef31dab68f961398c6d3a3",
+    ".github/workflows/ci-apk-sunsetrne.yml": "a40810153ec7eb91ac93f7d666671650afce684914f1b0cd778891ef05762165",
+    "tools/recovery-runtime/lock.json": "a2598243ace846acabadd9c49d240c58a7424c811772c516dccd3ddb25655c2c",
+    "tools/i18n/ui-source-baseline.json": "d663bfd27dbafce18e7f1ad464c8a877d29ce6cb4471a10c474548e0ac45952c",
+    "app/src/main/assets/ubuntu-tools.layout": "b3895c1c543047cc5b0cd5cdbc10fd7d06140ef7f3d997cc2a9515391409dedf",
+    "app/src/main/assets/ubuntu-tools.manifest.json": "ac910b341f4d4cc6b6818002b62d1c6785a1576c7837eb9157513ea2a4d71d68",
+    ".github/workflows/star-history.yml": "cafb56a9766d4c93e5d49d75ffa359e73df84abb17932115093092a5c3aad0e0"
+  },
+  "originalEvidenceFilesVerified": 15,
+  "sourceSha256": {
+    "app/build.gradle": "3ff4ac960ed06a0f934153181cf7c220a515cc9f0cc17f27674d92f58be992dc",
+    "app/src/debug/AndroidManifest.xml": "b8876867157302cb61c5cf32f2e73f4ab885b0a784ac904cd5b0568ceb75b568",
+    "app/src/debug/java/com/deepseekharness/app/RootSupportAudit.java": "12e40733cc2effcb44571f2e9c04b04bc1a0088a86150c92975af1a4f5cd69e4",
+    "app/src/main/assets/adb-shell.py": "dd1d01ea0d087ca21c4bfb0ea0d8ad02599d7fd864c35ee49ddbd89348f9719c",
+    "app/src/main/assets/managed-runtime-inputs.json": "528316f9835771a615c95b9905d7bc9b0c2bf45b1675793a83eb29f022b61bc0",
+    "app/src/main/assets/runtime-descriptor.json": "f6e3ff7cbf99a76152d8f98800d28012988710ec0450bae27360e04afc27d933",
+    "app/src/main/java/com/deepseekharness/app/RootBootstrapAuthority.java": "f5f1062ba02d66d0ab2563fb13e2f47026fc24abb4869854d5d6a1ebb979b8d4",
+    "app/src/main/java/com/deepseekharness/app/RootBootstrapExecutor.java": "a9d7e8caac49f074e506e1bd8fdc275eb20865ff162221914e31bf67c0621311",
+    "app/src/main/java/com/deepseekharness/app/RootBootstrapFileLabels.java": "46cccb9502457a7965b412b240607ccb4c15b7f4817cf185bd75fbe630baa261",
+    "app/src/main/java/com/deepseekharness/app/RootBootstrapFiles.java": "a0609bb8b51035f2e6f03c8cc6cf684f752e1b9712fb891e1cb98ae4354cf313",
+    "app/src/main/java/com/deepseekharness/app/RootBootstrapNative.java": "529c37bdb6c667f0c0b91a7a3c769bb9a3e88a4f3f7e94997d1f6b5507cea10a",
+    "app/src/main/java/com/deepseekharness/app/RootShell.java": "ca2ce441960d8505f02c59da8ce3ede003dd01013920a339c03aab597f44bb62",
+    "app/src/main/java/com/deepseekharness/app/RootShellMain.java": "c5aae763f669f56dcd0f223c59d3394f26d5106710583ddc86068df4af98c67b",
+    "app/src/main/java/com/deepseekharness/app/bridge/AdbBridge.java": "eb3c3f5faa77be1eb074670bd6e79d4ea1f6191c357eeea4c6f9364e2c1c73e5",
+    "app/src/main/java/com/deepseekharness/app/core/AdbBootstrapController.java": "f2e2ec7d97085b8366fa7c22ebc0731b69579bed169fe6cf7f7d1da393f2a7f8",
+    "app/src/main/java/com/deepseekharness/app/core/ConfigStore.java": "cf2a214ad6535d4557b9d23f35f94098694781c2cf431d8b619ec34f64bc5d89",
+    "app/src/main/java/com/deepseekharness/app/core/DeviceGrants.java": "9300a2263b3cc9f75d0358b7526f0fd7b8599763101cdbff85b0c00294716e48",
+    "app/src/main/java/com/deepseekharness/app/ui/DeviceGrantsFragment.java": "969d8cb630d14af8265000e9532279dff43d80985c5bfe8994a67b34f5c31f19",
+    "app/src/main/java/com/deepseekharness/app/ui/RootBootstrapCard.java": "68ce64478aa5a06bbadbd5d02b725fb7371ef8343eee306f876ff4609b9164f5",
+    "app/src/main/java/com/deepseekharness/app/util/AdbAuthorizedKeys.java": "9140be1440e0f6d3d8f2bc0ef80c797541b5cc743d957af075ab797f56dbe392",
+    "app/src/main/java/com/deepseekharness/app/util/AdbBootstrapEngine.java": "db5f51dae12f17d7e39dfe15b184a5b4019f12b43b2ef74149537fe9fd86c2cb",
+    "app/src/main/java/com/deepseekharness/app/util/AdbBootstrapGrant.java": "dd6307031dfa735fd98c66d8ecf12a16a13ea6abe7efb570754131e12fd830b6",
+    "app/src/main/java/com/deepseekharness/app/util/AdbBootstrapJournal.java": "b3166e8ee7e1321d40728d5ae7f448a5b5fac1aeacf527ca7638b17b27131b82",
+    "app/src/main/java/com/deepseekharness/app/util/AdbBootstrapPolicy.java": "1f88bf44d2067868c7a7b561c5c7b4d624ba31ed15344558bc221cb979ae8a2b",
+    "app/src/main/java/com/deepseekharness/app/util/AdbdIdentity.java": "e26225978af52acfde093e8b19616df99cd0dd3c6665d7699e4666e47ddcdcf1",
+    "app/src/main/java/com/deepseekharness/app/util/RootSupportProbe.java": "41ac3b8aabf6ec33186424ba3e2d63145a7341720e60a4beb075d3bb98a1ad70",
+    "app/src/main/res/layout/fragment_device_grants.xml": "663668e2df71318f12f066b2dc31d852bff985b981e52a66ba027bda1279a3cb",
+    "app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java": "932dc2d6a6b2db34ad2b6ae21da51fcd953d573ca14e17f9cf42412bc58bd644",
+    "app/src/test/java/com/deepseekharness/app/util/AdbAuthorizedKeysTest.java": "080659a38b708a213f77b37860c05a044f185949511240d5a30283547c8b8391",
+    "app/src/test/java/com/deepseekharness/app/util/AdbBootstrapEngineTest.java": "a445a61040d5da462328665645aa84fc4fab3b92accf4b6f80a71ed7feb0b450",
+    "app/src/test/java/com/deepseekharness/app/util/AdbBootstrapGrantTest.java": "1f54596e8ff54031789292d4b8c27d67f99a2275f9b9ea8ccb3a1079232eb34f",
+    "app/src/test/java/com/deepseekharness/app/util/AdbBootstrapJournalTest.java": "249623d695d2afb9fceeac3fb9b7b18b7b58758ae36dc9ff2b9d672a9fa9db40",
+    "app/src/test/java/com/deepseekharness/app/util/AdbBootstrapPolicyTest.java": "a0e710748bede48ef6ed3bb0f589bdd3872b5a55f86191c92e7de99b993f2b47",
+    "app/src/test/java/com/deepseekharness/app/util/AdbdIdentityTest.java": "c14a3aa41b9ceb3b3f06fca6172d526f2644a1ac0f1b1440818f25017566eebd",
+    "app/src/test/java/com/deepseekharness/app/util/RootSupportProbeTest.java": "d30014d50d4bcd44ed723ca284cd0f4eb812f158e71043be064241ee16af795a",
+    "docs/audits/root-adb-bringup-20261009/README.md": "bbb4cb2ae9ea3a093402d081dde99f88eca04f606ea0fe7275a1b99739c56406",
+    "docs/audits/root-adb-bringup-20261009/chroot-l1.md": "82b0694bfaff6a5a01eaa8a9599e8fec7502ea77077cea9ed1e37bfc65e3b721",
+    "docs/audits/root-adb-bringup-20261009/design.md": "26b49c71e794ded23d56a9d219afbae5a1b3bb1dd7b55ea736afd6aa4f9ef285",
+    "docs/audits/root-adb-bringup-20261009/devices/TB321FU.md": "0c8f6224ac6a2a44c2b10ea82625ac1380281cc22233d520bbe460fbcfeeb7bf",
+    "docs/audits/root-adb-bringup-20261009/evidence.md": "d0e51c273b6bf9ee625e3f949f49985431c93c082c02b95f5c290072971d3a30",
+    "docs/audits/root-adb-bringup-20261009/implementation-20261010.md": "19a1ae32026673d3f7d4529f7342807cdd418fd1e3d5e7ef08a95c5680eaf5ec",
+    "docs/audits/root-adb-bringup-20261009/scripts/adb-listen-narrow.sh": "41527964c08e669178f370600ec78e5cf17c8207b2217241fe6d66004dc8a23d",
+    "docs/audits/root-adb-bringup-20261009/scripts/authorize-adb.sh": "45c2c6c76dbefde0e2378d87c98a0db4639a56ae89747a0acdc0082152c5b5fc",
+    "docs/audits/root-adb-bringup-20261009/scripts/revoke-adb.sh": "4a2f20610ee36efcf13e0287cfccd2352f45dcadee8f0dd8258ae93c20511320",
+    "docs/audits/root-adb-bringup-20261009/scripts/verify-adb-identity.sh": "6cd2b428623d776a7a2563febd1364aa912981ebc91389f6579aaa881e7b5e31",
+    "docs/audits/root-adb-bringup-20261009/workload-assessment.md": "aac136e43c14371e15b38e3d4bca4464fa2c9f2a2992f59e21c8b09b2e3067d7",
+    "docs/security-model.md": "cf4eb8c94981222f8ca1df69b169fd94ed331de8a3b498882a207b9960cf107e",
+    "gradle/verification-metadata.xml": "d918b7d8610b2b226ff3b98fad7dd2b915f6628f369a94e3c07fa111744a1070",
+    "tools/host-tests.manifest.json": "01c171bee6911110f24530cedce1a01c330c44ca633addb5cf43cc3dbdebd384",
+    "tools/test-root-bootstrap-endpoint.py": "0621155e5eb80efbb3d3653c0a0a5809a8e3a7f7f79331673d8af66bb0b1493f",
+    "tools/test-root-support.py": "8d1ad508cc166eb89b60dcd6490c34cdf5d91e26df4956c4ee2e57df26f4779b"
+  },
+  "evidence": [
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-current-gate.log",
+      "sha256": "6e23433db4db69c336541f565047c96d513e6e38c49f102a5edd20d5f0a947a9"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-continuation-code.log",
+      "sha256": "87a312dd37878bee369e84099530dfba6accda460b8ff48084aadb6095746442"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-continuation-final.log",
+      "sha256": "f926e296c8e69d569ef40853f78c99be59aa2ea1c479101230955fdfb09e78be"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-continuation-cached.log",
+      "sha256": "44eed6c4bfc0c3ccae40530f856db516fbf545a6ad03496101b0e4a55ab1d3e0"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-continuation-unit.log",
+      "sha256": "854bd7a3d7016fd9463a4f360a31f787449eea5f1d37895f36743f208ed26813"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/gradle-continuation-targeted.log",
+      "sha256": "8889d67817106a645e0585c764310778dfdcfb5763b06314a3b60633bef4cbd3"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/continuation-source-proof.json",
+      "sha256": "82c59705940b68ff3b5a4050e2e38b85a5474b2e11402882c324ce819847d2a9"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-root-support.py.log",
+      "sha256": "c584077f757f33927fd05a7304d6fc961c4a1e7ab25756b78dbb6c3eb5ca5a7a"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-root-bootstrap-endpoint.py.log",
+      "sha256": "c9d56aa64ecf049d6266d7f44044d8e2106d9f58f627a9aab54fc4a1fbbddf94"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-native-device-policy.py.log",
+      "sha256": "7567862ffeabfdb3263c96e2b863e192a38a4eb8bb3fb57a735cdf33bf3b87c7"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-device-shell-policy.py.log",
+      "sha256": "7ba913a012185fa25a962dbeef8f8c28e472fd96505ed04aaec3bca296b79a29"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-adb-flow.py.log",
+      "sha256": "677208cc182837b79324cb6dff9fffe8f81b7e62834b1c0af8ffc39a2936ae7b"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/test-ui-i18n.py.log",
+      "sha256": "b1e2df9be5b3e954c2d2d25efcf39cb02fe4e10735e67c33a5bb9488485289d7"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/check-ui-i18n.py.log",
+      "sha256": "1075b49318df90aa215cadd3d53fd817c4e4aab07fd913c473c3c2eeacc707b0"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/check-source-hygiene.py.log",
+      "sha256": "912b97e63e36120ea7c9eb667c9c852885f41ec3002ee11100a20249b8e39fcd"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/lint-results-standardRelease.xml",
+      "sha256": "0f55a8ce052272b747e46c830b6871d40d0e9f9d37686b927f6b6c8a39f84354"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/lint-results-lowRelease.xml",
+      "sha256": "50cd056f38098d4fe67329884e31a7753cdb2c4db595514796fd6fccc046ee16"
+    },
+    {
+      "path": "deliverables/root-bootstrap-implementation/validation/verification.init.gradle",
+      "sha256": "fa17b5a764103c98bbef0a812a4c3a857e36f0fb3c5a0b587682aa5c3bd96152"
+    }
+  ],
+  "notVerified": [
+    "Android Os rename/fsync/xattr behavior",
+    "Binder/LocalSocket authorization and root manager behavior",
+    "actual IPv4/IPv6 external access and vendor firewall resets",
+    "API 23/24/25 devices",
+    "concurrent system pairing or power-loss transactions",
+    "native UI style matrix and real lifecycle instrumentation",
+    "complete APK/assets/signature/release verification"
+  ],
+  "verificationInitCopy": "deliverables/root-bootstrap-implementation/validation/verification.init.gradle",
+  "reproduceTargetedCommand": [
+    "bash",
+    "build.sh",
+    "-Pandroid.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2",
+    "--project-cache-dir",
+    "app/build/root-bootstrap-project-cache",
+    "--init-script",
+    "deliverables/root-bootstrap-implementation/validation/verification.init.gradle",
+    ":app:testStandardDebugUnitTest",
+    "--tests",
+    "*RootBootstrapExecutorTest",
+    "--tests",
+    "*AdbBootstrap*Test",
+    "--tests",
+    "*AdbAuthorizedKeysTest",
+    "--tests",
+    "*AdbdIdentityTest",
+    "--tests",
+    "*RootSupportProbeTest",
+    "--tests",
+    "*DeviceShellPolicyTest",
+    "--tests",
+    "*RootShellCandidatesTest",
+    "--tests",
+    "*SelfPackageIdentityTest",
+    ":app:testLowDebugUnitTest",
+    "--tests",
+    "*RootBootstrapExecutorTest",
+    "--tests",
+    "*AdbBootstrap*Test",
+    "--tests",
+    "*AdbAuthorizedKeysTest",
+    "--tests",
+    "*AdbdIdentityTest",
+    "--tests",
+    "*RootSupportProbeTest",
+    "--tests",
+    "*DeviceShellPolicyTest",
+    "--tests",
+    "*RootShellCandidatesTest",
+    "--tests",
+    "*SelfPackageIdentityTest",
+    "-x",
+    ":app:prepareStandardAssets",
+    "-x",
+    ":app:prepareBackupAssets",
+    "-x",
+    ":app:prepareRuntimeDescriptor",
+    "-x",
+    ":app:prepareRecoveryAssets",
+    "--offline",
+    "--continue",
+    "--console=plain",
+    "--no-daemon",
+    "--max-workers=1"
+  ]
+}

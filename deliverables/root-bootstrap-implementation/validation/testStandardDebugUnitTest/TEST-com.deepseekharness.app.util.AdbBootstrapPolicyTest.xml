@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.util.AdbBootstrapPolicyTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:25:56.016Z" hostname="localhost" time="0.013">
+  <properties/>
+  <testcase name="rejectsNonCanonicalAndInjectedActions" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.002"/>
+  <testcase name="requirementsCannotBeChangedByCaller" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.003"/>
+  <testcase name="bindsRequestedPackageAndUidToInstalledIdentity" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="checksAppIdForSecondaryUsersAndRejectsIsolatedUid" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.002"/>
+  <testcase name="missingActionIsNotAnEmptyPreconditionSet" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="rejectsCoercedNumbersAndNullFields" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.001"/>
+  <testcase name="authorizeProtectsExistingListenerBeforeGrantingAccess" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="rejectsArbitraryPortAndWrongOperation" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.001"/>
+  <testcase name="allActionsRejectNonFixedPortsAndBindMapIdentity" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.003"/>
+  <testcase name="openRequiresDualStackProtectionAndNativeGrants" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="acceptsFixedActionsAndDefaultPort" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="cleanupRemainsPossibleAfterDisablingAdbBootstrap" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="acceptsStrictMapWithOptionalPort" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.0"/>
+  <testcase name="rejectsExtraAndMissingFields" classname="com.deepseekharness.app.util.AdbBootstrapPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

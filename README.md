@@ -232,6 +232,8 @@ agent 通过本机 `127.0.0.1:3090` 桥调用以下能力（token 门控，`/app
 
 👉 每项权限到底暴露了什么、agent 碰得到手机的哪些部分，见 **[安全模型](docs/security-model.md)**。
 
+Root/ADB 的历史评估、原生自举与 UI 实现、落地前验证范围见 [root 支持评估](docs/audits/root-adb-bringup-20261009/README.md)。此功能默认关闭，设备验收与源码验证分别记录。
+
 ---
 
 ## 与同类方案的关系

@@ -1,0 +1,1618 @@
+build.sh: line 262: warning: command substitution: ignored null byte in input
+==> 备份原生 aidl（x86_64，本机不可执行）：/root/Android/build-tools/36.0.0//aidl -> aidl.x86_64.disabled
+==> 已安装 aidl shim：/root/Android/build-tools/36.0.0//aidl
+==> build-tools 与主机架构不符（/root/Android/build-tools/36.0.0:62!=183）：已换 shim，AIDL 产物取自 tools/aidl-stub/
+==> locale=C.utf8  (JVM sun.jnu.encoding=UTF-8)
+==> JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64  (openjdk version "17.0.20.1" 2026-08-18)
+==> ANDROID_SDK=/root/Android
+==> GRADLE_USER_HOME=/root/.gradle
+==> DSHA_PYTHON=python3  (Python 3.12.3)
+==> Gradle 堆 -Xmx768m
+==> task: --init-script app/build/root-support-validation/verification.init.gradle :app:testStandardDebugUnitTest :app:testLowDebugUnitTest :app:lintStandardRelease :app:lintLowRelease -x :app:prepareStandardAssets -x :app:prepareBackupAssets -x :app:prepareRuntimeDescriptor -x :app:prepareRecoveryAssets --offline --continue --console=plain --no-daemon --max-workers=1
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2' is experimental.
+签名：未配置历史发布证书；正式 APK 打包将被阻止
+
+> Task :app:prepareUiLanguages UP-TO-DATE
+> Task :app:verifyBuiltinRegistry
+
+> Task :app:verifyBundledIdentities
+PASS runtime tools identity
+
+> Task :app:verifyCredentialRegistry
+Credential paths JSON/Java scope table PASS
+
+> Task :app:preBuild
+> Task :app:preStandardDebugBuild
+> Task :app:compileStandardDebugAidl UP-TO-DATE
+> Task :app:generateStandardDebugBuildConfig UP-TO-DATE
+> Task :app:generateStandardDebugResValues UP-TO-DATE
+> Task :app:generateStandardDebugResources UP-TO-DATE
+> Task :app:packageStandardDebugResources
+> Task :app:processStandardDebugNavigationResources UP-TO-DATE
+> Task :app:parseStandardDebugLocalResources UP-TO-DATE
+> Task :app:generateStandardDebugRFile UP-TO-DATE
+> Task :app:compileStandardDebugKotlin NO-SOURCE
+> Task :app:javaPreCompileStandardDebug UP-TO-DATE
+> Task :app:verifyBackupDependencies
+
+> Task :app:compileStandardDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:checkStandardDebugAarMetadata UP-TO-DATE
+> Task :app:mapStandardDebugSourceSetPaths
+> Task :app:compileStandardDebugNavigationResources
+> Task :app:mergeStandardDebugResources
+> Task :app:createStandardDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksStandardDebug
+> Task :app:processStandardDebugMainManifest
+> Task :app:processStandardDebugManifest
+> Task :app:processStandardDebugManifestForPackage
+AAPT2 aapt2-arm64 Daemon #0: Unexpected error output: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+10-10 17:00:53.342  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03031b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030161.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030443.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303be.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020a.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030162.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030043.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004a.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014f.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f7.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030206.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030353.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030215.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030352.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030205.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ff.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030182.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300cf.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03021b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019d.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008e.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030297.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030317.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03038f.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030296.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030387.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008b.
+10-10 17:00:53.343  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b0.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a7.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a8.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ad.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ac.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030289.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030288.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030432.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030433.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e8.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030419.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030040.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e2.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301be.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030247.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301eb.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030170.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030176.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030171.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030173.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030174.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030175.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030186.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030475.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030476.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030477.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030479.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030478.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030007.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030006.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030008.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030020.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030002.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030005.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030004.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030009.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030003.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030000.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030001.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030011.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030010.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030013.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030015.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030014.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030017.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030019.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030016.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03001e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030012.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030018.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ff.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030408.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030405.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030160.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03015f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030295.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03015e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03017c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030399.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030087.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030083.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030370.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030070.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030169.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030164.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030025.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030447.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030446.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030180.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03017f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030213.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030407.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030406.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03040f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029a.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029c.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029e.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029f.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a0.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03029d.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03017b.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030299.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030401.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030402.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030403.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030335.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030337.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030336.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030292.
+10-10 17:00:53.344  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300fc.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300fe.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300dc.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300e2.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300e0.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300e1.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300de.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030113.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030130.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300dd.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030029.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030027.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030028.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03040e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030086.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030084.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030085.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008f.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030090.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a1.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ac.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030181.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030357.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030359.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03035a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03035b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c5.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030298.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03044a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030449.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300e3.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046c.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030294.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030293.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030050.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030058.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030057.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030059.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004f.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030044.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030056.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302db.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302df.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030054.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030321.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030055.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030051.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030052.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005c.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005d.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030323.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030207.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030208.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030246.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030039.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030455.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030216.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030452.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030380.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fc.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030382.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e7.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004c.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03031a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030182.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b0.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b2.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b3.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b4.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b5.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b6.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b1.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030361.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030026.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030200.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032d.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032f.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030330.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e4.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030225.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030119.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030373.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03037b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030069.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030067.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030065.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030068.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030066.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006d.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006c.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f2.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030334.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a6.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a7.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a8.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03037f.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030356.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03037e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030093.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030094.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030095.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030097.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030099.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030098.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030127.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012a.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012d.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030128.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03009b.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03009e.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03009f.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a0.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c0.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ad.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b6.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ae.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300bd.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300be.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030363.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b7.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030192.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b5.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b2.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b1.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b4.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b3.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ce.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c9.
+10-10 17:00:53.345  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c8.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300cd.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300cb.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300aa.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a4.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a9.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030384.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fd.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300bc.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020f.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020b.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041a.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030410.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300cc.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ca.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300af.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b8.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300b9.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ba.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030390.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030391.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030371.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a3.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03021a.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030219.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030217.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c7.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c4.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302c5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030372.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a1.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a4.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a3.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a2.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a6.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d4.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030442.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a7.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012e.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b1.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030445.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030369.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030367.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d3.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a0.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030438.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030435.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030437.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302de.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ed.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301af.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043f.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030250.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030251.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002c.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030242.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030088.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030091.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030092.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030344.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030259.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025b.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025a.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025f.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030260.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030261.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026a.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026b.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026e.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030274.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030273.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030258.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030257.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030255.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026f.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030270.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025e.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030281.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030284.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030282.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027f.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030283.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030280.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030253.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030252.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030266.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030275.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030278.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030262.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027a.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030279.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027b.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030264.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030263.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030265.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030269.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030272.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026c.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030256.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030254.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025c.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030268.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030277.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030267.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030276.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027e.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030061.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030062.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030060.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03009d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d5.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301df.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301dc.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d2.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301dd.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d3.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e0.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301da.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d4.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301de.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301cf.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d1.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ce.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d0.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d7.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d9.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d6.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301d8.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030031.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045e.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033d.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030460.
+10-10 17:00:53.346  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016d.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030311.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030271.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030312.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030287.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024a.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011a.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030348.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011f.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03015d.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030241.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303af.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024f.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024d.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030286.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024e.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030285.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027c.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030038.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014b.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014a.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014e.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014d.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030151.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03014c.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030150.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030149.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300db.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030398.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030172.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f1.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030036.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030037.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03005f.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041c.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030182.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a9.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030384.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fd.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301a8.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030388.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d2.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030063.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030064.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004c.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004d.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030363.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b8.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b7.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030192.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030209.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030351.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006f.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030466.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302dd.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030384.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fd.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030373.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03037b.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030236.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030290.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e3.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e7.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e8.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e4.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e5.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e6.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e9.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ea.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e1.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ec.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301eb.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030465.
+10-10 17:00:53.347  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ef.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002e.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030366.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030082.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030144.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030364.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032b.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030365.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030330.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030332.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030334.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a6.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a7.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a8.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f0.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030313.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030148.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030473.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030472.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030471.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030474.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030341.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030342.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030340.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030392.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030470.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030463.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030326.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030327.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030324.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030464.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030462.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030314.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030315.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030259.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025b.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025a.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030260.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030261.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026a.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026b.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026e.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030274.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030273.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030258.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030257.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030255.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03026f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030270.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025e.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03025d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030281.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030284.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030282.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030283.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030280.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030253.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030252.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03027b.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302dc.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e1.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e6.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ea.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e2.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030162.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030383.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030167.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030214.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030218.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030047.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030048.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030046.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030045.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ab.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ad.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ac.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ae.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a9.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302aa.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03038b.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03038e.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03038c.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03038d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03017a.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020a.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020e.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03020c.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030210.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030211.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b2.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b3.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030138.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030363.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030444.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030391.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030371.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a2.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030154.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030152.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030153.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030155.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030480.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03047f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030481.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030358.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030320.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030223.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023d.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030237.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030238.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022f.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030230.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030096.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a4.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a9.
+10-10 17:00:53.348  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a8.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a7.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300a6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030363.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a9.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030088.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030468.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030091.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03008d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03009c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030193.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300ab.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303aa.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ab.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030163.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030168.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030165.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030166.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030248.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041f.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030421.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030422.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030420.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030456.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030457.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030458.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028f.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030240.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03031a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030436.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303bb.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a2.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a4.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030322.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030381.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03000d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030023.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030021.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030120.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03044c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030350.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b4.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ec.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ee.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ed.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302eb.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302ef.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302f0.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030031.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030310.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030312.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030328.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030325.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030145.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030311.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030034.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030385.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302f1.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030156.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024b.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e7.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e5.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a5.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e3.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030245.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030222.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030227.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030228.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023b.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030024.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030221.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03022a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e5.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030334.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030332.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b5.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b8.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030239.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030224.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03023e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030226.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030229.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030234.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030235.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030233.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030232.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030231.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03044d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030072.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b7.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030178.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e4.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c3.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016b.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e0.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302d8.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03016a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03044e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03044f.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030450.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03028e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03031e.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030316.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030329.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032a.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a6.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046d.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030271.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302c5.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030469.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e8.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030333.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024c.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030397.
+10-10 17:00:53.349  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030362.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039d.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301b9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301bc.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301bd.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ba.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301bb.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03021c.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03006a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030157.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030159.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fe.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301ee.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030434.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030249.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030212.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030355.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030158.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300c8.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f3.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03046e.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030118.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c2.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030354.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303b9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03036c.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030467.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030030.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03002f.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03003b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030042.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030139.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013c.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013d.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030133.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030136.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030137.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030135.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030134.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030127.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030128.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030129.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012c.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03012d.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030065.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030132.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f4.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f5.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030243.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030244.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041d.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041e.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030423.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030424.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030425.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030429.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03042f.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030430.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030431.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030452.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030453.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030454.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030459.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030395.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030394.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030396.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302d9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030032.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030049.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004d.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030022.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011e.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03015a.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030427.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030428.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030451.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045c.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030426.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c6.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c3.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c4.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039b.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030386.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030468.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303cf.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d2.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c8.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c7.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303cc.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d1.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303cd.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d0.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ce.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d6.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d3.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d5.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d4.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e1.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e2.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303df.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303de.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303da.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303db.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d9.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d8.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303d7.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ca.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303cb.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303dc.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e3.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301e2.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303e8.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030419.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301eb.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030414.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030202.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030201.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030203.
+10-10 17:00:53.350  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030204.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f8.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301f9.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fa.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0301fb.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030196.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03019c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030195.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030194.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030197.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030198.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030199.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030146.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030147.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03013f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030142.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030143.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030140.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030141.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030345.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030346.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030347.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03034f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303bf.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c0.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303c1.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a1.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a0.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a4.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a5.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a2.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303a3.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018a.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030189.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030188.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03018d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030078.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030079.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007a.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03007f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030077.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030080.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030081.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033a.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030339.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030338.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030190.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030191.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030440.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303bc.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030435.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303ba.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030439.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043a.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03043e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030125.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030121.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030123.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030124.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030126.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030122.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302da.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030089.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d1.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0300d0.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030319.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030318.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a1.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302a3.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030441.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0303bd.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f0302e3.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011c.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03024b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03033d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030041.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03030e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03017d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03039e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03045f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03035f.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030360.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03035d.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03035e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03011e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f030331.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03032e.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03041b.
+10-10 17:00:53.351  7415  7415 E aapt2   : No package ID 7f found for resource ID 0x7f03004d.
+
+> Task :app:processStandardDebugResources
+> Task :app:bundleStandardDebugClassesToRuntimeJar
+> Task :app:bundleStandardDebugClassesToCompileJar
+> Task :app:preStandardDebugUnitTestBuild
+> Task :app:compileStandardDebugUnitTestKotlin NO-SOURCE
+> Task :app:javaPreCompileStandardDebugUnitTest
+
+> Task :app:compileStandardDebugUnitTestJavaWithJavac
+/root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+        new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                            ^
+/root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+        new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                                             ^
+/root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+        new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                                                                              ^
+/root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:46: error: unreported exception JSONException; must be caught or declared to be thrown
+      return new JSONObject(journal.toString());
+             ^
+Note: /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/backup/DataFormatEvidenceTest.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+4 errors
+
+> Task :app:compileStandardDebugUnitTestJavaWithJavac FAILED
+> Task :app:processStandardDebugJavaRes NO-SOURCE
+> Task :app:processStandardDebugUnitTestJavaRes
+> Task :app:preLowDebugBuild
+> Task :app:compileLowDebugAidl FAILED
+> Task :app:generateLowDebugBuildConfig
+> Task :app:generateLowDebugResValues
+> Task :app:generateLowDebugResources
+> Task :app:packageLowDebugResources
+> Task :app:processLowDebugNavigationResources FAILED
+> Task :app:javaPreCompileLowDebug
+> Task :app:checkLowDebugAarMetadata FAILED
+> Task :app:mapLowDebugSourceSetPaths
+> Task :app:mergeLowDebugResources FAILED
+> Task :app:createLowDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksLowDebug
+> Task :app:processLowDebugMainManifest FAILED
+> Task :app:preLowDebugUnitTestBuild
+> Task :app:javaPreCompileLowDebugUnitTest
+> Task :app:preStandardReleaseBuild
+> Task :app:compileStandardReleaseAidl
+> Task :app:generateStandardReleaseBuildConfig
+> Task :app:generateStandardReleaseResValues
+> Task :app:generateStandardReleaseResources
+> Task :app:packageStandardReleaseResources
+> Task :app:processStandardReleaseNavigationResources
+> Task :app:parseStandardReleaseLocalResources
+> Task :app:generateStandardReleaseRFile
+> Task :app:compileStandardReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileStandardRelease
+
+> Task :app:compileStandardReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:extractProguardFiles
+> Task :app:extractDeepLinksStandardRelease
+> Task :app:processStandardReleaseMainManifest
+> Task :app:generateStandardReleaseLintReportModel FAILED
+> Task :app:lintAnalyzeStandardRelease FAILED
+> Task :app:preLowReleaseBuild
+> Task :app:compileLowReleaseAidl FAILED
+> Task :app:generateLowReleaseBuildConfig
+> Task :app:generateLowReleaseResValues
+> Task :app:generateLowReleaseResources
+> Task :app:packageLowReleaseResources
+> Task :app:processLowReleaseNavigationResources FAILED
+> Task :app:javaPreCompileLowRelease
+> Task :app:extractDeepLinksLowRelease
+> Task :app:processLowReleaseMainManifest FAILED
+
+[Incubating] Problems report is available at: file:///root/Documents/deepseek-harness/default-workspace/DSHA/build/reports/problems/problems-report.html
+
+FAILURE: Build completed with 11 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileStandardDebugUnitTestJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+          new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                              ^
+  /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+          new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                                               ^
+  /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:28: error: unreported exception JSONException; must be caught or declared to be thrown
+          new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
+                                                                                ^
+  /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/RootBootstrapExecutorTest.java:46: error: unreported exception JSONException; must be caught or declared to be thrown
+        return new JSONObject(journal.toString());
+               ^
+  Note: /root/Documents/deepseek-harness/default-workspace/DSHA/app/src/test/java/com/deepseekharness/app/backup/DataFormatEvidenceTest.java uses unchecked or unsafe operations.
+  Note: Recompile with -Xlint:unchecked for details.
+  4 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileLowDebugAidl'.
+> Could not resolve all files for configuration ':app:lowDebugCompileClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+3: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:processLowDebugNavigationResources'.
+> Could not resolve all files for configuration ':app:lowDebugRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+4: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:checkLowDebugAarMetadata'.
+> Could not resolve all files for configuration ':app:lowDebugRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-aar-metadata, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+5: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:mergeLowDebugResources'.
+> Could not resolve all files for configuration ':app:lowDebugRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-res, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+6: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:processLowDebugMainManifest'.
+> Could not resolve all files for configuration ':app:lowDebugRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+7: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:generateStandardReleaseLintReportModel'.
+> Could not resolve all files for configuration ':app:standardReleaseRuntimeClasspath'.
+   > Could not download kotlin-stdlib-jdk8-1.8.22.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22): No cached version available for offline mode
+   > Could not download kotlin-stdlib-jdk7-1.8.22.jar (org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+8: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:lintAnalyzeStandardRelease'.
+> Could not resolve all files for configuration ':app:coreLibraryDesugaring'.
+   > Failed to transform desugar_jdk_libs-2.0.4.jar (com.android.tools:desugar_jdk_libs:2.0.4) to match attributes {artifactType=_internal-desugar-lib-lint, lint-compile-sdk=37, lint-min-sdk=30, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download desugar_jdk_libs-2.0.4.jar (com.android.tools:desugar_jdk_libs:2.0.4): No cached version available for offline mode
+   > Failed to transform desugar_jdk_libs_configuration-2.0.4.jar (com.android.tools:desugar_jdk_libs_configuration:2.0.4) to match attributes {artifactType=_internal-desugar-lib-lint, lint-compile-sdk=37, lint-min-sdk=30, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download desugar_jdk_libs_configuration-2.0.4.jar (com.android.tools:desugar_jdk_libs_configuration:2.0.4): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+9: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileLowReleaseAidl'.
+> Could not resolve all files for configuration ':app:lowReleaseCompileClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-aidl, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-api}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+10: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:processLowReleaseNavigationResources'.
+> Could not resolve all files for configuration ':app:lowReleaseRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-navigation-xml, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-navigation-xml, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+11: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:processLowReleaseMainManifest'.
+> Could not resolve all files for configuration ':app:lowReleaseRuntimeClasspath'.
+   > Failed to transform geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-arm64-v8a-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-arm64-v8a:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.libraryelements=jar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download play-services-fido-21.2.0.aar (com.google.android.gms:play-services-fido:21.2.0): No cached version available for offline mode
+   > Failed to transform play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-base-18.5.0.aar (com.google.android.gms:play-services-base:18.5.0): No cached version available for offline mode
+   > Failed to transform play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-tasks-18.2.0.aar (com.google.android.gms:play-services-tasks:18.2.0): No cached version available for offline mode
+   > Failed to transform play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download play-services-basement-18.5.0.aar (com.google.android.gms:play-services-basement:18.5.0): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-ktx-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core-ktx:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-viewmodel-2.9.2.aar (androidx.lifecycle:lifecycle-viewmodel:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-release.aar (androidx.lifecycle:lifecycle-viewmodel-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-runtime-release.aar (androidx.lifecycle:lifecycle-runtime-android:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download lifecycle-livedata-2.9.2.aar (androidx.lifecycle:lifecycle-livedata:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-livedata-core-2.9.2.aar (androidx.lifecycle:lifecycle-livedata-core:2.9.2): No cached version available for offline mode
+   > Failed to transform savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download savedstate-release.aar (androidx.savedstate:savedstate-android:1.3.1): No cached version available for offline mode
+   > Failed to transform lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download lifecycle-process-2.9.2.aar (androidx.lifecycle:lifecycle-process:2.9.2): No cached version available for offline mode
+   > Failed to transform lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.jvm.environment=android, org.gradle.status=release, org.gradle.usage=java-runtime, org.jetbrains.kotlin.platform.type=androidJvm}.
+      > Could not download lifecycle-viewmodel-savedstate-release.aar (androidx.lifecycle:lifecycle-viewmodel-savedstate-android:2.9.2): No cached version available for offline mode
+   > Failed to transform core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-ktx-1.16.0.aar (androidx.core:core-ktx:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform core-1.16.0.aar (androidx.core:core:1.16.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.status=release}.
+      > Could not download core-1.16.0.aar (androidx.core:core:1.16.0): No cached version available for offline mode
+   > Failed to transform annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download annotation-experimental-1.5.1.aar (androidx.annotation:annotation-experimental:1.5.1): No cached version available for offline mode
+   > Failed to transform provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download provider-12.2.0.aar (dev.rikka.shizuku:provider:12.2.0): No cached version available for offline mode
+   > Failed to transform api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download api-12.2.0.aar (dev.rikka.shizuku:api:12.2.0): No cached version available for offline mode
+   > Failed to transform geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download geckoview-exoplayer2-143.0.20251003115653.aar (org.mozilla.geckoview:geckoview-exoplayer2:143.0.20251003115653): No cached version available for offline mode
+   > Failed to transform shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download shared-12.2.0.aar (dev.rikka.shizuku:shared:12.2.0): No cached version available for offline mode
+   > Failed to transform aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0) to match attributes {artifactType=android-manifest, org.gradle.category=library, org.gradle.dependency.bundling=external, org.gradle.libraryelements=aar, org.gradle.status=release, org.gradle.usage=java-runtime}.
+      > Could not download aidl-12.2.0.aar (dev.rikka.shizuku:aidl:12.2.0): No cached version available for offline mode
+> There are 15 more failures with identical causes.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 1m 40s
+68 actionable tasks: 58 executed, 10 up-to-date

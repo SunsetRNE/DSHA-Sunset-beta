@@ -1,0 +1,11 @@
+{
+  "checkedAssets": 108,
+  "checkedLaunchers": 291,
+  "deferredArchives": [
+    "dsh-runtime.bin",
+    "offline-rootfs.bin",
+    "ubuntu-tools.bin"
+  ],
+  "note": "Only available bytes verified; missing archive digests retained from the previous internally consistent descriptor, not reverified.",
+  "runtimeId": "bc136bb903968cd922b192ea35bfda88248d3599e04b8e72fc9f6ed419a107c7"
+}

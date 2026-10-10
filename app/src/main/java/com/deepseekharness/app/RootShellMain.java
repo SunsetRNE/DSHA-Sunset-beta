@@ -23,28 +23,48 @@ public final class RootShellMain {
       }
       org.json.JSONObject request =
           new org.json.JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
-      String command = request.getString("command");
-      int smsUser = request.optInt("smsUser", -1);
       String operation = request.optString("operation", "");
-      boolean identityRequired =
-          smsUser >= 0
-              || operation.equals("virtual-screen-start")
-              || com.deepseekharness.app.util.DeviceShellPolicy.inspect(command).kind
-                  == com.deepseekharness.app.util.DeviceShellPolicy.Kind.STOP;
-      ShellService shell;
-      if (request.has("selfPackage") || request.has("selfUid"))
-        shell =
-            new ShellService(
-                com.deepseekharness.app.runtime.PrivilegedPackageContext.launchIdentity(
-                    request.getString("selfPackage"), request.getInt("selfUid")));
-      else if (identityRequired) throw new SecurityException("SELF_PACKAGE_UNVERIFIED");
-      else
-        shell =
-            new ShellService(); // Historical ordinary reads do not require a guessed app identity.
-      if (operation.equals("virtual-screen-start")) output = shell.execVirtualScreen(command);
-      else if (operation.isEmpty())
-        output = smsUser < 0 ? shell.exec(command) : shell.execAuthorizedSms(command, smsUser);
-      else throw new SecurityException("未知 Root 操作");
+      if (operation.equals(com.deepseekharness.app.util.AdbBootstrapPolicy.OPERATION)) {
+        if (!(request.opt("selfPackage") instanceof String)
+            || !(request.opt("selfUid") instanceof Integer))
+          throw new SecurityException("SELF_PACKAGE_UNVERIFIED");
+        var identity =
+            com.deepseekharness.app.runtime.PrivilegedPackageContext.launchIdentity(
+                request.getString("selfPackage"), request.getInt("selfUid"));
+        java.util.Map<String, Object> fields = new java.util.HashMap<>();
+        java.util.Iterator<String> names = request.keys();
+        while (names.hasNext()) {
+          String name = names.next();
+          fields.put(name, request.get(name));
+        }
+        var plan = com.deepseekharness.app.util.AdbBootstrapPolicy.inspect(fields, identity);
+        if (!plan.allowed || !request.has("authority"))
+          throw new SecurityException("BOOTSTRAP_REQUEST_UNVERIFIED");
+        output =
+            RootBootstrapNative.execute(
+                identity, plan.request.action, request.getString("authority"));
+      } else {
+        String command = request.getString("command");
+        int smsUser = request.optInt("smsUser", -1);
+        boolean identityRequired =
+            smsUser >= 0
+                || operation.equals("virtual-screen-start")
+                || com.deepseekharness.app.util.DeviceShellPolicy.inspect(command).kind
+                    == com.deepseekharness.app.util.DeviceShellPolicy.Kind.STOP;
+        ShellService shell;
+        if (request.has("selfPackage") || request.has("selfUid"))
+          shell =
+              new ShellService(
+                  com.deepseekharness.app.runtime.PrivilegedPackageContext.launchIdentity(
+                      request.getString("selfPackage"), request.getInt("selfUid")));
+        else if (identityRequired) throw new SecurityException("SELF_PACKAGE_UNVERIFIED");
+        else shell = new ShellService(); // Historical ordinary reads do not require a guessed app
+        // identity.
+        if (operation.equals("virtual-screen-start")) output = shell.execVirtualScreen(command);
+        else if (operation.isEmpty())
+          output = smsUser < 0 ? shell.exec(command) : shell.execAuthorizedSms(command, smsUser);
+        else throw new SecurityException("未知 Root 操作");
+      }
     } catch (Throwable e) {
       output = "[ROOT_EXEC_FAILED] " + SensitiveData.redact(String.valueOf(e)) + "\n[EXIT=126]";
     }

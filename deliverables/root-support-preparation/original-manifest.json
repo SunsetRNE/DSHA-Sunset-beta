@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "baseline": "文档修订前的工作树字节，包含此前已有的未提交改动",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "349dfa3ea1a000a7e9c1971149cf0c7520904c802ae4596c1d8ace6db829b9c2",
+      "mode": 384
+    },
+    {
+      "path": "README.md",
+      "sha256": "149b03de2e58723aed52140547451ea0be4684e78a6f3e1c377e600234c3ed59",
+      "mode": 384
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "sha256": "4863a4e7caaedd42649ff18e684257849b57de5a53614a3ab98d3b4ef0dabc37",
+      "mode": 384
+    },
+    {
+      "path": "docs/adb-flow-audit.md",
+      "sha256": "2b4778ae2ad4003fa9a11eed1fc8fcf311c2a2639fc413ce8c0ba2f7677923cb",
+      "mode": 384
+    },
+    {
+      "path": "docs/security-model.md",
+      "sha256": "f20a0da4bd213326ebe5df5a5d60e0355c0e7e318473982f89d8eb06b6e0c307",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/README.md",
+      "sha256": "ed6e8ebe59acd50872484a5a54d5e3c9232c1946bf0cf4c672811c04bf2dcb4b",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/chroot-l1.md",
+      "sha256": "919404b7ccb90e8d9c91d3795a709e9d3ba2966fc70687428b433f6b336be323",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/design.md",
+      "sha256": "9a04b0e7afac3a5dfdf4cb8f433394774a7b85db186221212e6ae9d663f85703",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/devices/TB321FU.md",
+      "sha256": "d646f41d3d912146ba0ce9f0b5b83dfe9db21ca8e7e5b26fa706f09ae49c8f60",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/evidence.md",
+      "sha256": "3fe1202499122aef22345c8d21a0962356cf7fb2974d45a076363429b699ad4a",
+      "mode": 384
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/scripts/adb-listen-narrow.sh",
+      "sha256": "4905487f7346b74e270ec4e242887c4481573a463d7bf57597a931da2eae1cd1",
+      "mode": 448
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/scripts/authorize-adb.sh",
+      "sha256": "de66b4028bd790f77e095524db0af7a92485b71c29e62a8190562198d3352641",
+      "mode": 448
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/scripts/revoke-adb.sh",
+      "sha256": "c27e77bca5aa3d0907a44f3bd511ea0e577262fee1963fd98e50d131f5173fab",
+      "mode": 448
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/scripts/verify-adb-identity.sh",
+      "sha256": "64e4f9de26fac0d5e545d29c30f0b0615520ceb1f683f3a4bea0a3fd1c918fa4",
+      "mode": 448
+    },
+    {
+      "path": "docs/audits/root-adb-bringup-20261009/workload-assessment.md",
+      "sha256": "71e2539d2167754290573948a3eef019f9cd041700655c70cc528d5784141730",
+      "mode": 384
+    }
+  ]
+}

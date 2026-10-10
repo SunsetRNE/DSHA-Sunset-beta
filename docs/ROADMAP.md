@@ -13,6 +13,8 @@
 也内置 Ubuntu 24.04 + PRoot（条件允许时上 chroot），终端还支持 vim / tmux / SSH。
 所以「完整 glibc 环境」**不再是 DSHA 独有的卖点**，README 与对外介绍里不该再这么讲。
 
+> chroot 状态修订（2026-10-10）：历史捕获有 `BIND_OK`、`NSMOUNT_OK` 与 chroot exec ENOENT，但缺少完整退出码、ELF 依赖与成功的新根执行证据。不能直接把 ENOENT 归为缺解释器，也不能据此声明 L1 权限已证。L0 保持默认，L1 执行及回收仍待验收；见 [chroot 状态卡](audits/root-adb-bringup-20261009/chroot-l1.md)。
+
 DSHA 真正剩下的差异：
 
 - 专为 dsh（DeepSeek 官方 agent 框架）做的一体化，不是自己实现 agent loop；

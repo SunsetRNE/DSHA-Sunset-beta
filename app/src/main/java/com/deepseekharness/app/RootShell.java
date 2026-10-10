@@ -47,6 +47,18 @@ public final class RootShell {
     }
   }
 
+  private static final java.util.concurrent.atomic.AtomicLong AUTHORIZATION =
+      new java.util.concurrent.atomic.AtomicLong();
+
+  public static long authorizationRevision() {
+    return AUTHORIZATION.get();
+  }
+
+  public static void authorizationChanged() {
+    AUTHORIZATION.incrementAndGet();
+    lastResult = new LastResult(Status.WAITING, "", "");
+  }
+
   private static volatile LastResult lastResult = new LastResult(Status.WAITING, "", "");
 
   private RootShell() {}
@@ -119,11 +131,48 @@ public final class RootShell {
     return runPrivileged(ctx, command, -1, "virtual-screen-start");
   }
 
+  /** 原生 UI 的固定自举入口；不接收命令字符串，也不经过通用执行白名单。 */
+  public static String bootstrap(
+      Context ctx,
+      com.deepseekharness.app.util.AdbBootstrapPolicy.Action action,
+      String authority) {
+    if (action == null || !RootBootstrapAuthority.allowed(ctx, action))
+      return "[POLICY_BLOCKED] 原生自举授权未开启\n[EXIT=126]";
+    try {
+      org.json.JSONObject request =
+          new org.json.JSONObject()
+              .put("operation", com.deepseekharness.app.util.AdbBootstrapPolicy.OPERATION)
+              .put("action", action.name().toLowerCase(java.util.Locale.ROOT))
+              .put("selfPackage", ctx.getPackageName())
+              .put("selfUid", ctx.getApplicationInfo().uid)
+              .put("authority", authority);
+      return runPrivileged(ctx, request);
+    } catch (org.json.JSONException invalid) {
+      return "[POLICY_BLOCKED] 自举请求无法构造\n[EXIT=126]";
+    }
+  }
+
   private static String runPrivileged(
       Context ctx, String command, int authorizedSmsUser, String operation) {
+    try {
+      org.json.JSONObject request =
+          new org.json.JSONObject()
+              .put("command", command)
+              .put("smsUser", authorizedSmsUser)
+              .put("selfPackage", ctx.getPackageName())
+              .put("selfUid", ctx.getApplicationInfo().uid);
+      if (!operation.isEmpty()) request.put("operation", operation);
+      return runPrivileged(ctx, request);
+    } catch (org.json.JSONException invalid) {
+      return "[POLICY_BLOCKED] 设备请求无法构造\n[EXIT=126]";
+    }
+  }
+
+  private static String runPrivileged(Context ctx, org.json.JSONObject request) {
     String su = executable();
     if (su == null)
       return com.deepseekharness.app.util.UiText.text("[ROOT_UNAVAILABLE] 未找到 su\n[EXIT=124]");
+    long authorization = authorizationRevision();
     Process process = null;
     try {
       // 命令通过标准输入传递；su 的 shell 参数只含固定入口与已安装 APK 路径。
@@ -134,13 +183,6 @@ public final class RootShell {
               + RootShellMain.class.getName();
       process = new ProcessBuilder(su, "-c", entry).redirectErrorStream(true).start();
       try (java.io.OutputStream input = process.getOutputStream()) {
-        org.json.JSONObject request =
-            new org.json.JSONObject()
-                .put("command", command)
-                .put("smsUser", authorizedSmsUser)
-                .put("selfPackage", ctx.getPackageName())
-                .put("selfUid", ctx.getApplicationInfo().uid);
-        if (!operation.isEmpty()) request.put("operation", operation);
         input.write(request.toString().getBytes(StandardCharsets.UTF_8));
       }
       BoundedProcessRunner.Result result =
@@ -149,24 +191,28 @@ public final class RootShell {
       if (!result.timedOut && !result.truncated && marker >= 0) {
         String encoded = result.output.substring(marker + RootShellMain.RESULT.length()).trim();
         String output = new String(Base64.decode(encoded, Base64.DEFAULT), StandardCharsets.UTF_8);
-        lastResult = new LastResult(Status.RESPONDED, su, "");
+        if (authorization == authorizationRevision() && enabled(ctx))
+          lastResult = new LastResult(Status.RESPONDED, su, "");
         return output;
       }
-      lastResult =
+      LastResult failed =
           new LastResult(
               result.timedOut ? Status.TIMED_OUT : Status.FAILED,
               su,
               SensitiveData.redact(result.output.trim()));
+      if (authorization == authorizationRevision() && enabled(ctx)) lastResult = failed;
       return "[EXECUTION_UNKNOWN] "
-          + lastResult.render(su)
+          + failed.render(su)
           + com.deepseekharness.app.util.UiText.text("。未取得完整结果，不会自动重试\n[EXIT=125]");
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return com.deepseekharness.app.util.UiText.text(
           "[EXECUTION_UNKNOWN] root 请求已中断，不会自动重试\n[EXIT=125]");
     } catch (Throwable e) {
-      lastResult = new LastResult(Status.FAILED, su, SensitiveData.redact(String.valueOf(e)));
-      return "[EXECUTION_UNKNOWN] " + lastResult.render(su) + "\n[EXIT=125]";
+      LastResult failed =
+          new LastResult(Status.FAILED, su, SensitiveData.redact(String.valueOf(e)));
+      if (authorization == authorizationRevision() && enabled(ctx)) lastResult = failed;
+      return "[EXECUTION_UNKNOWN] " + failed.render(su) + "\n[EXIT=125]";
     } finally {
       if (process != null) {
         try {

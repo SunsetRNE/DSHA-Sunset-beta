@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.deepseekharness.app.util.DeviceShellPolicyTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-10-10T09:25:56.258Z" hostname="localhost" time="0.021">
+  <properties/>
+  <testcase name="rootReadAndCopySourcesCannotBypassSmsCapability" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.004"/>
+  <testcase name="everyReadableDirectoryIsEligible" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.0"/>
+  <testcase name="missingOrMismatchedLaunchIdentityDoesNotDefault" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="rootAndProtectedDirectoriesCannotBeMutated" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.002"/>
+  <testcase name="allDestructiveDeviceClassesAreBlocked" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.0"/>
+  <testcase name="processTargetsMustBeExplicit" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.006"/>
+  <testcase name="shellLanguageAndAlternateExecutorsCannotBypass" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="acceptedArgumentsAreDataAndImmutable" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="recursiveRootReadsCannotDescendIntoSmsProviderParents" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.0"/>
+  <testcase name="genericDeviceCommandCannotStartAppProcess" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="writableDiagnosticsAreNotReadOnly" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="multiSourceRootCopyChecksEverySource" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="ordinaryFilesAndCopiesFromReadOnlyDirectoriesAreAllowed" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.0"/>
+  <testcase name="typedVirtualScreenLauncherRequiresExactCanonicalInstalledApk" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <testcase name="unsafePathsAndUnknownOptionsFailClosed" classname="com.deepseekharness.app.util.DeviceShellPolicyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

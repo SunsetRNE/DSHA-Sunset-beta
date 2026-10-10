@@ -1,0 +1,9 @@
+javac 17.0.20.1
+UI language catalog: 3700/3700 entries
+JUnit version 4.13.2
+.........................................................................................
+Time: 0.268
+
+OK (89 tests)
+
+PASS root policy and production executor tests; fake I/O, no Android SDK or device execution

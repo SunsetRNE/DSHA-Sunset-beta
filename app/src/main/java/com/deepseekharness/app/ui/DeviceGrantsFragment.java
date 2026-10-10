@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.deepseekharness.app.DeviceBridgeService;
 import com.deepseekharness.app.DshaAccessibilityService;
@@ -32,6 +33,11 @@ public final class DeviceGrantsFragment extends Fragment {
   private TextView smsStatus;
   private boolean updating;
   private int adbStatusRequest;
+  private int rootStatusRequest;
+  private int shizukuStatusRequest;
+  private AlertDialog rootResultDialog;
+  private AlertDialog shizukuResultDialog;
+  private RootBootstrapCard rootBootstrap;
   private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
   private final Runnable refreshConnections =
       new Runnable() {
@@ -108,10 +114,14 @@ public final class DeviceGrantsFragment extends Fragment {
     }
 
     CompoundButton root = view.findViewById(R.id.config_root_shell);
+    root.setSaveEnabled(false);
     root.setChecked(RootShell.enabled(ctx));
     root.setOnCheckedChangeListener(
         (button, enabled) -> {
+          // 开关变化使旧验证结果失效，即使用户很快重新开启也不复用旧弹窗。
+          invalidateRootVerification(view);
           new ConfigStore(ctx).setRootShellAllowed(enabled);
+          if (rootBootstrap != null) rootBootstrap.grantsChanged();
           if (!enabled) com.deepseekharness.app.vscreen.VirtualScreenManager.from(ctx).revoke();
           syncSettings();
           refreshChannelLabels();
@@ -132,39 +142,41 @@ public final class DeviceGrantsFragment extends Fragment {
               verify(
                   button,
                   view.findViewById(R.id.device_root_status),
-                  () -> RootShell.exec(ctx.getApplicationContext(), "id", -1));
+                  () -> RootShell.exec(ctx.getApplicationContext(), "id", -1),
+                  true);
             });
     view.findViewById(R.id.device_shizuku_open).setOnClickListener(button -> openShizuku());
     view.findViewById(R.id.workspace_shizuku_auth)
         .setOnClickListener(
             button -> {
+              final int request = ++shizukuStatusRequest;
               if (!ShizukuShell.isAvailable()) {
                 button.setEnabled(false);
                 com.deepseekharness.app.ShizukuManagerCompat.reconnect(
                     requireActivity(),
-                    () -> {
-                      if (!isAdded()) return;
-                      button.setEnabled(true);
-                      if (ShizukuShell.isAvailable())
-                        ShizukuShell.requestPermission(
-                            (code, result) -> {
-                              if (isAdded()) refreshChannelLabels();
-                            });
-                      else toast(ShizukuShell.userStatus(ctx));
-                      refreshChannelLabels();
-                    });
+                    () ->
+                        main.post(
+                            () -> {
+                              if (!channelRequestCurrent(view, request, false)) return;
+                              button.setEnabled(true);
+                              if (!isResumed()) {
+                                refreshChannelLabels();
+                                return;
+                              }
+                              if (ShizukuShell.isAvailable())
+                                requestShizukuPermission(view, request);
+                              else toast(ShizukuShell.userStatus(ctx));
+                              refreshChannelLabels();
+                            }));
                 return;
               }
               if (ShizukuShell.hasPermission()) {
                 verify(
                     button,
                     view.findViewById(R.id.workspace_shizuku_status),
-                    () -> ShizukuShell.exec("id"));
-              } else
-                ShizukuShell.requestPermission(
-                    (code, result) -> {
-                      if (isAdded()) refreshChannelLabels();
-                    });
+                    () -> ShizukuShell.exec("id"),
+                    false);
+              } else requestShizukuPermission(view, request);
             });
     CompoundButton sensors = view.findViewById(R.id.config_cap_sensors);
     sensors.setChecked(pref(ctx, "cap_sensors", false));
@@ -185,6 +197,7 @@ public final class DeviceGrantsFragment extends Fragment {
                 104);
         });
     CompoundButton adb = view.findViewById(R.id.config_adb_enable);
+    adb.setSaveEnabled(false);
     adb.setChecked(DeviceBridgeService.isAdbEnabled(ctx));
     adb.setOnCheckedChangeListener(
         (button, enabled) -> {
@@ -197,6 +210,7 @@ public final class DeviceGrantsFragment extends Fragment {
           } else ctx.stopService(new Intent(ctx, DeviceBridgeService.class));
           syncSettings();
           refreshAdbStatus(view.findViewById(R.id.config_adb_status));
+          if (rootBootstrap != null) rootBootstrap.grantsChanged();
         });
     view.findViewById(R.id.config_adb_pair)
         .setOnClickListener(
@@ -234,6 +248,7 @@ public final class DeviceGrantsFragment extends Fragment {
               .setNegativeButton(com.deepseekharness.app.util.UiText.text("取消"), null)
               .show();
         });
+    rootBootstrap = new RootBootstrapCard(view.findViewById(R.id.root_bootstrap_card));
     updateSms();
     return view;
   }
@@ -269,8 +284,14 @@ public final class DeviceGrantsFragment extends Fragment {
         .start();
   }
 
-  private void verify(View button, TextView status, java.util.function.Supplier<String> probe) {
+  private void verify(
+      View button,
+      TextView status,
+      java.util.function.Supplier<String> probe,
+      boolean rootChannel) {
     final View page = getView();
+    if (page == null) return;
+    final int request = rootChannel ? ++rootStatusRequest : ++shizukuStatusRequest;
     button.setEnabled(false);
     status.setText(com.deepseekharness.app.util.UiText.text("正在验证设备通道…"));
     status.setTag(Boolean.TRUE);
@@ -285,19 +306,63 @@ public final class DeviceGrantsFragment extends Fragment {
               final String result = output;
               main.post(
                   () -> {
-                    if (!isAdded() || getView() != page) return;
+                    if (!channelRequestCurrent(page, request, rootChannel)) return;
                     button.setEnabled(true);
                     status.setTag(null);
-                    new com.deepseekharness.app.ui.DshaDialogBuilder(requireContext())
-                        .setTitle(com.deepseekharness.app.util.UiText.text("设备通道验证"))
-                        .setMessage(com.deepseekharness.app.util.UiText.raw(result))
-                        .setPositiveButton(com.deepseekharness.app.util.UiText.text("知道了"), null)
-                        .show();
                     refreshChannelLabels();
+                    if (!isResumed()
+                        || (rootChannel && !RootShell.enabled(requireContext()))
+                        || (!rootChannel && !ShizukuShell.hasPermission())) return;
+                    AlertDialog dialog =
+                        new DshaDialogBuilder(requireContext())
+                            .setTitle(com.deepseekharness.app.util.UiText.text("设备通道验证"))
+                            .setMessage(com.deepseekharness.app.util.UiText.raw(result))
+                            .setPositiveButton(
+                                com.deepseekharness.app.util.UiText.text("知道了"), null)
+                            .create();
+                    if (rootChannel) {
+                      if (rootResultDialog != null) rootResultDialog.dismiss();
+                      rootResultDialog = dialog;
+                    } else {
+                      if (shizukuResultDialog != null) shizukuResultDialog.dismiss();
+                      shizukuResultDialog = dialog;
+                    }
+                    dialog.setOnDismissListener(
+                        ignored -> {
+                          if (rootResultDialog == dialog) rootResultDialog = null;
+                          if (shizukuResultDialog == dialog) shizukuResultDialog = null;
+                        });
+                    dialog.show();
                   });
             },
             "device-channel-probe")
         .start();
+  }
+
+  /** 回调只更新发起它的同一个页面和请求；销毁旧 View 不影响后端任务。 */
+  private boolean channelRequestCurrent(View page, int request, boolean rootChannel) {
+    return isAdded()
+        && page != null
+        && getView() == page
+        && request == (rootChannel ? rootStatusRequest : shizukuStatusRequest);
+  }
+
+  private void requestShizukuPermission(View page, int request) {
+    if (!channelRequestCurrent(page, request, false) || !isResumed()) return;
+    ShizukuShell.requestPermission(
+        (code, result) ->
+            main.post(
+                () -> {
+                  if (channelRequestCurrent(page, request, false)) refreshChannelLabels();
+                }));
+  }
+
+  private void invalidateRootVerification(View page) {
+    rootStatusRequest++;
+    ((TextView) page.findViewById(R.id.device_root_status)).setTag(null);
+    page.findViewById(R.id.device_root_verify).setEnabled(true);
+    if (rootResultDialog != null) rootResultDialog.dismiss();
+    rootResultDialog = null;
   }
 
   private void openShizuku() {
@@ -330,6 +395,7 @@ public final class DeviceGrantsFragment extends Fragment {
                 ? com.deepseekharness.app.util.UiText.text("验证 Shizuku 连接")
                 : com.deepseekharness.app.util.UiText.text("授权 Shizuku"));
     if (root.getTag() == null) root.setText(RootShell.status(requireContext()));
+    if (rootBootstrap != null) rootBootstrap.render();
   }
 
   private void saveSms(boolean enabled) {
@@ -402,6 +468,7 @@ public final class DeviceGrantsFragment extends Fragment {
   @Override
   public void onResume() {
     super.onResume();
+    if (rootBootstrap != null) rootBootstrap.resume();
     ShizukuShell.ensureBound(requireContext());
     updateSms();
     main.removeCallbacks(refreshConnections);
@@ -416,6 +483,7 @@ public final class DeviceGrantsFragment extends Fragment {
 
   @Override
   public void onPause() {
+    if (rootBootstrap != null) rootBootstrap.pause();
     main.removeCallbacks(refreshConnections);
     super.onPause();
   }
@@ -423,6 +491,15 @@ public final class DeviceGrantsFragment extends Fragment {
   @Override
   public void onDestroyView() {
     adbStatusRequest++;
+    rootStatusRequest++;
+    shizukuStatusRequest++;
+    main.removeCallbacks(refreshConnections);
+    if (rootResultDialog != null) rootResultDialog.dismiss();
+    if (shizukuResultDialog != null) shizukuResultDialog.dismiss();
+    rootResultDialog = null;
+    shizukuResultDialog = null;
+    if (rootBootstrap != null) rootBootstrap.detach();
+    rootBootstrap = null;
     sms = null;
     smsStatus = null;
     super.onDestroyView();

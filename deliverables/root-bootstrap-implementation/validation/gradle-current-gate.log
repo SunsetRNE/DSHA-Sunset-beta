@@ -1,0 +1,47 @@
+build.sh: line 262: warning: command substitution: ignored null byte in input
+==> 备份原生 aidl（x86_64，本机不可执行）：/root/Android/build-tools/36.0.0//aidl -> aidl.x86_64.disabled
+==> 已安装 aidl shim：/root/Android/build-tools/36.0.0//aidl
+==> build-tools 与主机架构不符（/root/Android/build-tools/36.0.0:62!=183）：已换 shim，AIDL 产物取自 tools/aidl-stub/
+==> locale=C.utf8  (JVM sun.jnu.encoding=UTF-8)
+==> JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64  (openjdk version "17.0.20.1" 2026-08-18)
+==> ANDROID_SDK=/root/Android
+==> GRADLE_USER_HOME=/root/.gradle
+==> DSHA_PYTHON=python3  (Python 3.12.3)
+==> Gradle 堆 -Xmx768m
+==> task: :app:testStandardDebugUnitTest :app:testLowDebugUnitTest :app:lintStandardRelease :app:lintLowRelease --offline --console=plain --no-daemon --max-workers=1
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.aapt2FromMavenOverride=/opt/aapt2-arm64/aapt2' is experimental.
+签名：未配置历史发布证书；正式 APK 打包将被阻止
+
+> Task :app:prepareBackupAssets FAILED
+
+[Incubating] Problems report is available at: file:///root/Documents/deepseek-harness/default-workspace/DSHA/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+A problem was found with the configuration of task ':app:prepareBackupAssets' (type 'Exec').
+  - Type 'org.gradle.api.tasks.Exec' property '$3' specifies file '/root/Documents/deepseek-harness/default-workspace/DSHA/app/src/main/assets/dsh-runtime.bin' which doesn't exist.
+    
+    Reason: An input file was expected to be present but it doesn't exist.
+    
+    Possible solutions:
+      1. Make sure the file exists before the task is called.
+      2. Make sure that the task which produces the file is declared as an input.
+    
+    For more information, please refer to https://docs.gradle.org/9.3.1/userguide/validation_problems.html#input_file_does_not_exist in the Gradle documentation.
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 19s
+1 actionable task: 1 executed

@@ -24,6 +24,7 @@
     <instrumentation android:name="com.deepseekharness.app.BridgeAuditInstrumentation" android:targetPackage="com.dsh.client" android:functionalTest="true" />
     <instrumentation android:name="com.deepseekharness.app.DevicePolicyAudit" android:targetPackage="com.dsh.client" android:functionalTest="true" />
     <instrumentation android:name="com.deepseekharness.app.SmsGrantAudit" android:targetPackage="com.dsh.client" android:functionalTest="true" />
+    <instrumentation android:name="com.deepseekharness.app.RootSupportAudit" android:targetPackage="com.dsh.client" android:functionalTest="true" />
     <instrumentation android:name="com.deepseekharness.app.runtime.ProotCommandAuditInstrumentation" android:targetPackage="com.dsh.client" android:functionalTest="true" />
     <instrumentation android:name="com.deepseekharness.app.ui.WebRegressionAudit" android:targetPackage="com.dsh.client" android:functionalTest="true" />
     <instrumentation android:name="com.deepseekharness.app.ui.DiagnosticPtyAudit" android:targetPackage="com.dsh.client" android:functionalTest="true" />

@@ -1,0 +1,5 @@
+CRLF: app/src/main/assets/ubuntu-tools.layout
+CRLF: app/src/main/assets/ubuntu-tools.manifest.json
+CRLF: tools/i18n/ui-source-baseline.json
+CRLF: tools/recovery-runtime/lock.json
+UNPINNED_ACTION: .github/workflows/star-history.yml

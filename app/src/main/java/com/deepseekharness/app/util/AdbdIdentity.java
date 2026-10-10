@@ -84,8 +84,8 @@ public final class AdbdIdentity {
     if (!lines[0].trim().replaceAll("\\s+", " ").equals(header)) return false;
     Set<Integer> pids = new HashSet<>();
     for (int i = 1; i < lines.length; i++) {
-      String[] cols = lines[i].trim().split("\\s+");
-      if (cols.length != 3) return false;
+      String[] cols = row3(lines[i]);
+      if (cols == null) return false;
       Integer pid = number(cols[0]);
       if (pid == null
           || pid <= 0
@@ -95,6 +95,19 @@ public final class AdbdIdentity {
         return false;
     }
     return true;
+  }
+
+  /**
+   * 三列固定表（PID / UID 或 LABEL / NAME）的一行。
+   *
+   * <p>NAME 允许含空格：真机 Android 16 的内核线程是 `[irq/261-q6v5 wdog]` 这类名字，
+   * 按空白切满就会变成 4 列，从而把整张表判成不可信（实机踩过，整条 AUTHORIZE 挂在这里）。
+   * 因此只固定前两列，其余全部算 NAME。
+   */
+  private static String[] row3(String line) {
+    if (line == null) return null;
+    String[] parts = line.trim().split("\\s+", 3);
+    return parts.length == 3 ? parts : null;
   }
 
   private static boolean validListing(String listing) {
@@ -117,13 +130,16 @@ public final class AdbdIdentity {
     Set<Integer> pids = new HashSet<>();
     for (String line : listing.split("\\r?\\n")) {
       if (line.trim().isEmpty()) continue;
-      String[] columns = line.trim().split("\\s+");
-      if (!seen && String.join(" ", columns).equals("PID UID NAME")) {
-        seen = true;
-        continue;
+      if (!seen) {
+        String[] head = line.trim().split("\\s+");
+        if (String.join(" ", head).equals("PID UID NAME")) {
+          seen = true;
+          continue;
+        }
       }
       seen = true;
-      if (columns.length != 3) return null;
+      String[] columns = row3(line);
+      if (columns == null) return null;
       Integer pid = number(columns[0]);
       Integer uid = number(columns[1]);
       if (pid == null || pid == 0 || uid == null || !pids.add(pid)) return null;
@@ -140,8 +156,8 @@ public final class AdbdIdentity {
     Set<Integer> pids = new HashSet<>();
     for (String line : listing.split("\\r?\\n")) {
       if (line.trim().isEmpty()) continue;
-      String[] columns = line.trim().split("\\s+");
-      String header = String.join(" ", columns);
+      String[] raw = line.trim().split("\\s+");
+      String header = String.join(" ", raw);
       if (shape == 0 && (header.equals("PID CONTEXT NAME") || header.equals("PID LABEL NAME"))) {
         shape = 3;
         continue;
@@ -150,8 +166,10 @@ public final class AdbdIdentity {
         shape = 10;
         continue;
       }
-      if (shape == 0) shape = columns.length;
-      if (columns.length != shape) return null;
+      if (shape == 0) shape = raw.length;
+      // 三列表格允许 NAME 带空格（内核线程），十列 ps -Z 保持原样。
+      String[] columns = shape == 3 ? row3(line) : raw;
+      if (columns == null || columns.length != shape) return null;
       Integer pid;
       String context;
       if (shape == 3) {

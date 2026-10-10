@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "runtimeId": "883d94c29cd7143c15cb28e1976a4d2407f9e6f2fdf1c7c7fda3c53e3a80701b",
+  "runtimeId": "cf72a5d856a3c78de31332546a63a974b9fd155bf5dbeecbd7264010d1a351ab",
   "baseVersion": "10",
   "dshVersion": "0.2.0-rc.2",
   "launcherContract": "DSHA_ARM64_V2",
@@ -216,7 +216,7 @@
     "util/AdbDependencyPreparation.java": "0d4bdf904a6497605d8a438c028ff54e1a5996f315c6322ef193d888c66dda38",
     "util/AdbWheelCache.java": "bacf710fd3643d5372e50fab73afcd56acb3bfea420f9b0a887abf3230be3347",
     "util/AdbWheelPaths.java": "6ff6e5329b39bcedf68a2621b729b5ea8fc2c3a7eb75780f625d92f109dd7ad1",
-    "util/AdbdIdentity.java": "5f1840c77d7cdc28fb68380ed35d5e20728291a886cfa076ada03e44a55138b6",
+    "util/AdbdIdentity.java": "c5c82059f621cd8b340ef390fb5fa603cac107e530be9a990546de6a867b7f3c",
     "util/AndroidGroupMap.java": "d29ddff63d59c46a1fc8ecb2578d6cc0c456b4266f84984b89c7940d837e7ed2",
     "util/ApplicationOwner.java": "5668039029eed805276bf0ad5978eaab30b1dedcfa1a9976f7bf536fedcadd08",
     "util/ApplicationServiceSlot.java": "8bb4a72d5970c1fdaa3f557830973e1f4a12bd6d6bcfa73fe701436e97fcf238",

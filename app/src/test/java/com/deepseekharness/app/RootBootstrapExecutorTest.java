@@ -152,13 +152,17 @@ public final class RootBootstrapExecutorTest {
         if (failPs) return RootSupportProbe.parse("permission denied\n[EXIT=1]");
         String spec = args.get(3);
         String adbdPid = daemon ? "321 " : "";
-        if (spec.contains("UID")) body = "PID UID NAME\n1 0 init\n" + (daemon ? "321 0 adbd\n" : "");
+        // 真机里一定存在名字带空格的内核线程：三列表格不能因此判成不可信。
+        if (spec.contains("UID"))
+          body =
+              "PID UID NAME\n1 0 init\n692 0 [irq/261-q6v5 wdog]\n"
+                  + (daemon ? "321 0 adbd\n" : "");
         else if (spec.contains("LABEL")) {
           // 真机 Android 16（toybox）：LABEL 可用，CONTEXT 直接 bad -o 退出。
           if (rejectLabelColumns)
             return RootSupportProbe.parse("ps: bad -o 'PID,LABEL,NAME'\n[EXIT=1]");
           body =
-              "PID LABEL NAME\n1 u:r:init:s0 init\n"
+              "PID LABEL NAME\n1 u:r:init:s0 init\n692 u:r:kernel:s0 [irq/261-q6v5 wdog]\n"
                   + adbdPid
                   + (daemon ? "u:r:adbd:s0 adbd\n" : "");
         } else if (spec.contains("CONTEXT")) {
@@ -166,6 +170,7 @@ public final class RootBootstrapExecutorTest {
             return RootSupportProbe.parse("ps: bad -o 'PID,CONTEXT,NAME'\n[EXIT=1]");
           body =
               "PID CONTEXT NAME\n1 u:r:init:s0 init\n"
+                  + "692 u:r:kernel:s0 [irq/261-q6v5 wdog]\n"
                   + adbdPid
                   + (daemon ? "u:r:adbd:s0 adbd\n" : "");
         } else throw new AssertionError(args);

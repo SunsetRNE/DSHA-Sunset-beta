@@ -191,6 +191,28 @@ public final class AdbdIdentityTest {
   }
 
   @Test
+  public void kernelThreadNamesWithSpacesDoNotInvalidateTheTable() {
+    // 真机 Android 16：`ps -A -o PID,LABEL,NAME` 里存在名字带空格的内核线程
+    // （如 [irq/207-8804000.sdhci cd] / [irq/261-q6v5 wdog]）。按空白切满会把整张表
+    // 判成不可信，于是 daemonIdentity() 报 ADBD_IDENTITY_UNVERIFIED、AUTHORIZE 全线失败。
+    String uid =
+        "PID UID NAME\n1 0 init\n692 0 [irq/207-8804000.sdhci cd]\n2241 0 adbd\n";
+    String label =
+        "PID LABEL NAME\n1 u:r:init:s0 init\n692 u:r:kernel:s0 [irq/207-8804000.sdhci cd]\n"
+            + "2241 u:r:adbd:s0 adbd\n";
+    AdbdIdentity.Evidence evidence = AdbdIdentity.assess(uid, label);
+    assertEquals(AdbdIdentity.Level.ROOT, evidence.level);
+    assertEquals(2241, evidence.pid);
+    assertEquals("u:r:adbd:s0", evidence.selinuxContext);
+    // 缺席判定同样要容忍带空格的名字，且不能被名字里出现 adbd 的其它进程干扰。
+    assertTrue(
+        AdbdIdentity.absent(
+            "PID UID NAME\n1 0 init\n692 0 [irq/261-q6v5 wdog]\n",
+            "PID LABEL NAME\n1 u:r:init:s0 init\n692 u:r:kernel:s0 [irq/261-q6v5 wdog]\n"));
+    assertFalse(AdbdIdentity.absent(uid, label));
+  }
+
+  @Test
   public void absenceRequiresCompleteFixedTables() {
     String uid = "PID UID NAME\n1 0 init\n";
     String label = "PID CONTEXT NAME\n1 u:r:init:s0 init\n";

@@ -75,9 +75,9 @@ public final class AdbFirewallToolTest {
     Fake fake = new Fake(List.of("never"));
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
     assertFalse(resolved.ok());
-    assertTrue(resolved.evidence.contains(TOOL + " -w 2 -S INPUT [EXIT=2]"));
+    assertTrue(resolved.evidence.contains(TOOL + " -w 2 -S INPUT (exit=2)"));
     assertTrue(resolved.evidence.contains("unrecognized option"));
-    assertTrue(resolved.evidence.contains(TOOL + " -S INPUT [EXIT=2]"));
+    assertTrue(resolved.evidence.contains(TOOL + " -S INPUT (exit=2)"));
     assertEquals(3, fake.calls.size());
   }
 
@@ -88,7 +88,25 @@ public final class AdbFirewallToolTest {
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
     assertFalse(resolved.ok());
     assertEquals(1, fake.calls.size());
-    assertTrue(resolved.evidence.contains("[EXIT=-1]"));
+    assertTrue(resolved.evidence.contains("(exit=-1)"));
+  }
+
+  @Test
+  public void evidenceNeverCarriesTheReservedProtocolTokens() {
+    // 实机踩过：证据里出现 [EXIT=…] 会让 RootSupportProbe.parse 把整包结果判成不可信，
+    // 于是「命令失败」被伪装成「结果未知」。证据生成与展示两处都必须中性化。
+    String evidence = AdbFirewallTool.head("[EXECUTION_UNKNOWN] su 超时\n[EXIT=125]");
+    assertFalse(evidence.contains("[EXIT="));
+    assertFalse(evidence.contains("[EXECUTION_UNKNOWN]"));
+    assertTrue(evidence.contains("(exit=125)"));
+    // 放进自举 JSON 之后，协议解析仍必须成功。
+    String json =
+        "{\"status\":\"FAILED\",\"code\":\"COMMAND_FAILED\",\"evidence\":"
+            + org.json.JSONObject.quote(evidence)
+            + "}";
+    RootSupportProbe parsed = RootSupportProbe.parse(json + "\n[EXIT=125]");
+    assertEquals(125, parsed.exitCode);
+    assertTrue(parsed.body.contains("COMMAND_FAILED"));
   }
 
   @Test

@@ -49,6 +49,8 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
   private boolean dispatched;
   /** 本事务解析出来的防火墙调用形式；同一事务内查询与增删必须一致。 */
   private AdbFirewallTool.Form v4Form, v6Form;
+  /** 本事务解析出来的 `ps` 上下文列形式（LABEL / CONTEXT）。 */
+  private List<String> psContextArgv;
 
   @Override
   public boolean dispatched() {
@@ -406,12 +408,52 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     save();
   }
 
+  /**
+   * 解析（并缓存）上下文列可用的 `ps` 形式：toybox 只认 `LABEL`，`CONTEXT` 会
+   * `bad -o` 直接退出——真机 Android 16 已复现，旧实现因此让整条 AUTHORIZE 失败。
+   */
+  private List<String> psContext() throws Exception {
+    if (psContextArgv != null) return psContextArgv;
+    List<String> label = Arrays.asList("/system/bin/ps", "-A", "-o", "PID,LABEL,NAME");
+    RootSupportProbe probe = raw(label, false);
+    if (probe.succeeded()) {
+      psContextArgv = label;
+      return label;
+    }
+    if (probe.exitCode < 0)
+      throw new AdbBootstrapEngine.BootstrapFailure(
+          "COMMAND_RESULT_UNKNOWN", AdbFirewallTool.evidence(label, probe));
+    List<String> context = Arrays.asList("/system/bin/ps", "-A", "-o", "PID,CONTEXT,NAME");
+    RootSupportProbe fallback = raw(context, false);
+    if (fallback.succeeded()) {
+      psContextArgv = context;
+      return context;
+    }
+    String evidence =
+        AdbFirewallTool.evidence(label, probe) + "\n" + AdbFirewallTool.evidence(context, fallback);
+    if (fallback.exitCode < 0)
+      throw new AdbBootstrapEngine.BootstrapFailure("COMMAND_RESULT_UNKNOWN", evidence);
+    // 两种列名都被拒（本机 toybox 只认 LABEL，CONTEXT 直接 bad -o）是「这个系统不提供该快照」，
+    // 与「ps 本身跑不起来（例如权限被拒）」区分开：前者在写任何东西前拒绝。
+    if (columnSpecRejected(probe.body) && columnSpecRejected(fallback.body))
+      throw new AdbBootstrapEngine.Refused("ADBD_SNAPSHOT_UNSUPPORTED", evidence);
+    throw new AdbBootstrapEngine.BootstrapFailure("COMMAND_FAILED", evidence);
+  }
+
+  private static boolean columnSpecRejected(String output) {
+    return output != null
+        && (output.contains("bad -o")
+            || output.contains("PID,LABEL,NAME")
+            || output.contains("PID,CONTEXT,NAME"));
+  }
+
   private ProcStat daemonIdentity() throws Exception {
+    List<String> contextArgv = psContext();
     String uid = command(false, "/system/bin/ps", "-A", "-o", "PID,UID,NAME");
-    String context = command(false, "/system/bin/ps", "-A", "-o", "PID,CONTEXT,NAME");
+    String context = command(false, contextArgv);
     if (AdbdIdentity.absent(uid, context)) {
       String againUid = command(false, "/system/bin/ps", "-A", "-o", "PID,UID,NAME");
-      String againContext = command(false, "/system/bin/ps", "-A", "-o", "PID,CONTEXT,NAME");
+      String againContext = command(false, contextArgv);
       if (AdbdIdentity.absent(againUid, againContext)) return null;
       throw new IOException("ADBD_IDENTITY_CHANGED");
     }
@@ -422,7 +464,7 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
         ProcStat.parse(system.read("/proc/" + evidence.pid + "/stat", 8192), evidence.pid);
     if (stat == null || stat.exited()) throw new IOException("ADBD_IDENTITY_UNVERIFIED");
     String againUid = command(false, "/system/bin/ps", "-A", "-o", "PID,UID,NAME");
-    String againContext = command(false, "/system/bin/ps", "-A", "-o", "PID,CONTEXT,NAME");
+    String againContext = command(false, contextArgv);
     AdbdIdentity.Evidence again = AdbdIdentity.assess(againUid, 0, againContext, 0);
     String comm = system.read("/proc/" + stat.pid + "/comm", 128).trim();
     if (again.pid != stat.pid

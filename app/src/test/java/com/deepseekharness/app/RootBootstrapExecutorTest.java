@@ -42,7 +42,11 @@ public final class RootBootstrapExecutorTest {
         /** 模拟 iptables 完全不可用（例如权限被拒）。 */
         firewallBroken,
         /** 模拟插入规则失败，用来检查失败原文是否带出去。 */
-        failInsert;
+        failInsert,
+        /** 模拟本机 `ps` 不认 LABEL 列（只认 CONTEXT 的老构建）。 */
+        rejectLabelColumns,
+        /** 模拟本机 `ps` 认 CONTEXT 列（默认真机行为：只认 LABEL）。 */
+        acceptContextColumns;
     int restarts, replacements, saves;
     long time, started = 100;
     final List<String> writes = new ArrayList<>();
@@ -146,11 +150,25 @@ public final class RootBootstrapExecutorTest {
         } else throw new AssertionError(args);
       } else if (tool.endsWith("/ps")) {
         if (failPs) return RootSupportProbe.parse("permission denied\n[EXIT=1]");
-        body =
-            args.get(3).contains("UID")
-                ? "PID UID NAME\n1 0 init\n"
-                : "PID CONTEXT NAME\n1 u:r:init:s0 init\n";
-        if (daemon) body += args.get(3).contains("UID") ? "321 0 adbd\n" : "321 u:r:adbd:s0 adbd\n";
+        String spec = args.get(3);
+        String adbdPid = daemon ? "321 " : "";
+        if (spec.contains("UID")) body = "PID UID NAME\n1 0 init\n" + (daemon ? "321 0 adbd\n" : "");
+        else if (spec.contains("LABEL")) {
+          // 真机 Android 16（toybox）：LABEL 可用，CONTEXT 直接 bad -o 退出。
+          if (rejectLabelColumns)
+            return RootSupportProbe.parse("ps: bad -o 'PID,LABEL,NAME'\n[EXIT=1]");
+          body =
+              "PID LABEL NAME\n1 u:r:init:s0 init\n"
+                  + adbdPid
+                  + (daemon ? "u:r:adbd:s0 adbd\n" : "");
+        } else if (spec.contains("CONTEXT")) {
+          if (!acceptContextColumns)
+            return RootSupportProbe.parse("ps: bad -o 'PID,CONTEXT,NAME'\n[EXIT=1]");
+          body =
+              "PID CONTEXT NAME\n1 u:r:init:s0 init\n"
+                  + adbdPid
+                  + (daemon ? "u:r:adbd:s0 adbd\n" : "");
+        } else throw new AssertionError(args);
       } else if (tool.endsWith("tables")) {
         boolean ipv6 = tool.endsWith("ip6tables"), exists = ipv6 ? v6 : v4;
         int wait = args.indexOf("-w");
@@ -274,7 +292,7 @@ public final class RootBootstrapExecutorTest {
     assertEquals("REFUSED", outcome.status);
     assertEquals("GUARD_TOOL_UNAVAILABLE", outcome.code);
     assertTrue(outcome.evidence.contains("/system/bin/iptables"));
-    assertTrue(outcome.evidence.contains("[EXIT=1]"));
+    assertTrue(outcome.evidence.contains("(exit=1)"));
     assertTrue(outcome.evidence.contains("Permission denied"));
     assertTrue(d.writes.isEmpty());
     assertEquals(0, d.replacements);
@@ -289,8 +307,40 @@ public final class RootBootstrapExecutorTest {
     assertEquals("UNKNOWN", outcome.status);
     assertEquals("COMMAND_FAILED", outcome.code);
     assertTrue(outcome.evidence.contains("-I"));
-    assertTrue(outcome.evidence.contains("[EXIT=1]"));
+    assertTrue(outcome.evidence.contains("(exit=1)"));
     assertTrue(outcome.evidence.contains("Permission denied"));
+  }
+
+  @Test
+  public void psContextColumnsFallBackToLabelOnToybox() throws Exception {
+    // 真机 Android 16 复现：`ps -o PID,CONTEXT,NAME` 报 bad -o；换 LABEL 后授权必须成功。
+    Device d = new Device();
+    assertEquals("OK", d.execute(Action.AUTHORIZE).status);
+    assertTrue(d.v4 && d.v6);
+  }
+
+  @Test
+  public void psContextStillWorksOnBuildsThatOnlyAcceptContext() throws Exception {
+    Device d = new Device();
+    d.rejectLabelColumns = true;
+    d.acceptContextColumns = true;
+    assertEquals("OK", d.execute(Action.AUTHORIZE).status);
+    assertTrue(d.v4 && d.v6);
+  }
+
+  @Test
+  public void unsupportedPsColumnsRefuseWithBothCommandOutputs() throws Exception {
+    Device d = new Device();
+    d.rejectLabelColumns = true;
+    var outcome = d.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", outcome.status);
+    assertEquals("ADBD_SNAPSHOT_UNSUPPORTED", outcome.code);
+    assertTrue(outcome.evidence.contains("PID,LABEL,NAME"));
+    assertTrue(outcome.evidence.contains("PID,CONTEXT,NAME"));
+    assertTrue(outcome.evidence.contains("bad -o"));
+    assertFalse(outcome.evidence.contains("[EXIT="));
+    assertTrue(d.writes.isEmpty());
+    assertEquals(0, d.replacements);
   }
 
   @Test

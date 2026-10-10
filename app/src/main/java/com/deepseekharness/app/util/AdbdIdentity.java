@@ -30,6 +30,15 @@ public final class AdbdIdentity {
   /** 固定列避免从命令行参数、用户名或 PPID 猜测进程身份；这些常量不会执行命令。 */
   public static final List<String> UID_ARGV = List.of("ps", "-A", "-o", "PID,UID,NAME");
 
+  /**
+   * 上下文列的首选与回退形式。
+   *
+   * <p>Android 的 toybox `ps` 只认 `LABEL`；`CONTEXT` 在部分构建里直接报
+   * `ps: bad -o 'PID,CONTEXT,NAME'` 并以 1 退出（真机 Android 16 已复现）。
+   * 两种表头形状相同（PID / 上下文 / NAME 三列），解析层必须都接受。
+   */
+  public static final List<String> LABEL_ARGV = List.of("ps", "-A", "-o", "PID,LABEL,NAME");
+
   public static final List<String> CONTEXT_ARGV = List.of("ps", "-A", "-o", "PID,CONTEXT,NAME");
   private static final int MAX_LISTING_CHARS = 262144;
   // MLS 的低、高级别各自都可以带类别集合。
@@ -65,7 +74,8 @@ public final class AdbdIdentity {
   /** 仅完整固定列表证明 daemon 缺席；不能把格式错误或空输出当作已停止。 */
   public static boolean absent(String uids, String contexts) {
     return absentTable(uids, "PID UID NAME", false)
-        && absentTable(contexts, "PID CONTEXT NAME", true);
+        && (absentTable(contexts, "PID LABEL NAME", true)
+            || absentTable(contexts, "PID CONTEXT NAME", true));
   }
 
   private static boolean absentTable(String listing, String header, boolean context) {
@@ -132,7 +142,7 @@ public final class AdbdIdentity {
       if (line.trim().isEmpty()) continue;
       String[] columns = line.trim().split("\\s+");
       String header = String.join(" ", columns);
-      if (shape == 0 && header.equals("PID CONTEXT NAME")) {
+      if (shape == 0 && (header.equals("PID CONTEXT NAME") || header.equals("PID LABEL NAME"))) {
         shape = 3;
         continue;
       }

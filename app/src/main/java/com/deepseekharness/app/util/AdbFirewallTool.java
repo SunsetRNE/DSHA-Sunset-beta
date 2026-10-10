@@ -117,10 +117,10 @@ public final class AdbFirewallTool {
     return argv;
   }
 
-  /** `tool -w 2 -S INPUT [EXIT=2] <stderr 首行>`。 */
+  /** `tool -w 2 -S INPUT (exit=2) <stderr 首行>`；退出码刻意不用 `[EXIT=` 形式。 */
   public static String describe(List<String> argv, int exitCode, String output) {
     StringBuilder text = new StringBuilder(quote(argv));
-    text.append(" [EXIT=").append(exitCode).append(']');
+    text.append(" (exit=").append(exitCode).append(')');
     String head = head(output);
     if (!head.isEmpty()) text.append(' ').append(head);
     return text.length() > EVIDENCE_LIMIT ? text.substring(0, EVIDENCE_LIMIT) : text.toString();
@@ -132,20 +132,37 @@ public final class AdbFirewallTool {
     return describe(argv, probe.exitCode, probe.body);
   }
 
-  /** 只保留可读的输出开头：脱敏、压掉控制字符、限制行数与长度。 */
+  /** 只保留可读的输出开头：脱敏、中性化保留标记、压掉控制字符、限制行数与长度。 */
   public static String head(String output) {
     if (output == null || output.isEmpty()) return "";
     String safe = SensitiveData.redact(output);
     StringBuilder text = new StringBuilder();
     int lines = 0;
     for (String raw : safe.split("\\r?\\n")) {
-      String line = raw.replaceAll("[\\p{Cntrl}&&[^\\t]]", "").trim();
+      String line = neutralize(raw.replaceAll("[\\p{Cntrl}&&[^\\t]]", "").trim());
       if (line.isEmpty()) continue;
       if (text.length() > 0) text.append(" / ");
       text.append(line.length() > LINE_LIMIT ? line.substring(0, LINE_LIMIT) + "…" : line);
       if (++lines >= LINES) break;
     }
     return text.toString();
+  }
+
+  /**
+   * 中性化协议保留标记。
+   *
+   * <p>`RootSupportProbe.parse` 会把含 `[EXIT=`、`[OUTPUT_TRUNCATED]`、`[EXECUTION_UNKNOWN]`、
+   * `[POLICY_BLOCKED]` 的输出判为不可信并整包丢弃——证据文本里出现这些字样，就会把本来
+   * 可以解析的结果变成「结果未知」（实机踩过）。因此证据在生成与展示两处都必须中性化。
+   */
+  public static String neutralize(String value) {
+    if (value == null || value.isEmpty()) return "";
+    return value
+        .replace("[EXIT=", "(exit=")
+        .replace("[EXIT", "(exit")
+        .replace("[OUTPUT_TRUNCATED]", "(output truncated)")
+        .replace("[EXECUTION_UNKNOWN]", "(execution unknown)")
+        .replace("[POLICY_BLOCKED]", "(policy blocked)");
   }
 
   /** 展示用：命令按空格连接；参数是我们自己构造的固定值，不含用户输入。 */

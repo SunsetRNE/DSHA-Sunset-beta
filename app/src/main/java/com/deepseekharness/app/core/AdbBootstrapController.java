@@ -212,13 +212,22 @@ public final class AdbBootstrapController {
                   app, "root-adb-bootstrap", () -> execute(action, clientPublicKey(action), lease))
               : execute(action, "", lease);
       RootSupportProbe probe = RootSupportProbe.parse(output);
-      JSONObject reply = new JSONObject(probe.body);
+      JSONObject reply;
+      try {
+        reply = new JSONObject(probe.body);
+      } catch (org.json.JSONException unparseable) {
+        // 特权进程返回的不是自举 JSON（例如 [ROOT_EXEC_FAILED] / [POLICY_BLOCKED] /
+        // [EXECUTION_UNKNOWN]）：以前这里只剩一个 REQUEST_OUTCOME_UNKNOWN，看不出原因。
+        throw new AdbBootstrapEngine.BootstrapFailure(
+            "RESULT_UNPARSEABLE", AdbFirewallTool.head(output == null ? "" : output));
+      }
       String outcome = reply.getString("status");
       if (!(outcome.equals("OK") && probe.exitCode == 0
           || outcome.equals("REFUSED") && probe.exitCode == 126
           || outcome.equals("UNKNOWN") && probe.exitCode == 125
           || outcome.equals("FAILED") && probe.exitCode == 125))
-        throw new IOException("RESULT_PROTOCOL_INVALID");
+        throw new AdbBootstrapEngine.BootstrapFailure(
+            "RESULT_PROTOCOL_INVALID", AdbFirewallTool.head(output == null ? "" : output));
       result =
           new Snapshot(
               false,

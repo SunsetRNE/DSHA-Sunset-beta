@@ -27,7 +27,7 @@ public final class RootBootstrapExecutorTest {
     JSONObject journal =
         new JSONObject().put("schema", 1).put("package", "com.dsh.client").put("uid", 10281);
     byte[] table = bytes("other-key owner\n");
-    String port = "", persistent = "", tls = "", tcp = HEADER, tcp6 = HEADER;
+    String port = "", persistent = "", tls = "", tlsEnabled = "0", tcp = HEADER, tcp6 = HEADER;
     boolean v4,
         v6,
         grant = true,
@@ -124,7 +124,7 @@ public final class RootBootstrapExecutorTest {
               case "service.adb.tcp.port" -> port;
               case "persist.adb.tcp.port" -> persistent;
               case "service.adb.tls.port" -> tls;
-              case "persist.adb.tls_server.enable" -> "0";
+              case "persist.adb.tls_server.enable" -> tlsEnabled;
               case "ro.adb.secure" -> "1";
               default -> throw new AssertionError(args);
             };
@@ -227,6 +227,33 @@ public final class RootBootstrapExecutorTest {
       assertEquals("REFUSED", d.execute(Action.AUTHORIZE).status);
       assertTrue(d.writes.isEmpty());
     }
+  }
+
+  @Test
+  public void systemWirelessDebuggingGetsItsOwnCodeAndNeverTakesOverForeignPorts() throws Exception {
+    // 无线调试（ADB TLS 入口）单独一个码，用户才知道该去关哪个开关。
+    Device tlsPort = new Device();
+    tlsPort.tls = "37123";
+    var byTlsPort = tlsPort.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", byTlsPort.status);
+    assertEquals("WIRELESS_DEBUG_IN_USE", byTlsPort.code);
+    assertTrue(tlsPort.writes.isEmpty());
+    assertEquals(0, tlsPort.replacements);
+
+    Device tlsFlag = new Device();
+    tlsFlag.tlsEnabled = "1";
+    var byTlsFlag = tlsFlag.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", byTlsFlag.status);
+    assertEquals("WIRELESS_DEBUG_IN_USE", byTlsFlag.code);
+    assertTrue(tlsFlag.writes.isEmpty());
+
+    // 其它来源的 5555 端口仍然只报「别的监听」，不能被误标成无线调试。
+    Device foreign = new Device();
+    foreign.port = "5556";
+    var refused = foreign.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", refused.status);
+    assertEquals("OTHER_ADB_PORT_IN_USE", refused.code);
+    assertTrue(foreign.writes.isEmpty());
   }
 
   @Test

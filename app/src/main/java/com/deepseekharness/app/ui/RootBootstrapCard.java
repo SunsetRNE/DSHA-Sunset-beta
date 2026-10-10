@@ -35,6 +35,7 @@ public final class RootBootstrapCard {
   private final AdbBootstrapController controller;
   private final MaterialSwitch allowed;
   private final Button chain;
+  private final Button devOptions;
   private boolean updating;
   private boolean detached;
   private boolean resumed;
@@ -66,6 +67,9 @@ public final class RootBootstrapCard {
     }
     chain = card.findViewById(R.id.root_bootstrap_all);
     chain.setOnClickListener(button -> reviewChain());
+    devOptions = card.findViewById(R.id.root_bootstrap_dev_options);
+    devOptions.setVisibility(android.view.View.GONE);
+    devOptions.setOnClickListener(button -> openDeveloperOptions());
     render();
   }
 
@@ -139,6 +143,14 @@ public final class RootBootstrapCard {
     text(
         R.id.root_bootstrap_detail,
         snapshot.detail == null || snapshot.detail.isEmpty() ? "" : detailLabel(snapshot.detail));
+    // 只有「被系统无线调试挡住」这一种拒绝给出直达入口：其它拒绝没有对应的单个开关。
+    boolean wirelessBlocked =
+        !snapshot.busy && "WIRELESS_DEBUG_IN_USE".equals(snapshot.detail == null ? "" : snapshot.detail);
+    devOptions.setVisibility(wirelessBlocked ? android.view.View.VISIBLE : android.view.View.GONE);
+    if (wirelessBlocked)
+      text(
+          R.id.root_bootstrap_dev_options,
+          UiText.choose("打开开发者选项关闭无线调试", "Open developer options to turn it off"));
     text(
         R.id.root_bootstrap_cleanup,
         UiText.choose(
@@ -179,6 +191,21 @@ public final class RootBootstrapCard {
     dismissReview();
     allowed.setOnCheckedChangeListener(null);
     for (int id : BUTTONS) card.findViewById(id).setOnClickListener(null);
+    devOptions.setOnClickListener(null);
+  }
+
+  /** 只打开系统开发者选项，不改任何设置；关掉无线调试仍由用户自己确认。 */
+  private void openDeveloperOptions() {
+    try {
+      app.startActivity(
+          new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+              .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+    } catch (Throwable unavailable) {
+      toast(
+          UiText.choose(
+              "打不开开发者选项：请在 设置 → 系统 → 开发者选项 里关闭无线调试。",
+              "Could not open developer options: turn wireless debugging off in Settings → System → Developer options."));
+    }
   }
 
   private void reviewGrant() {
@@ -421,6 +448,10 @@ public final class RootBootstrapCard {
           UiText.choose(
               "这条公钥授权原已存在，本应用不会删除它。",
               "This key authorization predated setup; this app will not delete it.");
+      case "WIRELESS_DEBUG_IN_USE" ->
+          UiText.choose(
+              "系统「无线调试」正在运行（ADB TLS 入口），DSHA 不会接管它。请先关闭无线调试，再执行自举；在你处理期间 DSHA 不会自动重开它。",
+              "System wireless debugging is active (an ADB TLS endpoint); this app will not take it over. Turn wireless debugging off before running setup. The app will not reopen it while this block is shown.");
       case "ADB_LISTENER_ALREADY_IN_USE",
               "ADB_LISTENER_NOT_OWNED",
               "OTHER_ADB_PORT_IN_USE",

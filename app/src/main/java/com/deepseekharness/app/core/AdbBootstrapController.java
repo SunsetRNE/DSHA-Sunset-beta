@@ -94,6 +94,20 @@ public final class AdbBootstrapController {
     return unresolved;
   }
 
+  /**
+   * ADB 保活能否自动重开无线调试。
+   *
+   * <p>自举与无线调试互斥：自举会拒绝接管系统的 ADB TLS 入口，而保活每次探活失败都想把
+   * 无线调试打开。两者同时生效就会出现「用户刚关掉、应用又开回来」的死循环，所以这里在
+   * 自举执行期间、以及最近一次结果正因无线调试被拒时，明确拦住保活的重开动作。
+   * 用户任何后续动作（只读刷新、重跑自举、成功或其它失败）都会换掉这个结果，拦停自然解除。
+   */
+  public boolean blocksWirelessReopen() {
+    if (running.get() || chainActive) return true;
+    Snapshot latest = current;
+    return latest != null && "WIRELESS_DEBUG_IN_USE".equals(latest.detail);
+  }
+
   public Snapshot snapshot() {
     return current;
   }

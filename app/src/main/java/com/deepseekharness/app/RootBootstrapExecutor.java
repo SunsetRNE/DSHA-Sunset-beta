@@ -164,10 +164,12 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
       throw new AdbBootstrapEngine.Refused("OTHER_ADB_PORT_IN_USE");
     if (!disabled(command(false, "/system/bin/getprop", "persist.adb.tcp.port").trim()))
       throw new AdbBootstrapEngine.Refused("PERSISTENT_ADB_PORT_IN_USE");
+    // 系统「无线调试」是独立的 ADB TLS 入口。单独给一个码，用户才知道该去关哪个开关，
+    // 而不是看到「另一个端口的 ADB 监听」这种无从下手的话；行为仍是拒绝接管。
     if (!disabled(command(false, "/system/bin/getprop", "service.adb.tls.port").trim())
         || command(false, "/system/bin/getprop", "persist.adb.tls_server.enable")
             .trim()
-            .equals("1")) throw new AdbBootstrapEngine.Refused("OTHER_ADB_PORT_IN_USE");
+            .equals("1")) throw new AdbBootstrapEngine.Refused("WIRELESS_DEBUG_IN_USE");
     ProcStat daemon = daemonIdentity();
     if (daemon == null) return;
     var inodes = system.socketInodes(daemon.pid);

@@ -1,5 +1,10 @@
 # DSHA
 
+> **本仓库是实验分支**：`SunsetRNE/DSHA-Sunset-beta`（**不是 GitHub Fork**，与主线没有 fork 关系）。
+> 主线（唯一主分支）是 [`DSH-APP/DSHA`](https://github.com/DSH-APP/DSHA)：功能演进与正式发布以它为准，
+> 本仓库承载真机实测、修复批次与验收取证。同步做法见
+> [docs/upstream-and-remotes.md](docs/upstream-and-remotes.md)，本轮交接见 [docs/handover-20261012.md](docs/handover-20261012.md)。
+
 <p align="center">
   <b>DeepSeek Harness 安卓启动器</b><br>
   在手机上跑完整的 <a href="https://github.com/deepseek-ai/deepseek-harness">deepseek-harness</a> —— 免 ROOT，免 Termux，装完即用

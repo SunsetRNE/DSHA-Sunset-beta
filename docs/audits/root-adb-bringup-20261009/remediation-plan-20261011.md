@@ -219,7 +219,8 @@ python3 -B tools/test-adb-flow.py NativeRouteTest         # OK (3)
 python3 -B tools/test-native-device-policy.py             # PASS（16 项 dry plan）
 python3 -B tools/test-device-shell-policy.py              # OK
 python3 -B tools/prepare-runtime-descriptor.py --write    # 重算（launcher 输入已纳入 5 个新协作者）
-python3 -B tools/prepare-runtime-descriptor.py --check    # exit 0；runtime descriptor: 91d7f91a…e2eba
+python3 -B tools/prepare-runtime-descriptor.py --check    # exit 0；runtimeId 随每轮 launcher 输入变化
+#   第二轮 7d6c660c → 91d7f91a → 40a470c4 → e4013087
 python3 -B tools/verify-runtime-descriptor-source.py      # 113 资产 / 301 启动输入
 ```
 
@@ -254,7 +255,7 @@ Android 侧的命令与结果（`ANDROID_SDK_ROOT=/root/Android bash build.sh �
 - **F02 的接收器只差 Android 层的写入计数用例**：`WirelessReopenPolicy` 与 `WirelessBootAction` 都有主机测试，接收器现在也只按 `WirelessBootAction.writesSettings(decision)` 决定是否写设置；但「被拦住时 `Settings.Global.putInt` 一次都没被调用」本身需要模拟 Android 设置的测试，仓库当前没有 Robolectric，未做。
 - **F05 的真机探活未验收**：`probe` 已强制 ADB 计划、TCP 快路径不再发布新认证；但 Root 可用而 ADB 失败的设备样本、实际端点失败后的行为只在源码与主机路由测试层面确认。
 - **F07 / F08 的仪器验收未做**：返回 / 旋转 / 切换语言 / 再次核验的界面行为、首页开关与真实值一致、渲染写回次数为零，需按仓库既有 style 验收方式在设备上核对。
-- **描述符与设备验收分开记录**：本轮重算了 `runtime-descriptor.json`（launcher 输入变化会改变 `runtimeId`），但描述符重算不能代替 `RuntimeTrial`、APK 签名 / 身份、覆盖安装与真机验证；这些未开展，按未验证处理。
+- **描述符与设备验收分开记录**：本轮重算了 `runtime-descriptor.json`。注意 `AdbBootstrapController` / `RootBootstrapExecutor` / `AdbBridge` / `DeviceBridgeService` / `DshaApp` 都在 `launcherSources` 里，**每轮改它们都会改变 `runtimeId`，覆盖安装后会再触发一次环境维护** —— 这是受管契约的代价，不能靠把文件移出清单来回避（计划 §155）；打包时应尽量攒批。描述符重算不能代替 `RuntimeTrial`、APK 签名 / 身份、覆盖安装与真机验证；这些未开展，按未验证处理。
 - **既有无关失败（本轮未修，不掩盖）**：
   - `AdbWheelPathsTest.externalBindingsForeignHostsAndLinkCyclesNeverCreateCache`：`expected java.io.IOException to be thrown, but nothing was thrown`，与本轮改动无关（环境相关，容器内以 root 运行）。
   - `python3 -B tools/run-host-tests.py --check-manifest`：**本轮已修**。HEAD 上失败是因为 `tools/test-mobile-reasoning-defaults.mjs` / `test-mobile-refresh.mjs` / `test-web-file-actions.mjs` 三个测试文件没有登记。现在：`test-mobile-reasoning-defaults.mjs` 登记为 `fast`（只需 node24，已通过执行），另两个登记为 `support`（需要构建产出的 `app/build/test-runtimes/current.json`，不纳入默认主机测试运行）。`--check-manifest` 现在返回 `PASS_MANIFEST`（130 项）。

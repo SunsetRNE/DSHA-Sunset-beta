@@ -488,7 +488,14 @@ public final class DiagnosticRepository extends AndroidViewModel {
         DiagnosticReport.Health.INFO,
         t("设备通道", "Device channels"),
         t("按需授权", "Optional access"),
-        com.deepseekharness.app.RootShell.status(getApplication())
+        // 与设置页共用同一份授权快照；下面附原始证据行，避免两份报告各说各话。
+        DeviceAuthorizationReader.summary(getApplication())
+            + "\n"
+            + DeviceAuthorizationReader.pipes(getApplication())
+            + "\n\n"
+            + t("原始证据：", "Raw evidence:")
+            + "\n"
+            + com.deepseekharness.app.RootShell.status(getApplication())
             + "\n\n"
             + com.deepseekharness.app.ShizukuShell.userStatus(getApplication())
             + "\n\nADB: "

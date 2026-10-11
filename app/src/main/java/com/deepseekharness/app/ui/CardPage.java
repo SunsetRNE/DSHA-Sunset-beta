@@ -83,6 +83,12 @@ final class CardPage {
   }
 
   void entry(LinearLayout card, String title, String subtitle, int icon, Runnable action) {
+    entryRow(card, title, subtitle, icon, action);
+  }
+
+  /** 与 {@link #entry} 同样的行，但把状态行交回调用方，便于按快照刷新。 */
+  TextView entryRow(
+      LinearLayout card, String title, String subtitle, int icon, Runnable action) {
     LinearLayout row = new LinearLayout(context);
     row.setGravity(Gravity.CENTER_VERTICAL);
     row.setPadding(0, dp(10), 0, dp(10));
@@ -111,6 +117,7 @@ final class CardPage {
     arrow.setImageResource(R.drawable.ic_ui2_chevron);
     row.addView(arrow, new LinearLayout.LayoutParams(dp(16), dp(16)));
     card.addView(row);
+    return detail;
   }
 
   Button button(LinearLayout parent, String title, boolean primary, Runnable action) {

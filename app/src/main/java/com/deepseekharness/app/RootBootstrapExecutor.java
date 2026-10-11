@@ -20,6 +20,9 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
 
     byte[] keys() throws Exception;
 
+    /** D1：首次写入前的无副作用预检；不能安全继续时抛明确拒绝，不做任何设备写入。 */
+    void preflightKeyTable() throws Exception;
+
     void replaceKeys(
         AdbAuthorizedKeys.Change change, JSONObject state, String phase, GrantCheck grant)
         throws Exception;
@@ -78,8 +81,14 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
     state = files.load();
   }
 
-  boolean pending() {
-    return !(state.optString("pending", "") + state.optString("keyPending", "")).isEmpty();
+  /**
+   * 事务结束后重新读取**持久**记录：未决状态必须以落盘内容为准。
+   *
+   * <p>内存里的 {@code state} 可能在最后一次 {@code put} 之后、{@code save()} 之前就被异常打断；
+   * 重新读取保证「响应说已清理」永远对应磁盘上的证据。读取失败由调用方记为未知。
+   */
+  JSONObject durableRecord() throws Exception {
+    return files.load();
   }
 
   @Override
@@ -95,6 +104,14 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
         && requested != AdbBootstrapPolicy.Action.CLOSE
         && requested != AdbBootstrapPolicy.Action.REVOKE)
       throw new AdbBootstrapEngine.Refused("PENDING_ACTION_OBSERVE_AND_CLEANUP");
+  }
+
+  @Override
+  public void preflight(AdbBootstrapPolicy.Action requested) throws Exception {
+    // 只约束「本应用尚无公钥所有权记录」的首次写入路径：已有归属沿用既有 inode / 标签。
+    // STATUS 只读、CLOSE / REVOKE 是清理路径，都不该被首次建表前置条件挡住。
+    if (requested != AdbBootstrapPolicy.Action.AUTHORIZE || state.optBoolean("keyOwned")) return;
+    files.preflightKeyTable();
   }
 
   @Override

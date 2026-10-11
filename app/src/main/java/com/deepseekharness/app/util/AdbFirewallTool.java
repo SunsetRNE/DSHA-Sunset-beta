@@ -158,6 +158,8 @@ public final class AdbFirewallTool {
   public static String neutralize(String value) {
     if (value == null || value.isEmpty()) return "";
     return value
+        // 完整标记连**方括号一起**中性化：只换左半段会留下 `(exit=125]` 这种半截文本。
+        .replaceAll("\\[EXIT=([0-9]{1,3})\\]", "(exit=$1)")
         .replace("[EXIT=", "(exit=")
         .replace("[EXIT", "(exit")
         .replace("[OUTPUT_TRUNCATED]", "(output truncated)")

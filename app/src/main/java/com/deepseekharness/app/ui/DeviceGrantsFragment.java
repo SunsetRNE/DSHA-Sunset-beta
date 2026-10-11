@@ -1,6 +1,5 @@
 package com.deepseekharness.app.ui;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,38 +12,40 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.deepseekharness.app.DeviceBridgeService;
 import com.deepseekharness.app.DshaAccessibilityService;
 import com.deepseekharness.app.R;
 import com.deepseekharness.app.RootShell;
-import com.deepseekharness.app.ShizukuShell;
 import com.deepseekharness.app.bridge.AdbBridge;
-import com.deepseekharness.app.core.ConfigStore;
+import com.deepseekharness.app.core.AdbBootstrapController;
+import com.deepseekharness.app.core.AdbSwitch;
+import com.deepseekharness.app.core.DeviceAuthorizationReader;
 import com.deepseekharness.app.core.DeviceGrants;
 import com.deepseekharness.app.core.HarnessController;
 import com.deepseekharness.app.util.Constants;
+import com.deepseekharness.app.util.DeviceAuthorization;
+import com.deepseekharness.app.util.UiStateText;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
-/** 设备通道、系统权限与能力预授权的唯一设置页；沿用历史偏好键。 */
+/**
+ * 设备能力授权首页（ADR 0005）。
+ *
+ * <p>只保留两个入口：**ADB 全局授权**（入口行带总开关，开=全局授权、关=全局无 ADB 授权）与
+ * **Root 授权**（独立权威，进独立页面）。四来源铺开、配对、Shizuku、自举都在各自的页面里，
+ * 首页不再出现第二个真相。
+ */
 public final class DeviceGrantsFragment extends Fragment {
   private MaterialSwitch sms;
   private TextView smsStatus;
   private boolean updating;
-  private int adbStatusRequest;
-  private int rootStatusRequest;
-  private int shizukuStatusRequest;
-  private AlertDialog rootResultDialog;
-  private AlertDialog shizukuResultDialog;
-  private RootBootstrapCard rootBootstrap;
   private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
-  private final Runnable refreshConnections =
+  private final Runnable refreshEntries =
       new Runnable() {
         @Override
         public void run() {
           if (!isResumed() || getView() == null) return;
-          refreshChannelLabels();
+          refreshEntryRows();
           main.postDelayed(this, 1000);
         }
       };
@@ -53,18 +54,12 @@ public final class DeviceGrantsFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saved) {
     View view = inflater.inflate(R.layout.fragment_device_grants, container, false);
     Context ctx = requireContext();
-    for (int id :
-        new int[] {
-          R.id.device_root_status, R.id.workspace_shizuku_status, R.id.config_adb_status
-        }) {
-      TextView detail = view.findViewById(id);
-      detail.setOnClickListener(
-          v ->
-              CardSheet.show(
-                  requireContext(),
-                  com.deepseekharness.app.util.UiText.choose("设备通道状态", "Device channel status"),
-                  detail.getText().toString()));
-    }
+    view.findViewById(R.id.entry_adb_authorization)
+        .setOnClickListener(
+            button -> startActivity(new Intent(ctx, AdbAuthorizationActivity.class)));
+    view.findViewById(R.id.entry_root_authorization)
+        .setOnClickListener(
+            button -> startActivity(new Intent(ctx, RootAuthorizationActivity.class)));
     ((TextView) view.findViewById(R.id.computer_use_hint))
         .setText(
             com.deepseekharness.app.util.UiText.choose(
@@ -113,118 +108,29 @@ public final class DeviceGrantsFragment extends Fragment {
       screenCard.addView(virtualScreen, new android.widget.LinearLayout.LayoutParams(-1, -2));
     }
 
-    CompoundButton root = view.findViewById(R.id.config_root_shell);
-    root.setSaveEnabled(false);
-    root.setChecked(RootShell.enabled(ctx));
-    root.setOnCheckedChangeListener(
-        (button, enabled) -> {
-          // 开关变化使旧验证结果失效，即使用户很快重新开启也不复用旧弹窗。
-          invalidateRootVerification(view);
-          new ConfigStore(ctx).setRootShellAllowed(enabled);
-          if (rootBootstrap != null) rootBootstrap.grantsChanged();
-          if (!enabled) com.deepseekharness.app.vscreen.VirtualScreenManager.from(ctx).revoke();
-          syncSettings();
-          refreshChannelLabels();
-        });
-    view.findViewById(R.id.device_root_verify)
-        .setOnClickListener(
-            button -> {
-              if (!RootShell.enabled(ctx)) {
-                toast(com.deepseekharness.app.util.UiText.text("请先启用「允许 Root Shell」"));
-                return;
-              }
-              if (!RootShell.present()) {
-                toast(
-                    com.deepseekharness.app.util.UiText.text(
-                        "未找到 su；请确认手机已 root，且 root 管理器允许 DSHA 使用"));
-                return;
-              }
-              verify(
-                  button,
-                  view.findViewById(R.id.device_root_status),
-                  () -> RootShell.exec(ctx.getApplicationContext(), "id", -1),
-                  true);
-            });
-    view.findViewById(R.id.device_shizuku_open).setOnClickListener(button -> openShizuku());
-    view.findViewById(R.id.workspace_shizuku_auth)
-        .setOnClickListener(
-            button -> {
-              final int request = ++shizukuStatusRequest;
-              if (!ShizukuShell.isAvailable()) {
-                button.setEnabled(false);
-                com.deepseekharness.app.ShizukuManagerCompat.reconnect(
-                    requireActivity(),
-                    () ->
-                        main.post(
-                            () -> {
-                              if (!channelRequestCurrent(view, request, false)) return;
-                              button.setEnabled(true);
-                              if (!isResumed()) {
-                                refreshChannelLabels();
-                                return;
-                              }
-                              if (ShizukuShell.isAvailable())
-                                requestShizukuPermission(view, request);
-                              else toast(ShizukuShell.userStatus(ctx));
-                              refreshChannelLabels();
-                            }));
-                return;
-              }
-              if (ShizukuShell.hasPermission()) {
-                verify(
-                    button,
-                    view.findViewById(R.id.workspace_shizuku_status),
-                    () -> ShizukuShell.exec("id"),
-                    false);
-              } else requestShizukuPermission(view, request);
-            });
-    CompoundButton sensors = view.findViewById(R.id.config_cap_sensors);
-    sensors.setChecked(pref(ctx, "cap_sensors", false));
-    sensors.setOnCheckedChangeListener((button, enabled) -> savePreference("cap_sensors", enabled));
-    CompoundButton location = view.findViewById(R.id.config_cap_location);
-    location.setChecked(pref(ctx, "cap_location", false));
-    location.setOnCheckedChangeListener(
-        (button, enabled) -> {
-          savePreference("cap_location", enabled);
-          if (enabled
-              && ctx.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-                  != android.content.pm.PackageManager.PERMISSION_GRANTED)
-            requestPermissions(
-                new String[] {
-                  android.Manifest.permission.ACCESS_FINE_LOCATION,
-                  android.Manifest.permission.ACCESS_COARSE_LOCATION
-                },
-                104);
-        });
+    // ADB 全局授权总开关：开 = 允许使用 ADB 全局授权（含 Shizuku 来源）；关 = 全局无 ADB 授权。
     CompoundButton adb = view.findViewById(R.id.config_adb_enable);
     adb.setSaveEnabled(false);
-    adb.setChecked(DeviceBridgeService.isAdbEnabled(ctx));
+    adb.setChecked(AdbSwitch.enabled(ctx));
     adb.setOnCheckedChangeListener(
         (button, enabled) -> {
-          savePreference("adb_enabled", enabled);
+          if (updating) return; // 渲染写回不构成用户意图
+          if (!AdbSwitch.userSet(ctx, enabled)) {
+            toast(com.deepseekharness.app.util.UiText.text("设置保存失败，请重试"));
+            syncAdbSwitch();
+            return;
+          }
           if (!enabled) com.deepseekharness.app.vscreen.VirtualScreenManager.from(ctx).revoke();
           if (enabled) {
+            // 用户明确选择恢复 ADB 使用 = 使用模式切换；已有可信清理结果时解除自举互斥。
+            AdbBootstrapController.get(ctx).onUserModeChosen();
             DeviceBridgeService.apply(ctx);
             if (getActivity() instanceof MainActivity)
               ((MainActivity) getActivity()).requestLocalNetwork();
           } else ctx.stopService(new Intent(ctx, DeviceBridgeService.class));
           syncSettings();
-          refreshAdbStatus(view.findViewById(R.id.config_adb_status));
-          if (rootBootstrap != null) rootBootstrap.grantsChanged();
+          refreshEntryRows();
         });
-    view.findViewById(R.id.config_adb_pair)
-        .setOnClickListener(
-            button -> {
-              if (android.os.Build.VERSION.SDK_INT < 30) {
-                new com.deepseekharness.app.ui.DshaDialogBuilder(ctx)
-                    .setTitle(com.deepseekharness.app.util.UiText.text("当前系统没有配对码接口"))
-                    .setMessage(
-                        com.deepseekharness.app.util.UiText.text(
-                            "无线调试配对码需要 Android 11+。Android 6—10 可使用 Shizuku、已授权的 root，或由电脑开启 ADB TCP 通道。"))
-                    .setPositiveButton(com.deepseekharness.app.util.UiText.text("知道了"), null)
-                    .show();
-              } else startActivity(new Intent(ctx, AdbPairActivity.class));
-            });
     view.findViewById(R.id.config_all_files).setOnClickListener(button -> openAllFilesAccess(ctx));
     view.findViewById(R.id.config_battery_opt).setOnClickListener(button -> openBatteryOpt(ctx));
     sms = view.findViewById(R.id.device_sms);
@@ -248,9 +154,38 @@ public final class DeviceGrantsFragment extends Fragment {
               .setNegativeButton(com.deepseekharness.app.util.UiText.text("取消"), null)
               .show();
         });
-    rootBootstrap = new RootBootstrapCard(view.findViewById(R.id.root_bootstrap_card));
+    CompoundButton sensors = view.findViewById(R.id.config_cap_sensors);
+    sensors.setChecked(pref(ctx, "cap_sensors", false));
+    sensors.setOnCheckedChangeListener((button, enabled) -> savePreference("cap_sensors", enabled));
+    CompoundButton location = view.findViewById(R.id.config_cap_location);
+    location.setChecked(pref(ctx, "cap_location", false));
+    location.setOnCheckedChangeListener(
+        (button, enabled) -> {
+          savePreference("cap_location", enabled);
+          if (enabled
+              && ctx.checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                  != android.content.pm.PackageManager.PERMISSION_GRANTED)
+            requestPermissions(
+                new String[] {
+                  android.Manifest.permission.ACCESS_FINE_LOCATION,
+                  android.Manifest.permission.ACCESS_COARSE_LOCATION
+                },
+                104);
+        });
     updateSms();
     return view;
+  }
+
+  /** 两个入口行只显示唯一结论：ADB 全局授权状态 + Root 通道状态。 */
+  private void refreshEntryRows() {
+    View page = getView();
+    if (page == null || !isAdded()) return;
+    DeviceAuthorization.Snapshot snapshot = DeviceAuthorizationReader.snapshot(requireContext());
+    TextView adb = page.findViewById(R.id.device_auth_summary);
+    if (adb != null)
+      adb.setText(UiStateText.render(DeviceAuthorizationReader.adbEntrySummary(snapshot)));
+    TextView root = page.findViewById(R.id.device_root_status);
+    if (root != null) root.setText(UiStateText.render(RootShell.status(requireContext())));
   }
 
   private void savePreference(String key, boolean enabled) {
@@ -274,6 +209,7 @@ public final class DeviceGrantsFragment extends Fragment {
                   () -> {
                     if (!isAdded() || page == null || getView() != page) return;
                     TextView status = page.findViewById(R.id.config_guard_status);
+                    if (status == null) return;
                     status.setVisibility(View.VISIBLE);
                     status.setText(
                         com.deepseekharness.app.util.UiText.format(
@@ -282,120 +218,6 @@ public final class DeviceGrantsFragment extends Fragment {
             },
             "device-settings")
         .start();
-  }
-
-  private void verify(
-      View button,
-      TextView status,
-      java.util.function.Supplier<String> probe,
-      boolean rootChannel) {
-    final View page = getView();
-    if (page == null) return;
-    final int request = rootChannel ? ++rootStatusRequest : ++shizukuStatusRequest;
-    button.setEnabled(false);
-    status.setText(com.deepseekharness.app.util.UiText.text("正在验证设备通道…"));
-    status.setTag(Boolean.TRUE);
-    new Thread(
-            () -> {
-              String output;
-              try {
-                output = probe.get();
-              } catch (Throwable error) {
-                output = com.deepseekharness.app.util.SensitiveData.redact(String.valueOf(error));
-              }
-              final String result = output;
-              main.post(
-                  () -> {
-                    if (!channelRequestCurrent(page, request, rootChannel)) return;
-                    button.setEnabled(true);
-                    status.setTag(null);
-                    refreshChannelLabels();
-                    if (!isResumed()
-                        || (rootChannel && !RootShell.enabled(requireContext()))
-                        || (!rootChannel && !ShizukuShell.hasPermission())) return;
-                    AlertDialog dialog =
-                        new DshaDialogBuilder(requireContext())
-                            .setTitle(com.deepseekharness.app.util.UiText.text("设备通道验证"))
-                            .setMessage(com.deepseekharness.app.util.UiText.raw(result))
-                            .setPositiveButton(
-                                com.deepseekharness.app.util.UiText.text("知道了"), null)
-                            .create();
-                    if (rootChannel) {
-                      if (rootResultDialog != null) rootResultDialog.dismiss();
-                      rootResultDialog = dialog;
-                    } else {
-                      if (shizukuResultDialog != null) shizukuResultDialog.dismiss();
-                      shizukuResultDialog = dialog;
-                    }
-                    dialog.setOnDismissListener(
-                        ignored -> {
-                          if (rootResultDialog == dialog) rootResultDialog = null;
-                          if (shizukuResultDialog == dialog) shizukuResultDialog = null;
-                        });
-                    dialog.show();
-                  });
-            },
-            "device-channel-probe")
-        .start();
-  }
-
-  /** 回调只更新发起它的同一个页面和请求；销毁旧 View 不影响后端任务。 */
-  private boolean channelRequestCurrent(View page, int request, boolean rootChannel) {
-    return isAdded()
-        && page != null
-        && getView() == page
-        && request == (rootChannel ? rootStatusRequest : shizukuStatusRequest);
-  }
-
-  private void requestShizukuPermission(View page, int request) {
-    if (!channelRequestCurrent(page, request, false) || !isResumed()) return;
-    ShizukuShell.requestPermission(
-        (code, result) ->
-            main.post(
-                () -> {
-                  if (channelRequestCurrent(page, request, false)) refreshChannelLabels();
-                }));
-  }
-
-  private void invalidateRootVerification(View page) {
-    rootStatusRequest++;
-    ((TextView) page.findViewById(R.id.device_root_status)).setTag(null);
-    page.findViewById(R.id.device_root_verify).setEnabled(true);
-    if (rootResultDialog != null) rootResultDialog.dismiss();
-    rootResultDialog = null;
-  }
-
-  private void openShizuku() {
-    Intent launch = com.deepseekharness.app.ShizukuManagerCompat.launchIntent(requireContext());
-    if (launch == null) {
-      toast(com.deepseekharness.app.util.UiText.text("尚未安装 Shizuku，请安装后启动服务"));
-      return;
-    }
-    try {
-      startActivity(launch);
-    } catch (RuntimeException e) {
-      toast(
-          com.deepseekharness.app.util.UiText.format(
-              "无法打开 Shizuku：%s", e.getClass().getSimpleName()));
-    }
-  }
-
-  private void refreshChannelLabels() {
-    View page = getView();
-    if (page == null) return;
-    TextView shizuku = page.findViewById(R.id.workspace_shizuku_status);
-    TextView root = page.findViewById(R.id.device_root_status);
-    if (shizuku.getTag() == null)
-      shizuku.setText(
-          com.deepseekharness.app.util.UiStateText.render(
-              ShizukuShell.userStatus(requireContext())));
-    ((TextView) page.findViewById(R.id.workspace_shizuku_auth))
-        .setText(
-            ShizukuShell.hasPermission()
-                ? com.deepseekharness.app.util.UiText.text("验证 Shizuku 连接")
-                : com.deepseekharness.app.util.UiText.text("授权 Shizuku"));
-    if (root.getTag() == null) root.setText(RootShell.status(requireContext()));
-    if (rootBootstrap != null) rootBootstrap.render();
   }
 
   private void saveSms(boolean enabled) {
@@ -468,38 +290,46 @@ public final class DeviceGrantsFragment extends Fragment {
   @Override
   public void onResume() {
     super.onResume();
-    if (rootBootstrap != null) rootBootstrap.resume();
-    ShizukuShell.ensureBound(requireContext());
+    // F08：自举自动启用、配对页关闭等路径都会改总开关；每次回到前台从真实存储同步显示值。
+    syncAdbSwitch();
     updateSms();
-    main.removeCallbacks(refreshConnections);
-    main.post(refreshConnections);
+    main.removeCallbacks(refreshEntries);
+    main.post(refreshEntries);
     View page = getView();
     if (page != null) {
       refreshAllFilesStatus(page.findViewById(R.id.config_all_files_status));
       refreshA11yStatus(page.findViewById(R.id.config_a11y_status));
-      refreshAdbStatus(page.findViewById(R.id.config_adb_status));
+    }
+  }
+
+  /**
+   * 从真实授权存储同步 ADB 总开关。
+   *
+   * <p>状态渲染只能读：用 {@code updating} 抑制监听器，写回不得触发再次授权、停止服务或弹窗。
+   */
+  private void syncAdbSwitch() {
+    View page = getView();
+    if (page == null) return;
+    CompoundButton adb = page.findViewById(R.id.config_adb_enable);
+    if (adb == null) return;
+    boolean enabled = AdbSwitch.enabled(requireContext());
+    updating = true;
+    try {
+      adb.setChecked(enabled);
+    } finally {
+      updating = false;
     }
   }
 
   @Override
   public void onPause() {
-    if (rootBootstrap != null) rootBootstrap.pause();
-    main.removeCallbacks(refreshConnections);
+    main.removeCallbacks(refreshEntries);
     super.onPause();
   }
 
   @Override
   public void onDestroyView() {
-    adbStatusRequest++;
-    rootStatusRequest++;
-    shizukuStatusRequest++;
-    main.removeCallbacks(refreshConnections);
-    if (rootResultDialog != null) rootResultDialog.dismiss();
-    if (shizukuResultDialog != null) shizukuResultDialog.dismiss();
-    rootResultDialog = null;
-    shizukuResultDialog = null;
-    if (rootBootstrap != null) rootBootstrap.detach();
-    rootBootstrap = null;
+    main.removeCallbacks(refreshEntries);
     sms = null;
     smsStatus = null;
     super.onDestroyView();
@@ -511,69 +341,6 @@ public final class DeviceGrantsFragment extends Fragment {
 
   private void toast(String value) {
     if (getContext() != null) Toast.makeText(getContext(), value, Toast.LENGTH_LONG).show();
-  }
-
-  /** 后台读 ADB 通道真实状态（key/deps/端口 + 保活服务的连接状态），刷到状态栏。 */
-  private void refreshAdbStatus(final TextView status) {
-    final Context app = requireContext().getApplicationContext();
-    final View page = getView();
-    final android.app.Activity activity = getActivity();
-    if (activity == null) return;
-    final int request = ++adbStatusRequest;
-    new Thread(
-            () -> {
-              final String text = computeAdbStatus(app);
-              activity.runOnUiThread(
-                  () -> {
-                    if (request != adbStatusRequest
-                        || status == null
-                        || getView() != page
-                        || !isAdded()) return;
-                    status.setText(com.deepseekharness.app.util.UiText.status(text));
-                    if (text.startsWith("环境任务进行中") && isResumed())
-                      status.postDelayed(
-                          () -> {
-                            if (request == adbStatusRequest && getView() == page && isResumed())
-                              refreshAdbStatus(status);
-                          },
-                          1500);
-                  });
-            },
-            "adb-status")
-        .start();
-  }
-
-  private String computeAdbStatus(Context app) {
-    try {
-      if (!pref(app, "adb_enabled", false))
-        return com.deepseekharness.app.util.UiText.text("ADB 已关闭。开启后才会保持连接。");
-      String bridge = DeviceBridgeService.adbState;
-      String detail = DeviceBridgeService.adbDetail == null ? "" : DeviceBridgeService.adbDetail;
-      HarnessController hc = HarnessController.get(app);
-      String st = hc.proot().isEnvironmentReady() ? AdbBridge.status(hc.proot()) : "env:not_ready";
-      if (st.startsWith("ENVIRONMENT_BUSY") || "environment_busy".equals(bridge))
-        return "环境任务进行中，ADB 暂停检查，完成后自动重试。" + (detail.isEmpty() ? "" : "\n" + detail);
-      boolean key = st.contains("key=YES");
-      String port = "?";
-      int p = st.indexOf("port=");
-      if (p >= 0) port = st.substring(p + 5).trim();
-      if ("need_pair".equals(bridge)) {
-        return com.deepseekharness.app.util.UiText.text("配对已失效，请重新配对。");
-      } else if ("reconnecting".equals(bridge)) {
-        return com.deepseekharness.app.util.UiText.format(
-            "正在重连无线调试…%s", (detail.isEmpty() ? "" : "\n" + detail));
-      } else if ("connected".equals(bridge)) {
-        return com.deepseekharness.app.util.UiText.format(
-            "连接已验证 · 端口 %s%s", port, (detail.isEmpty() ? "" : "\n" + detail));
-      } else if (key) {
-        return com.deepseekharness.app.util.UiText.format(
-            "配对密钥已保存，连接尚未验证。%s", (detail.isEmpty() ? "" : "\n" + detail));
-      } else {
-        return com.deepseekharness.app.util.UiText.text("尚未配对：点下方「ADB 无线配对」，配对后还会验证连接。");
-      }
-    } catch (Throwable e) {
-      return com.deepseekharness.app.util.UiText.format("ADB 状态读取失败：%s", e.getMessage());
-    }
   }
 
   private void openBatteryOpt(Context ctx) {

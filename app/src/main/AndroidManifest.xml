@@ -62,6 +62,11 @@
         <activity android:name=".ui.OnboardingPrepareActivity" android:exported="false" />
         <activity android:name=".ui.OnboardingReadyActivity" android:exported="false" />
         <activity android:name=".ui.AccessibilitySetupActivity" android:exported="false" />
+        <activity android:name=".ui.AdbAuthorizationActivity" android:exported="false" />
+        <activity android:name=".ui.RootAuthorizationActivity" android:exported="false" />
+        <activity android:name=".ui.UsbAuthorizationActivity" android:exported="false" />
+        <activity android:name=".ui.ShizukuAuthorizationActivity" android:exported="false" />
+        <activity android:name=".ui.BootstrapAuthorizationActivity" android:exported="false" />
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"

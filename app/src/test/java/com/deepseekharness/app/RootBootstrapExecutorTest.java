@@ -74,6 +74,14 @@ public final class RootBootstrapExecutorTest {
       return table.clone();
     }
 
+    /** D1：模拟平台还不能安全完成首次写入（例如系统授权表缺失）。 */
+    boolean keyTableReady = true;
+
+    public void preflightKeyTable() throws Exception {
+      if (!keyTableReady)
+        throw new AdbBootstrapEngine.Refused(AdbKeyTablePreflight.MISSING_UNSUPPORTED);
+    }
+
     public void replaceKeys(
         AdbAuthorizedKeys.Change change,
         JSONObject state,
@@ -219,8 +227,45 @@ public final class RootBootstrapExecutorTest {
               10281,
               "/data/app/com.dsh.client-1/base.apk",
               "/data/app/com.dsh.client-1/base.apk");
-      return AdbBootstrapEngine.execute(
-          action, new RootBootstrapExecutor(identity, action, this, this));
+      last = new RootBootstrapExecutor(identity, action, this, this);
+      return AdbBootstrapEngine.execute(action, last);
+    }
+
+    RootBootstrapExecutor last;
+
+    /**
+     * 复刻 {@link RootBootstrapNative#execute} 的响应编码与宿主消费路径。
+     *
+     * <p>完成判据与编解码都在生产接缝 {@link AdbBootstrapReply} 里；这里只负责把它接到
+     * 假设备的事务结果上，让「生产响应 → 控制器归约」的组合可以在主机测试里跑通。
+     */
+    AdbBootstrapReply reply(Action action) throws Exception {
+      AdbBootstrapEngine.Outcome result = execute(action);
+      boolean verified = false;
+      String network = "";
+      String key = "";
+      try {
+        JSONObject durable = last.durableRecord();
+        verified = true;
+        network = durable.optString("pending", "");
+        key = durable.optString("keyPending", "");
+      } catch (Exception unreadable) {
+        verified = false;
+      }
+      String code = result.code;
+      if (verified && result.status.equals("OK") && (!network.isEmpty() || !key.isEmpty()))
+        code = "PENDING_ACTION";
+      return AdbBootstrapReply.parse(
+          AdbBootstrapReply.encode(
+              result.status,
+              code,
+              result.snapshot.key,
+              result.snapshot.listener,
+              result.snapshot.guard,
+              result.evidence,
+              verified,
+              network,
+              key));
     }
 
     void authorized() throws Exception {
@@ -389,6 +434,26 @@ public final class RootBootstrapExecutorTest {
     assertTrue(foreign.writes.isEmpty());
   }
 
+  /**
+   * F06 / D1：平台还不能安全完成首次写入时，AUTHORIZE 必须在**任何**设备写入之前明确拒绝，
+   * 只读与清理路径不受影响。这不是首次建表能力的实现（D2 仍未完成）。
+   */
+  @Test
+  public void unsupportedFirstWriteRefusesBeforeAnyDeviceWrite() throws Exception {
+    Device d = new Device();
+    d.keyTableReady = false;
+    var outcome = d.execute(Action.AUTHORIZE);
+    assertEquals("REFUSED", outcome.status);
+    assertEquals(AdbKeyTablePreflight.MISSING_UNSUPPORTED, outcome.code);
+    assertTrue("防火墙 / 公钥 / 监听写入必须为零", d.writes.isEmpty());
+    assertEquals(0, d.replacements);
+    assertFalse(d.v4 || d.v6);
+    // 只读与清理仍需可用：预检不能把 STATUS / CLOSE / REVOKE 一起挡死。
+    assertEquals("OK", d.execute(Action.STATUS).status);
+    assertEquals("OK", d.execute(Action.CLOSE).status);
+    assertEquals("OK", d.execute(Action.REVOKE).status);
+  }
+
   @Test
   public void secondStackFailureCannotAuthorizeAndKeepsFirstStackEvidence() throws Exception {
     Device d = new Device();
@@ -399,6 +464,43 @@ public final class RootBootstrapExecutorTest {
     assertFalse(d.v6);
     assertEquals("NARROW", d.journal.getString("pending"));
     assertEquals("REFUSED", d.execute(Action.OPEN).status);
+  }
+
+  /**
+   * F03 回归：IPv6 写失败留下持久网络未决后，一次「无事可做」的 REVOKE 成功
+   * 不能把本地未决洗成已确认；只有 CLOSE 真正清理完两个阶段才允许解除。
+   */
+  @Test
+  public void noOpRevokeCannotClearTheDurableNetworkPending() throws Exception {
+    Device d = new Device();
+    d.failV6 = true;
+    boolean unresolved = false;
+
+    AdbBootstrapReply authorize = d.reply(Action.AUTHORIZE);
+    assertEquals("UNKNOWN", authorize.status);
+    assertTrue("响应必须独立报告未决状态已核实", authorize.pendingVerified);
+    assertEquals("NARROW", authorize.networkPending);
+    assertEquals("", authorize.keyPending);
+    unresolved =
+        AdbBootstrapJournal.unresolved(unresolved, authorize, authorize.status, authorize.code);
+    assertTrue(unresolved);
+
+    // 显式 REVOKE：尚无 keyOwned，动作本身是成功的无操作，但网络事务仍未结束。
+    AdbBootstrapReply revoke = d.reply(Action.REVOKE);
+    assertEquals("OK", revoke.status);
+    assertTrue(revoke.pendingVerified);
+    assertEquals("NARROW", revoke.networkPending);
+    unresolved = AdbBootstrapJournal.unresolved(unresolved, revoke, revoke.status, revoke.code);
+    assertTrue("无操作 REVOKE 不得清除持久未决", unresolved);
+
+    // 只有真正清理掉两族规则之后，可信响应才允许解除。
+    d.failV6 = false;
+    AdbBootstrapReply close = d.reply(Action.CLOSE);
+    assertEquals("OK", close.status);
+    assertEquals("", close.networkPending);
+    assertEquals("", close.keyPending);
+    unresolved = AdbBootstrapJournal.unresolved(unresolved, close, close.status, close.code);
+    assertFalse(unresolved);
   }
 
   @Test

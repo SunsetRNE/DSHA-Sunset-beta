@@ -127,6 +127,13 @@
     <string name="ui2_device_grants">Device capabilities</string>
     <string name="ui2_grants_sub">Optional capabilities. Conversations and terminals do not require device control permission.</string>
     <string name="ui2_device_channels">Device command channels</string>
+    <string name="ui2_device_auth">Device command authorization</string>
+    <string name="device_auth_adb_title">ADB global authorization</string>
+    <string name="device_auth_root_title">Root authorization (independent)</string>
+    <string name="device_auth_self">① Set up via app (recommended, no pairing)</string>
+    <string name="device_auth_system">② System debugging authorization</string>
+    <string name="device_auth_root">③ Root (independent authority)</string>
+    <string name="device_auth_shizuku">④ Shizuku (middle layer: started by ADB / Root)</string>
     <string name="ui2_system_permissions">System permissions</string>
     <string name="ui2_sensitive">Sensitive capabilities</string>
 

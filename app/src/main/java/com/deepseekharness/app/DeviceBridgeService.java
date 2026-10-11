@@ -74,8 +74,8 @@ public class DeviceBridgeService extends Service {
   public static volatile String adbDetail = "";
 
   public static boolean isAdbEnabled(Context ctx) {
-    return ctx.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE)
-        .getBoolean("adb_enabled", false);
+    // 唯一受管写入口：值由 AdbSwitch 维护，避免各处直接写偏好绕过意图代次。
+    return com.deepseekharness.app.core.AdbSwitch.enabled(ctx);
   }
 
   public static boolean apply(Context ctx) {
@@ -143,6 +143,9 @@ public class DeviceBridgeService extends Service {
       svc.consecutiveFailures = 0;
     }
     if (isAdbEnabled(ctx)) apply(ctx);
+    // 完成一次真实无线验证 = 用户明确选择了别的使用模式；若已有可信清理结果，解除互斥。
+    if (result == AdbResult.PairState.CONNECTED && isAdbEnabled(ctx))
+      com.deepseekharness.app.core.AdbBootstrapController.get(ctx).onUserModeChosen();
   }
 
   @Override
@@ -419,14 +422,17 @@ public class DeviceBridgeService extends Service {
       }
     }
     if (!running || !isAdbEnabled(this) || AdbBridge.isPairing()) return;
-    // 1) 无副作用 TCP 探活（避免每轮都触发系统「已连接无线调试」toast）
+    // 1) 无副作用 TCP 探活（避免每轮都触发系统「已连接无线调试」toast）。
+    //    它只**保留**最近一次完整 ADB 握手验证过的状态：TCP 可达不是本次认证证明，因此
+    //    只在自己已经处于 connected 时短路，不再借它把其它状态升级成「已连接」（F05）。
     boolean needFull = System.currentTimeMillis() - lastFullVerifyAt > FULL_VERIFY_INTERVAL_MS;
-    if (!needFull && tcpReachable(readConnectPort(proot), 1200)) {
-      onProbeOk(reason);
+    if (!needFull && "connected".equals(adbState) && tcpReachable(readConnectPort(proot), 1200)) {
+      consecutiveFailures = 0;
       return;
     }
-    // 2) 完整握手验证（无副作用探活失败时才做）
-    String r = probeCommand(proot, null);
+    // 2) 完整握手验证：显式请求 ADB 计划（回环 + 已确认端口）；不带端点会让 root/Shizuku
+    //    的成功结果冒充 ADB 已连接。自举模式即回环 5555（connect_port 缺省值）。
+    String r = probeCommand(proot, AdbBridge.endpoint("127.0.0.1", readConnectPort(proot)));
     if (AdbResult.shellReady(r)) {
       lastFullVerifyAt = System.currentTimeMillis();
       onProbeOk(reason);

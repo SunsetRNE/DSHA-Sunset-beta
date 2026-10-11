@@ -89,23 +89,91 @@ public final class AdbBootstrapJournalTest {
       assertFalse(AdbBootstrapJournal.restartMayBeSent(phase));
   }
 
+  private static AdbBootstrapReply reply(
+      String status,
+      String code,
+      String key,
+      String listener,
+      String guard,
+      boolean pendingVerified,
+      String networkPending,
+      String keyPending) {
+    return AdbBootstrapReply.parse(
+        AdbBootstrapReply.encode(
+            status, code, key, listener, guard, "", pendingVerified, networkPending, keyPending));
+  }
+
+  @Test
+  public void onlyATrustedClearedObservationReleasesThePendingBarrier() {
+    // 可信 + 两阶段都已结束 + 观测完整 + 成功：解除。
+    assertFalse(
+        AdbBootstrapJournal.unresolved(
+            true,
+            reply("OK", "COMPLETE", "ABSENT", "CLOSED", "UNPROTECTED", true, "", ""),
+            "OK",
+            "COMPLETE"));
+    // F03：无操作 REVOKE 成功，但持久记录里网络阶段仍未结束 —— 不得解除。
+    assertTrue(
+        AdbBootstrapJournal.unresolved(
+            false,
+            reply("OK", "COMPLETE", "NOT_REGISTERED", "CLOSED", "UNPROTECTED", true, "NARROW", ""),
+            "OK",
+            "COMPLETE"));
+    assertTrue(
+        AdbBootstrapJournal.unresolved(
+            false,
+            reply("OK", "COMPLETE", "OWNED", "CLOSED", "UNPROTECTED", true, "", "AUTHORIZE"),
+            "OK",
+            "COMPLETE"));
+    // 观测不完整或未核实时也不解除。
+    assertTrue(
+        AdbBootstrapJournal.unresolved(
+            false,
+            reply("OK", "OBSERVATION_INCOMPLETE", "UNKNOWN", "CLOSED", "UNPROTECTED", true, "", ""),
+            "OK",
+            "OBSERVATION_INCOMPLETE"));
+    assertTrue(
+        AdbBootstrapJournal.unresolved(
+            true,
+            reply("OK", "COMPLETE", "ABSENT", "CLOSED", "UNPROTECTED", false, "", ""),
+            "OK",
+            "COMPLETE"));
+    assertTrue(
+        AdbBootstrapJournal.unresolved(
+            false,
+            reply(
+                "OK", "PENDING_ACTION", "NOT_REGISTERED", "CLOSED", "UNPROTECTED", true, "NARROW", ""),
+            "OK",
+            "PENDING_ACTION"));
+  }
+
   @Test
   public void failedOrIncompleteRefreshRetainsUnresolvedRequest() {
+    // 原生异常（不可信响应）：沿用结果码判据，可能已写入的未知结果保持未决。
     for (String result : new String[] {"FAILED", "REFUSED", "UNKNOWN"})
-      assertTrue(
-          AdbBootstrapJournal.unresolved(
-              true, result, "BOOTSTRAP_BUSY", "UNKNOWN", "UNKNOWN", "UNVERIFIED"));
+      assertTrue(AdbBootstrapJournal.unresolved(true, null, result, "BOOTSTRAP_BUSY"));
+    assertFalse(AdbBootstrapJournal.unresolved(false, null, "REFUSED", "NATIVE_GRANT_REVOKED"));
+    assertTrue(AdbBootstrapJournal.unresolved(false, null, "UNKNOWN", "REQUEST_OUTCOME_UNKNOWN"));
+    // 旧格式 / 缺字段响应不得解除已有未决。
     assertTrue(
         AdbBootstrapJournal.unresolved(
-            true, "OK", "PENDING_ACTION", "ABSENT", "CLOSED", "UNPROTECTED"));
+            true,
+            reply("OK", "COMPLETE", "ABSENT", "CLOSED", "UNPROTECTED", false, "", ""),
+            "OK",
+            "COMPLETE"));
+    // 可信但失败：保留原状态，不新增也不清除。
     assertTrue(
         AdbBootstrapJournal.unresolved(
-            true, "OK", "OBSERVATION_INCOMPLETE", "UNKNOWN", "CLOSED", "UNPROTECTED"));
-    assertFalse(
-        AdbBootstrapJournal.unresolved(true, "OK", "COMPLETE", "ABSENT", "CLOSED", "UNPROTECTED"));
+            true,
+            reply("REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
+            "REFUSED",
+            "WIRELESS_DEBUG_IN_USE"));
     assertFalse(
         AdbBootstrapJournal.unresolved(
-            false, "REFUSED", "NATIVE_GRANT_REVOKED", "UNKNOWN", "UNKNOWN", "UNKNOWN"));
+            false,
+            reply("REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
+            "REFUSED",
+            "WIRELESS_DEBUG_IN_USE"));
   }
 
   @Test

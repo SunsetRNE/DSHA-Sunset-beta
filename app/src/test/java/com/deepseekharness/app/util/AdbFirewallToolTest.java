@@ -38,7 +38,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void resolvePrefersTheShortestWaitThatWorks() {
+  public void resolvePrefersTheShortestWaitThatWorks() throws Exception {
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, new Fake(List.of("-w", "2")));
     assertTrue(resolved.ok());
     assertEquals(List.of("-w", "2"), resolved.form.wait);
@@ -49,7 +49,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void resolveFallsBackWhenSecondsFormIsRejected() {
+  public void resolveFallsBackWhenSecondsFormIsRejected() throws Exception {
     Fake fake = new Fake(List.of("-w"));
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
     assertTrue(resolved.ok());
@@ -61,7 +61,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void resolveFallsBackToNoWaitUntilNothingIsLeft() {
+  public void resolveFallsBackToNoWaitUntilNothingIsLeft() throws Exception {
     Fake fake = new Fake(List.of());
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
     assertTrue(resolved.ok());
@@ -71,7 +71,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void everyFormFailingKeepsTheCommandExitCodeAndFirstLine() {
+  public void everyFormFailingKeepsTheCommandExitCodeAndFirstLine() throws Exception {
     Fake fake = new Fake(List.of("never"));
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
     assertFalse(resolved.ok());
@@ -82,7 +82,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void unknownOutcomeStopsInsteadOfTryingAnotherForm() {
+  public void unknownOutcomeStopsInsteadOfTryingAnotherForm() throws Exception {
     // 第一次调用就是未知结果：不能再换形式重放。
     Fake fake = new Fake(List.of("-w"), true);
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, fake);
@@ -119,7 +119,7 @@ public final class AdbFirewallToolTest {
   }
 
   @Test
-  public void formCommandPrefixesTheResolvedWaitForm() {
+  public void formCommandPrefixesTheResolvedWaitForm() throws Exception {
     AdbFirewallTool.Resolved resolved = AdbFirewallTool.resolve(TOOL, new Fake(List.of("-w")));
     List<String> insert = resolved.form.command("-I", "INPUT", "1", "-j", "DROP");
     assertEquals(List.of(TOOL, "-w", "-I", "INPUT", "1", "-j", "DROP"), insert);

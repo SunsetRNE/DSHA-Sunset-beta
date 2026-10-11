@@ -84,19 +84,17 @@ public final class ShizukuShell {
         + (failure.isEmpty() ? "" : ",error=" + failure);
   }
 
+  /** 最近一次连接失败原因；供统一授权快照读取，不暴露 Binder 细节。 */
+  public static String failureReason() {
+    return failure;
+  }
+
   public static String userStatus(Context ctx) {
-    if (!isAvailable())
-      return isInstalled(ctx)
-          ? com.deepseekharness.app.util.UiText.text(
-              "管理器已安装，服务尚未连接。点击授权重新连接；若仍未连接，请启动管理器服务，并检查隐藏模式是否允许 DSHA。")
-          : com.deepseekharness.app.util.UiText.text("尚未安装 Shizuku。安装并启动后可在这里授权。");
-    if (!hasPermission())
-      return com.deepseekharness.app.util.UiText.text("服务已连接，尚未授权 DSHA。点击下方授权。");
-    if (isReady())
-      return com.deepseekharness.app.util.UiText.text("已授权 · 设备 Shell 已连接，可直接使用，无需 ADB 配对");
-    if (!failure.isEmpty())
-      return com.deepseekharness.app.util.UiText.format("已授权，连接失败：%s。点击下方重试。", failure);
-    return com.deepseekharness.app.util.UiText.text("已授权，正在连接设备 Shell…");
+    // 判定与措辞都在 util/ShizukuStatus 里，有专属单测；这里只提供真实观测。
+    return com.deepseekharness.app.util.ShizukuStatus.describe(
+        com.deepseekharness.app.util.ShizukuStatus.level(
+            isAvailable(), isInstalled(ctx), hasPermission(), isReady(), failure),
+        failure);
   }
 
   public static void requestPermission(Shizuku.OnRequestPermissionResultListener callback) {

@@ -5,6 +5,8 @@ import android.system.Os;
 import android.system.OsConstants;
 import android.system.StructStat;
 import com.deepseekharness.app.util.AdbAuthorizedKeys;
+import com.deepseekharness.app.util.AdbBootstrapEngine;
+import com.deepseekharness.app.util.AdbKeyTablePreflight;
 import com.deepseekharness.app.util.SelfPackageIdentity;
 import java.io.*;
 import java.nio.channels.FileLock;
@@ -97,7 +99,63 @@ final class RootBootstrapFiles implements AutoCloseable, RootBootstrapExecutor.S
 
   public byte[] keys() throws Exception {
     trustedDirectory("/data/misc/adb", false);
-    return read(KEYS, AdbAuthorizedKeys.MAX_TABLE_BYTES, -1);
+    try {
+      return read(KEYS, AdbAuthorizedKeys.MAX_TABLE_BYTES, -1);
+    } catch (android.system.ErrnoException missing) {
+      // 明确区分「表不存在」与其它 I/O：不能把所有读取异常都当成空表。
+      if (missing.errno == OsConstants.ENOENT)
+        throw new AdbBootstrapEngine.Refused(AdbKeyTablePreflight.MISSING_UNSUPPORTED);
+      throw missing;
+    }
+  }
+
+  /**
+   * D1：首次写入共享授权表之前的无副作用预检。
+   *
+   * <p>只读取事实并判定，不创建、不写入、不改标签；不能安全继续时抛出明确拒绝码，使整次
+   * 动作在防火墙 / 公钥 / 监听写入之前停住。首次建表本身（D2）尚未实现。
+   */
+  public void preflightKeyTable() throws Exception {
+    boolean directoryTrusted = true;
+    try {
+      trustedDirectory("/data/misc/adb", false);
+    } catch (Exception untrusted) {
+      directoryTrusted = false;
+    }
+    boolean present = false;
+    StructStat info = null;
+    try {
+      info = Os.lstat(KEYS);
+      present = true;
+    } catch (android.system.ErrnoException problem) {
+      if (problem.errno != OsConstants.ENOENT)
+        throw new AdbBootstrapEngine.Refused("ADB_KEY_TABLE_PERMISSION_UNVERIFIED");
+    }
+    boolean canonical = false;
+    boolean labelReadable = false;
+    if (present) {
+      try {
+        canonical = new File(KEYS).getCanonicalPath().equals(KEYS);
+      } catch (IOException redirected) {
+        canonical = false;
+      }
+      try {
+        labelReadable = RootBootstrapFileLabels.read(KEYS).length > 0;
+      } catch (Exception unavailable) {
+        labelReadable = false;
+      }
+    }
+    String reason =
+        AdbKeyTablePreflight.reason(
+            directoryTrusted,
+            present,
+            present && info != null && OsConstants.S_ISREG(info.st_mode),
+            present && info != null && info.st_nlink == 1,
+            present && info != null && (info.st_uid == 0 || info.st_uid == 1000),
+            present && info != null && (info.st_mode & 0022) == 0,
+            canonical,
+            labelReadable);
+    if (!reason.isEmpty()) throw new AdbBootstrapEngine.Refused(reason);
   }
 
   public void replaceKeys(

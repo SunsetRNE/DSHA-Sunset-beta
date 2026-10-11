@@ -128,6 +128,34 @@ public class DshaApp extends Application
     ShizukuShell.init(this);
     com.deepseekharness.app.ui.ThemeController.apply(this);
     com.deepseekharness.app.core.RuntimeTasks.initialize(this);
+    // 环境维护门禁必须在**任何**入口都生效：只写在 MainActivity.onCreate 里会漏掉
+    // 「任务被系统恢复到别的 Activity / 已有任务回前台 / 克隆或快捷方式打开」这些路径，
+    // 用户看不到维护页、只有退出重开才触发（2026-10-12 实机反馈）。
+    registerActivityLifecycleCallbacks(
+        new android.app.Application.ActivityLifecycleCallbacks() {
+          @Override
+          public void onActivityResumed(android.app.Activity activity) {
+            com.deepseekharness.app.ui.EnvironmentGate.redirectIfNeeded(activity);
+          }
+
+          @Override
+          public void onActivityCreated(android.app.Activity activity, android.os.Bundle state) {}
+
+          @Override
+          public void onActivityStarted(android.app.Activity activity) {}
+
+          @Override
+          public void onActivityPaused(android.app.Activity activity) {}
+
+          @Override
+          public void onActivityStopped(android.app.Activity activity) {}
+
+          @Override
+          public void onActivitySaveInstanceState(android.app.Activity activity, android.os.Bundle state) {}
+
+          @Override
+          public void onActivityDestroyed(android.app.Activity activity) {}
+        });
     final android.content.Context runtimeApp = getApplicationContext();
     runtimeHostPorts.install(
         new com.deepseekharness.app.runtime.RuntimeHostPorts.Provider() {

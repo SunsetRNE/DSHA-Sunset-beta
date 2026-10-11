@@ -19,6 +19,9 @@ import org.json.JSONObject;
 
 /** 应用级单飞控制器。仅保存 Application 与结构化结果，页面销毁不会取消或重放设备动作。 */
 public final class AdbBootstrapController {
+  /** 会话核验前的固定等待（毫秒）：只延后时点，不增加核验次数（ADR 0007 方案 C）。 */
+  private static final long SESSION_SETTLE_MS = 2500L;
+
   private static AdbBootstrapController instance;
   private final Context app;
   private final SharedPreferences records;
@@ -33,10 +36,10 @@ public final class AdbBootstrapController {
   private volatile Snapshot current;
   private volatile boolean rootRequestSent;
   private volatile boolean unresolved;
-  /** 一键自举剩余动作；固定顺序，不重排、不重放。 */
-  private final java.util.ArrayDeque<AdbBootstrapPolicy.Action> chain =
-      new java.util.ArrayDeque<>();
-  private volatile boolean chainActive;
+  /** 本轮进程内的保守互斥拦截；持久化失败时仍生效（F02）。 */
+  private volatile boolean wirelessReopenLatched;
+  /** 一键自举链的状态机：当前步骤 / 剩余步骤 / 最初确认的总开关意图（F01/F04）。 */
+  private final AdbBootstrapChainSession session = new AdbBootstrapChainSession();
 
   public static final class Snapshot {
     public final boolean busy;
@@ -103,13 +106,79 @@ public final class AdbBootstrapController {
    *
    * <p>自举与无线调试互斥：自举会拒绝接管系统的 ADB TLS 入口，而保活每次探活失败都想把
    * 无线调试打开。两者同时生效就会出现「用户刚关掉、应用又开回来」的死循环，所以这里在
-   * 自举执行期间、以及最近一次结果正因无线调试被拒时，明确拦住保活的重开动作。
-   * 用户任何后续动作（只读刷新、重跑自举、成功或其它失败）都会换掉这个结果，拦停自然解除。
+   * 自举执行期间、最近一次结果正因无线调试被拒时，**以及上次结果尚未确认时**，明确拦住
+   * 保活的重开动作。
+   *
+   * <p>实机踩过（2026-10-11）：自举链在最后一步以「结果未知」收场后，链里已经打开了 ADB
+   * 通道，保活随即探活失败、把用户刚关掉的无线调试又打开 —— 下一次自举必然被
+   * `WIRELESS_DEBUG_IN_USE` 拒绝。未确认的结果同样属于"不该动设备状态"的窗口。
+   *
+   * <p>解除条件：用户显式只读刷新（STATUS）把结果确认下来，或重跑自举。
    */
   public boolean blocksWirelessReopen() {
-    if (running.get() || chainActive) return true;
-    Snapshot latest = current;
-    return latest != null && "WIRELESS_DEBUG_IN_USE".equals(latest.detail);
+    return WirelessReopenPolicy.blocked(
+        running.get() || session.active(),
+        session.active(),
+        unresolved,
+        records.getString("bootstrap_last_code", ""),
+        wirelessReopenLatched || persistedReopenBlock());
+  }
+
+  /**
+   * 无副作用判据，供开机 / 覆盖升级广播使用。
+   *
+   * <p>进程可能是刚起来的：控制器实例只用持久记录恢复保守意图，不申请 Root、不执行自举、
+   * 也不在广播里补做任何设备写动作。
+   */
+  public static boolean wirelessReopenBlocked(Context context) {
+    return get(context).blocksWirelessReopen();
+  }
+
+  /**
+   * 持久互斥意图：旧数据没有显式记录时，按「是否真的确认过自举动作」保守迁移。
+   *
+   * <p>只读刷新（STATUS）不写设备、不需要无线调试关闭，因此不构成自举选择；只有
+   * AUTHORIZE / NARROW / OPEN 这类会改设备状态的确认才算。
+   */
+  private boolean persistedReopenBlock() {
+    // 显式记录优先；旧数据按「确认过哪个动作」保守迁移（判据与测试都在 util 里）。
+    return WirelessReopenPolicy.persistedBlock(
+        records.contains("wireless_reopen_block"),
+        records.getBoolean("wireless_reopen_block", true),
+        records.getString("bootstrap_action", ""));
+  }
+
+  /** 自举确认时先持久化「本轮选择自举」的保守意图；持久化失败也保持内存拦截。 */
+  private void markBootstrapChosen() {
+    wirelessReopenLatched = true;
+    try {
+      records
+          .edit()
+          .putBoolean("wireless_reopen_block", true)
+          .putBoolean("wireless_reopen_clean", false)
+          .commit();
+    } catch (RuntimeException unavailable) {
+      // 内存拦截已生效；下次确认会再尝试持久化。
+    }
+  }
+
+  /**
+   * 用户明确选择了别的使用模式（打开 ADB 全局授权、完成无线配对）。
+   *
+   * <p>只有在已经拿到**可信清理结果**时才解除互斥；否则保持禁止并提示显式观察。
+   */
+  public boolean onUserModeChosen() {
+    boolean clean = records.getBoolean("wireless_reopen_clean", false);
+    if (!WirelessReopenPolicy.releasable(unresolved, clean, true)) return false;
+    try {
+      if (records.edit().putBoolean("wireless_reopen_block", false).commit()) {
+        wirelessReopenLatched = false;
+        return true;
+      }
+    } catch (RuntimeException unavailable) {
+      // 保持拦截。
+    }
+    return false;
   }
 
   public Snapshot snapshot() {
@@ -118,7 +187,17 @@ public final class AdbBootstrapController {
 
   /** busy 时拒绝排队；不会把旧页面操作留到授权变化后才执行。 */
   public boolean submit(AdbBootstrapPolicy.Action action) {
-    if (action == null || !running.compareAndSet(false, true)) return false;
+    return submit(action, false);
+  }
+
+  /**
+   * @param fromChain 该动作属于在途的整链；链进行中只接受链自己的下一步，外部动作不能
+   *     趁步骤之间的空档插入并改变归属（F01/F04）。
+   */
+  private boolean submit(AdbBootstrapPolicy.Action action, boolean fromChain) {
+    // 链进行中只接受链自己的当前步骤；外部动作不能趁步骤之间的空档插入（F01/F04）。
+    if (!session.accepts(action, fromChain)) return false;
+    if (!running.compareAndSet(false, true)) return false;
     RootBootstrapAuthority prepared = null;
     boolean submitted = false;
     try {
@@ -128,6 +207,10 @@ public final class AdbBootstrapController {
         return false;
       }
       prepared = new RootBootstrapAuthority(app, action, "");
+      // 单动作各自捕获总开关用户意图；链内步进沿用最初确认，不能借新票据复活旧链。
+      if (!fromChain) session.captureStandalone(AdbSwitch.revision(app));
+      // 选择自举 = 本轮禁止自动重开无线调试；先落盘，进程死亡/升级后判据仍保守。
+      if (RootBootstrapAuthority.needsBootstrap(action)) markBootstrapChosen();
       if (!records
           .edit()
           .putBoolean("bootstrap_request_pending", true)
@@ -178,7 +261,7 @@ public final class AdbBootstrapController {
    * 保留该步现场并要求先只读刷新，不自动重试。三步全部成功才自动打开 ADB 设备通道。
    */
   public boolean submitBootstrapChain() {
-    if (running.get()) return false;
+    if (running.get() || session.active()) return false;
     if (unresolved) return false;
     if (!RootBootstrapAuthority.allowed(app, AdbBootstrapPolicy.Action.AUTHORIZE)
         || !RootShell.present()) {
@@ -186,24 +269,23 @@ public final class AdbBootstrapController {
           unknown(AdbBootstrapPolicy.Action.AUTHORIZE, "REFUSED", "NATIVE_GRANT_OR_SU_UNAVAILABLE");
       return false;
     }
-    chain.clear();
-    chain.add(AdbBootstrapPolicy.Action.NARROW);
-    chain.add(AdbBootstrapPolicy.Action.OPEN);
-    chainActive = true;
-    if (submit(AdbBootstrapPolicy.Action.AUTHORIZE)) return true;
-    chainActive = false;
-    chain.clear();
+    // 整链只捕获一次总开关用户意图：步骤之间用户改过开关，后面的步骤也不能把它写回来。
+    session.start(AdbSwitch.revision(app));
+    if (submit(AdbBootstrapPolicy.Action.AUTHORIZE, true)) return true;
+    session.end();
     return false;
   }
 
   /** 链是否正在执行；UI 据此显示进度而不是逐次确认。 */
   public boolean chaining() {
-    return chainActive;
+    return session.active();
   }
 
   private void perform(AdbBootstrapPolicy.Action action, RootBootstrapAuthority authority) {
     rootRequestSent = false;
     Snapshot result;
+    // 可信响应只在解析成功后存在；异常路径保持 null，屏障按旧的结果码判据处理。
+    AdbBootstrapReply reply = null;
     try (RootBootstrapAuthority lease = authority) {
       // 公钥读取/准备与环境维护共用任务凭据；清理不依赖 Ubuntu 环境仍健康。
       String output =
@@ -211,33 +293,20 @@ public final class AdbBootstrapController {
               ? AdbBridge.runEnvironmentTask(
                   app, "root-adb-bootstrap", () -> execute(action, clientPublicKey(action), lease))
               : execute(action, "", lease);
-      RootSupportProbe probe = RootSupportProbe.parse(output);
-      JSONObject reply;
-      try {
-        reply = new JSONObject(probe.body);
-      } catch (org.json.JSONException unparseable) {
-        // 特权进程返回的不是自举 JSON（例如 [ROOT_EXEC_FAILED] / [POLICY_BLOCKED] /
-        // [EXECUTION_UNKNOWN]）：以前这里只剩一个 REQUEST_OUTCOME_UNKNOWN，看不出原因。
-        throw new AdbBootstrapEngine.BootstrapFailure(
-            "RESULT_UNPARSEABLE", AdbFirewallTool.head(output == null ? "" : output));
-      }
-      String outcome = reply.getString("status");
-      if (!(outcome.equals("OK") && probe.exitCode == 0
-          || outcome.equals("REFUSED") && probe.exitCode == 126
-          || outcome.equals("UNKNOWN") && probe.exitCode == 125
-          || outcome.equals("FAILED") && probe.exitCode == 125))
-        throw new AdbBootstrapEngine.BootstrapFailure(
-            "RESULT_PROTOCOL_INVALID", AdbFirewallTool.head(output == null ? "" : output));
+      // 生产响应编码/解码与完成判据都在 AdbBootstrapReply 接缝里；这里不另写一套判断。
+      reply = AdbBootstrapReply.parse(output);
+      if (!reply.trusted)
+        throw new AdbBootstrapEngine.BootstrapFailure(reply.code, reply.evidence);
       result =
           new Snapshot(
               false,
               action,
-              outcome,
-              reply.getString("code"),
-              reply.getString("keyState"),
-              reply.getString("listenerState"),
-              reply.getString("guardState"),
-              reply.optString("evidence", ""),
+              reply.status,
+              reply.code,
+              reply.keyState,
+              reply.listenerState,
+              reply.guardState,
+              reply.evidence,
               System.currentTimeMillis());
       // 诊断页也留一份：设备上出问题时不必再让它复现一次。
       if (!result.evidence.isEmpty())
@@ -248,10 +317,13 @@ public final class AdbBootstrapController {
       // 不能由异常推断“未执行”；保留未知并要求显式刷新/清理。
       String code = error.getMessage();
       if (code == null || !code.matches("[A-Z0-9_]{1,96}")) code = "REQUEST_OUTCOME_UNKNOWN";
+      // 没有可识别错误码时，**必须**把异常原文留下来：否则界面只剩一个 REQUEST_OUTCOME_UNKNOWN，
+      // 既看不到原因，也没有「查看失败原文」可点（实机踩过：环境任务进行中时点了自举）。
       String evidence =
           error instanceof AdbBootstrapEngine.BootstrapFailure
               ? ((AdbBootstrapEngine.BootstrapFailure) error).evidence
-              : "";
+              : AdbFirewallTool.head(
+                  com.deepseekharness.app.util.SensitiveData.redact(String.valueOf(error)));
       result =
           new Snapshot(
               false,
@@ -264,15 +336,12 @@ public final class AdbBootstrapController {
               evidence,
               0);
     }
+    boolean persisted = false;
     try {
+      // 只有可信响应确认两个未决阶段都已结束、观测完整，才允许解除屏障。
       unresolved =
           AdbBootstrapJournal.unresolved(
-              unresolved,
-              result.outcome,
-              result.detail,
-              result.keyState,
-              result.listenerState,
-              result.guardState);
+              unresolved, reply, result.outcome, result.detail);
       boolean saved =
           records
               .edit()
@@ -281,42 +350,103 @@ public final class AdbBootstrapController {
               .putString("bootstrap_last_code", result.detail)
               .commit();
       if (!saved) unresolved = true;
+      persisted = saved;
       current = saved ? result : unknown(action, "UNKNOWN", "RESULT_RECORD_FAILED");
+      result = current;
+      // 可信清理结果（两阶段都已结束、观测完整）单独记录：它是解除互斥的必要条件之一，
+      // 但只有用户明确选择别的使用模式时才真正解除。
+      if (saved
+          && !unresolved
+          && reply != null
+          && reply.pendingCleared()
+          && reply.observationComplete()) {
+        try {
+          records.edit().putBoolean("wireless_reopen_clean", true).commit();
+        } catch (RuntimeException unavailable) {
+          // 清理证据没记上只是保守；主结果不受影响。
+        }
+      }
     } catch (Throwable failure) {
       unresolved = true;
       current = unknown(action, "UNKNOWN", "RESULT_RECORD_FAILED");
+      result = current;
     } finally {
       running.set(false);
-      advanceChain(result);
+      // 续链只看**已持久化**的有效结果：保存失败时 persisted=false，链不会继续。
+      advanceChain(persisted, result);
     }
   }
 
   /**
-   * 一键自举的下一步：仅当当前步成功、且仍有待执行动作时继续。
+   * 一键自举的下一步：仅当当前步成功、结果已持久化、未决已清、用户意图未变，且下一步真的
+   * 被受理时才继续。
    *
-   * <p>失败、未知或授权变化都终止整条链并清空队列，不重放、不换通道；
-   * 只有三步全部成功才自动打开 ADB 设备通道，使自举结果真正可用。
+   * <p>失败、未知、未决未清、意图改变或提交被拒都终止整条链并清空队列，不重放、不换通道。
+   * 下一步在决定之前**不取出**：旧实现先取走再用「队列为空」判成功，提交失败会被报告成
+   * 整链成功（F04）。自动打开 ADB 设备通道已在 OPEN 步骤内完成，这里不再重复写开关。
    */
-  private void advanceChain(Snapshot result) {
-    if (!chainActive) return;
-    boolean ok = result != null && "OK".equals(result.outcome);
-    if (ok && !chain.isEmpty() && submit(chain.poll())) return;
-    boolean completed = ok && chain.isEmpty();
-    chainActive = false;
-    chain.clear();
-    if (completed) enableAdbChannel();
+  private void advanceChain(boolean persisted, Snapshot result) {
+    if (!session.active()) return;
+    boolean ok =
+        persisted && result != null && "OK".equals(result.outcome) && !unresolved;
+    boolean nextExists = session.hasNext();
+    // 每次派发下一步**之前**回查最初确认的总开关意图：用户在步骤之间关闭或重新选择后，
+    // 旧链不再获得任何新的设备写入（F01）。
+    boolean intentUnchanged =
+        AdbBootstrapChainPlan.autoEnableAllowed(session.intentRevision(), AdbSwitch.revision(app));
+    AdbBootstrapPolicy.Action next = nextExists ? session.remaining().get(0) : null;
+    boolean accepted = ok && nextExists && intentUnchanged && session.beginNext() && submit(next, true);
+    AdbBootstrapChainPlan.Outcome outcome =
+        AdbBootstrapChainPlan.after(session.active(), ok, intentUnchanged, nextExists, accepted);
+    if (outcome == AdbBootstrapChainPlan.Outcome.CONTINUE) return;
+    if (outcome == AdbBootstrapChainPlan.Outcome.ABORT
+        && ok
+        && nextExists
+        && !intentUnchanged) {
+      // 链停在中间状态：保留上一步的观测，但把结果标成未知并说明原因，
+      // 而不是让卡片继续显示上一个「已完成」。
+      unresolved = true;
+      current =
+          new Snapshot(
+              false,
+              result.action,
+              "UNKNOWN",
+              "ADB_SWITCH_INTENT_CHANGED",
+              result.keyState,
+              result.listenerState,
+              result.guardState,
+              result.evidence,
+              result.observedAt);
+      try {
+        records
+            .edit()
+            .putBoolean("bootstrap_request_pending", true)
+            .putString("bootstrap_last_outcome", "UNKNOWN")
+            .putString("bootstrap_last_code", "ADB_SWITCH_INTENT_CHANGED")
+            .commit();
+      } catch (RuntimeException unavailable) {
+        // 内存里的屏障已经立起来。
+      }
+    }
+    session.end();
   }
 
-  /** 自举成功后自动开启 ADB 设备通道；失败保持关闭，交由用户按需处理。 */
-  private void enableAdbChannel() {
+  /**
+   * 自举成功后自动开启 ADB 设备通道。
+   *
+   * <p>只有最初确认捕获的总开关用户意图仍然有效时才能提交：用户在途中的关闭或重新选择
+   * 都会改变意图代次，旧完成回调不得把它反转回来（F01）。被拒时返回 false，由调用方
+   * 明确报告，不静默吞掉 commit 结果。
+   */
+  private boolean enableAdbChannel() {
     try {
-      app.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE)
-          .edit()
-          .putBoolean("adb_enabled", true)
-          .commit();
+      if (!AdbSwitch.autoEnable(app, session.intentRevision())) return false;
+      // 服务启动前再读真实开关：写值与启动服务之间的用户关闭优先。
       DeviceBridgeService.apply(app);
+      return true;
     } catch (RuntimeException unavailable) {
       // 自举结果已经落盘；通道开启失败不改变本次结论，也不重放设备动作。
+      return false;
     }
   }
 
@@ -332,7 +462,15 @@ public final class AdbBootstrapController {
         // 监听已确认打开。桥只对「已开启的 ADB 通道」下发 ADB 计划，而「三步全成功才开启」
         // 的顺序会让这里的会话核验永远拿不到计划（实机返回 [DEVICE_CHANNEL_UNAVAILABLE]）。
         // 因此先开启通道再核验；核验失败时保留开关与监听，由卡片提示刷新或按需关闭。
-        enableAdbChannel();
+        // 用户在途中关过总开关时这里会失败：不能反转用户意图，也**不能**把整链报成成功。
+        if (!enableAdbChannel())
+          throw new AdbBootstrapEngine.BootstrapFailure(
+              "ADB_SWITCH_INTENT_CHANGED",
+              "监听已确认打开；但用户已关闭 ADB 总开关，本次不再自动启用通道。");
+        // C（ADR 0007）：刚写完 adb_keys，adbd/系统侧可能还没读到新公钥，而核验按设计**只做一次**。
+        // 所以把核验时点后移一个固定短延时 —— 次数仍是 1 次，不轮询、不重试、不换端点、不换通道。
+        settleBeforeSessionVerify();
+        if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
         String session = AdbBridge.verifyBootstrap(HarnessController.get(app).proot());
         if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
         RootSupportProbe identity = RootSupportProbe.parse(session);
@@ -350,6 +488,16 @@ public final class AdbBootstrapController {
       }
       return output;
     }
+  }
+
+  /**
+   * 会话核验前的固定等待（ADR 0007 方案 C）。
+   *
+   * <p>只为让刚写入的公钥有机会被 adbd / 系统侧看到；**不轮询、不重试**，等待结束后仍然只核验一次。
+   * 被中断（页面/进程要求停止）时按打断处理，由上层保留现场。
+   */
+  private static void settleBeforeSessionVerify() throws InterruptedException {
+    Thread.sleep(SESSION_SETTLE_MS);
   }
 
   private String clientPublicKey(AdbBootstrapPolicy.Action action) throws Exception {

@@ -1,0 +1,24 @@
+# ADB 全局授权 · 设备侧观测（2026-10-11 16:3x-16:4x，主包 com.dsh.client 容器内取证）
+
+$ adb-shell settings get global adb_wifi_enabled
+1
+
+$ adb-shell getprop service.adb.tcp.port
+5555
+
+$ adb-shell cat /data/misc/adb/adb_keys        # 2 行
+QAAAAF3Mm3s...MkEAAQA= unknown@localhost
+QAAAABFgC5cP...cQEAAQA= dsha:com.dsh.clienu.SunsetRNE     <- 上一轮自举写入的本应用公钥
+
+$ adb-shell cat /proc/net/tcp6 | grep 15B3
+0: 00000000000000000000000000000000:15B3 ... 0A ... uid 0     <- [::]:5555 LISTEN
+
+$ python3 /root/.dsh/adb-shell.py --host 127.0.0.1 --port 5555 id
+uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),
+  1028(sdcard_r),1078(ext_data_rw),1079(ext_obb_rw),3001(net_bt_admin),3002(net_bt),
+  3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid),3012(readtracefs) context=u:r:ksu:s0
+[EXIT=0]
+
+# 结论：ADB 全局授权**已实际生效** —— 走 127.0.0.1:5555 的 ADB 客户端拿到 shell，
+# 且该设备 adbd 以 uid 0 运行（KSU 环境），因此返回 uid=0。daemon UID 0 ≠ 所有会话同权
+# （沿用既有审计的限定）。

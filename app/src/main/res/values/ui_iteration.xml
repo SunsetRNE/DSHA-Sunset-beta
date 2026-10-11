@@ -127,6 +127,13 @@
     <string name="ui2_device_grants">设备能力授权</string>
     <string name="ui2_grants_sub">按需开启。普通对话和终端不依赖设备控制授权。</string>
     <string name="ui2_device_channels">设备执行通道</string>
+    <string name="ui2_device_auth">设备命令授权</string>
+    <string name="device_auth_adb_title">ADB 全局授权</string>
+    <string name="device_auth_root_title">Root 授权（独立）</string>
+    <string name="device_auth_self">① App 自举（推荐，免配对）</string>
+    <string name="device_auth_system">② 系统调试授权</string>
+    <string name="device_auth_root">③ Root（独立权威）</string>
+    <string name="device_auth_shizuku">④ Shizuku（中间层：来源 = ADB / Root）</string>
     <string name="ui2_system_permissions">系统权限</string>
     <string name="ui2_sensitive">独立敏感能力</string>
 

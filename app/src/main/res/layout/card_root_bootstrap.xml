@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/root_bootstrap_card" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp">
+  <TextView android:id="@+id/root_bootstrap_title" style="@style/DshaText.Title" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" />
+  <TextView android:id="@+id/root_bootstrap_hint" style="@style/DshaText.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/root_bootstrap_allowed" style="@style/DshaText.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:paddingStart="0dp" android:paddingTop="6dp" android:paddingBottom="6dp" android:layout_marginTop="8dp" />
+  <TextView android:id="@+id/root_bootstrap_grant_state" style="@style/DshaText.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <TextView android:id="@+id/root_bootstrap_requirements" style="@style/DshaText.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <Button android:id="@+id/root_bootstrap_all" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" />
+  <TextView android:id="@+id/root_bootstrap_outcome" style="@style/DshaText.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="12dp" android:padding="12dp" android:background="@drawable/bg_selection" />
+  <TextView android:id="@+id/root_bootstrap_observed" style="@style/DshaText.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <TextView android:id="@+id/root_bootstrap_key_state" style="@style/DshaText.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <TextView android:id="@+id/root_bootstrap_listener_state" style="@style/DshaText.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="4dp" />
+  <TextView android:id="@+id/root_bootstrap_guard_state" style="@style/DshaText.Label" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="4dp" />
+  <TextView android:id="@+id/root_bootstrap_detail" style="@style/DshaText.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" android:textIsSelectable="true" />
+  <Button android:id="@+id/root_bootstrap_dev_options" style="@style/Widget.DSHA.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:visibility="gone" />
+  <Button android:id="@+id/root_bootstrap_evidence" style="@style/Widget.DSHA.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:visibility="gone" />
+  <TextView android:id="@+id/root_bootstrap_cleanup" style="@style/DshaText.Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:includeFontPadding="false" android:layout_marginTop="8dp" />
+  <Button android:id="@+id/root_bootstrap_advanced_toggle" style="@style/Widget.DSHA.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+  <LinearLayout android:id="@+id/root_bootstrap_advanced" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+    <Button android:id="@+id/root_bootstrap_status" style="@style/Widget.DSHA.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
+    <Button android:id="@+id/root_bootstrap_authorize" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+    <Button android:id="@+id/root_bootstrap_narrow" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+    <Button android:id="@+id/root_bootstrap_open" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+    <Button android:id="@+id/root_bootstrap_close" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+    <Button android:id="@+id/root_bootstrap_revoke" style="@style/Widget.DSHA.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" />
+  </LinearLayout>
+</LinearLayout>

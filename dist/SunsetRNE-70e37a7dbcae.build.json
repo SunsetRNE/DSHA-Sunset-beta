@@ -1,0 +1,47 @@
+{
+  "builtAt": "2026-10-10T21:25:08+08:00",
+  "workflow": ".github/workflows/ci-apk-sunsetrne.yml",
+  "mode": "local reproduction, no GitHub run or upload",
+  "task": ":app:assembleStandardDebug",
+  "result": "BUILD SUCCESSFUL",
+  "gradleDuration": "2m 40s",
+  "applicationId": "com.dsh.clienu.SunsetRNE",
+  "versionCode": 162,
+  "versionName": "0.2.13-20261007.1000-dsh0.2.0-rc.2",
+  "variant": "standardDebug",
+  "debuggable": true,
+  "minSdk": 30,
+  "targetSdk": 37,
+  "abis": [
+    "arm64-v8a"
+  ],
+  "file": "dist/SunsetRNE-70e37a7dbcae.apk",
+  "bytes": 25770570,
+  "sha256": "121a1a82ead94edbbadc13a3c43a351b1ef9519ceebf1a34b990a143edf474ca",
+  "certificateSha256": "db1fb87a1299746de54d9b06acdea4c48c4c0eec2d0413924542f9ad0ef2cf35",
+  "signature": "AGP default Android Debug; APK Signature Scheme v2 verified",
+  "offlineBundlesIncluded": false,
+  "rootBootstrapClassesVerified": [
+    "Lcom/deepseekharness/app/RootBootstrapAuthority;",
+    "Lcom/deepseekharness/app/RootBootstrapExecutor;",
+    "Lcom/deepseekharness/app/RootBootstrapNative;",
+    "Lcom/deepseekharness/app/core/AdbBootstrapController;",
+    "Lcom/deepseekharness/app/ui/RootBootstrapCard;"
+  ],
+  "head": "70e37a7dbcae83b32fc92a8a37b33af88befc0e0",
+  "sourceIncludesUncommittedChanges": true,
+  "sourceConfigUnchanged": true,
+  "installedOnDevice": false,
+  "buildLog": "app/build/sunsetrne-local-20261010/build.log",
+  "localInitScript": "app/build/sunsetrne-local-20261010/local.init.gradle",
+  "excludedTasks": [
+    ":app:prepareStandardAssets",
+    ":app:prepareRecoveryAssets"
+  ],
+  "hostAdaptations": [
+    "JDK 17.0.20.1 / Gradle 9.3.1 / SDK 37.0",
+    "arm64 aapt2 override",
+    "existing AIDL equivalent-source shim",
+    "prebuilt native libraries kept unstripped where strip unavailable"
+  ]
+}

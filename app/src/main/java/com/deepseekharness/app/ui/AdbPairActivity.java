@@ -145,10 +145,9 @@ public class AdbPairActivity extends androidx.appcompat.app.AppCompatActivity {
     root.findViewById(com.deepseekharness.app.R.id.adb_pair_disconnect)
         .setOnClickListener(
             v -> {
-              getSharedPreferences(com.deepseekharness.app.util.Constants.PREFS, 0)
-                  .edit()
-                  .putBoolean("adb_enabled", false)
-                  .apply();
+              // 用户的显式关闭：走唯一受管写入口，递增意图代次，使在途自举的自动启用失效。
+              com.deepseekharness.app.core.AdbSwitch.userSet(
+                  getApplicationContext(), false);
               stopService(new Intent(this, DeviceBridgeService.class));
               model.message(
                   com.deepseekharness.app.util.UiText.choose(
@@ -397,8 +396,8 @@ public class AdbPairActivity extends androidx.appcompat.app.AppCompatActivity {
           watchEpoch++;
           DshaAccessibilityService.stopWatch();
           String detail = com.deepseekharness.app.util.UiText.text("无线调试已关闭，请先开启");
-          DeviceBridgeService.adbDetail = detail;
-          DeviceBridgeService.adbState = "need_manual";
+          // 设备通道状态只由 DeviceBridgeService 自己的受守卫 setter 发布：服务未运行或已停止时
+          // 这里直接写静态字段会留下一条没人维护的假状态（历史缺陷）。
           status.setValue(detail);
           return;
         }
@@ -441,10 +440,7 @@ public class AdbPairActivity extends androidx.appcompat.app.AppCompatActivity {
                               : com.deepseekharness.app.util.UiText.text("ADB 配对完整任务"),
                           () -> perform(verify, value, pp, cp, selectedHost, offlineOnly));
                 } catch (AdbEnvironmentTask.Busy e) {
-                  if (!cleared) {
-                    DeviceBridgeService.adbDetail = e.getMessage();
-                    DeviceBridgeService.adbState = "environment_busy";
-                  }
+                  // 忙状态由服务自己发布（它带实例防重入校验）；页面只显示本次结果。
                   result = "ENVIRONMENT_BUSY: " + e.getMessage();
                 } catch (Throwable e) {
                   result =
@@ -494,8 +490,7 @@ public class AdbPairActivity extends androidx.appcompat.app.AppCompatActivity {
           String detail =
               com.deepseekharness.app.util.UiText.text(
                   "ADB_OFFLINE_READY: 离线依赖已准备好，未验证连接。请开启无线调试后再次验证。");
-          DeviceBridgeService.adbDetail = detail;
-          DeviceBridgeService.adbState = "need_manual";
+          // 同上：通道状态由服务发布，页面不越过实例防重入校验写共享状态。
           return new StringBuilder(prep).append('\n').append(detail).toString();
         }
         String address = selectedHost == null ? "" : selectedHost;

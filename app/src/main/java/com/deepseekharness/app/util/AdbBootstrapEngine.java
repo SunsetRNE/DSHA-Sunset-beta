@@ -10,6 +10,14 @@ public final class AdbBootstrapEngine {
 
     void checkPending(AdbBootstrapPolicy.Action action) throws Exception;
 
+    /**
+     * 任何设备写入之前的无副作用预检（F06 / D1）。
+     *
+     * <p>默认无要求；会首次写入共享授权表的适配器在这里区分可信缺失与元数据异常，并在
+     * 平台还不能安全初始化时明确拒绝，保持防火墙 / 公钥 / 监听写入为零。
+     */
+    default void preflight(AdbBootstrapPolicy.Action action) throws Exception {}
+
     void narrow() throws Exception;
 
     void verifyGuard() throws Exception;
@@ -95,6 +103,8 @@ public final class AdbBootstrapEngine {
       if (action == null || host == null) throw new Refused("INVALID_ACTION");
       host.checkGrant(action);
       host.checkPending(action);
+      // D1：预检必须在任何写入之前；它抛出的是「明确拒绝」，不得被当成未知结果。
+      host.preflight(action);
       switch (action) {
         case STATUS -> {}
         case AUTHORIZE -> {

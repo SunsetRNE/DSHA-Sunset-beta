@@ -43,22 +43,48 @@ public class BootReceiver extends BroadcastReceiver {
                 == android.content.pm.PackageManager.PERMISSION_GRANTED;
       } catch (Throwable ignored) {
       }
-      if (hasSecure) {
+      // F02：所有自动开启无线调试的入口共用同一无副作用判据。开机/升级时进程可能是刚起来的，
+      // 判据从持久化的保守互斥意图恢复；被拦住时只在日志里说明，不写系统设置。
+      // 直接启动（LOCKED_BOOT_COMPLETED）下凭据加密存储可能还不可读：读不到本机证据时保守禁止。
+      boolean reopenBlocked;
+      try {
+        reopenBlocked =
+            com.deepseekharness.app.core.AdbBootstrapController.wirelessReopenBlocked(context);
+      } catch (Throwable unavailable) {
+        reopenBlocked = true;
+      }
+      boolean alreadyOn = false;
+      if (hasSecure && !reopenBlocked) {
         try {
-          int cur = Settings.Global.getInt(context.getContentResolver(), "adb_wifi_enabled", 0);
-          if (cur != 1) {
-            Settings.Global.putInt(context.getContentResolver(), "adb_wifi_enabled", 1);
-            android.util.Log.i(
-                "DSHA-ADB",
-                com.deepseekharness.app.util.UiText.text("已自动开启无线调试（WRITE_SECURE_SETTINGS）"));
-          }
+          alreadyOn =
+              Settings.Global.getInt(context.getContentResolver(), "adb_wifi_enabled", 0) == 1;
+        } catch (Throwable unreadable) {
+          alreadyOn = false;
+        }
+      }
+      com.deepseekharness.app.util.WirelessBootAction.Decision decision =
+          com.deepseekharness.app.util.WirelessBootAction.decide(
+              hasSecure, reopenBlocked, alreadyOn);
+      if (com.deepseekharness.app.util.WirelessBootAction.writesSettings(decision)) {
+        try {
+          Settings.Global.putInt(context.getContentResolver(), "adb_wifi_enabled", 1);
+          android.util.Log.i(
+              "DSHA-ADB",
+              com.deepseekharness.app.util.UiText.text("已自动开启无线调试（WRITE_SECURE_SETTINGS）"));
         } catch (Throwable e) {
           android.util.Log.w(
               "DSHA-ADB",
               com.deepseekharness.app.util.UiText.format(
                   "自动开无线调试失败: %s", SensitiveData.redact(String.valueOf(e))));
         }
-      } else {
+      } else if (decision
+          == com.deepseekharness.app.util.WirelessBootAction.Decision.SKIP_MUTEX) {
+        android.util.Log.i(
+            "DSHA-ADB",
+            com.deepseekharness.app.util.UiText.text(
+                "自举互斥意图生效：开机/升级不自动开启无线调试（自举未决或最近一次正因它被拒）"));
+      } else if (decision
+          == com.deepseekharness.app.util.WirelessBootAction.Decision.SKIP_NO_PERMISSION) {
         android.util.Log.i(
             "DSHA-ADB",
             com.deepseekharness.app.util.UiText.text("无 WRITE_SECURE_SETTINGS 权限，靠 Shizuku/看门狗兜底"));

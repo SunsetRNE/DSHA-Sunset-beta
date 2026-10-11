@@ -528,24 +528,35 @@ public final class AdbBridge {
     return execOwned(proot, cmd, 60_000);
   }
 
-  /** 后台探测也使用同一进程回收与环境任务范围。 */
+  /**
+   * 保活 / 自举专用的**强制 ADB** 探活：必须给出本机实际端点。
+   *
+   * <p>不能不带端点：不带端点时容器脚本走普通业务路由（Root → Shizuku → ADB），一次
+   * root 或 Shizuku 成功会被误当成「ADB 已连接」（F05）。带 {@code --host/--port} 时脚本
+   * 只申请 ADB 计划，因此 {@code connected} 只可能来自真实 ADB 握手与该会话的命令结果。
+   * 自举模式用回环 5555（{@link #endpoint}），普通无线模式用已确认 / 发现的本机端点。
+   */
   public static String probe(ProotBootstrap proot, Endpoint endpoint) {
+    if (endpoint == null) return "ADB_ENDPOINT_REQUIRED\n[EXIT=2]";
     return environmentResult(
         proot,
         com.deepseekharness.app.util.UiText.text("ADB 后台探活"),
-        () -> {
-          String options =
-              endpoint == null
-                  ? ""
-                  : " --host " + ShellQuote.arg(endpoint.host) + " --port " + endpoint.port;
-          return execOwned(
-              proot,
-              "python3 /root/.dsh/adb-shell.py"
-                  + " --connect-timeout 20 --timeout 10"
-                  + options
-                  + " id 2>&1",
-              60_000);
-        });
+        () ->
+            execOwned(
+                proot,
+                "python3 /root/.dsh/adb-shell.py"
+                    + " --connect-timeout 20 --timeout 10"
+                    + " --host "
+                    + ShellQuote.arg(endpoint.host)
+                    + " --port "
+                    + endpoint.port
+                    + " id 2>&1",
+                60_000));
+  }
+
+  /** 构造一个本机端点；端点由调用方确认（自举固定回环 5555，无线用已确认端口）。 */
+  public static Endpoint endpoint(String host, int port) {
+    return new Endpoint(host, port);
   }
 
   public static java.util.Set<String> localAddresses() {

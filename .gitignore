@@ -42,3 +42,6 @@ scr_backup.png
 # 本机工具状态与服务器取证，不进入公开仓库
 .zcode/
 website-evidence/
+
+# 本地真机验收取证（截图 / logcat / 临时脚本），不随公开仓库发布
+verify-vscreen/

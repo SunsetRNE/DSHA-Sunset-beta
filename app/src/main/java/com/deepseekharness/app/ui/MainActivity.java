@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
   private boolean pendingOpenWeb;
 
   private String openedRecovery = "";
+  /** 待处理的受管运行时维护；回到前台时探一次，供横幅显示（热启动原本完全看不到）。 */
+  private boolean maintenancePending;
   private final androidx.activity.result.ActivityResultLauncher<String> localNetworkPermission =
       registerForActivityResult(
           new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
@@ -95,13 +97,11 @@ public class MainActivity extends AppCompatActivity {
     }
     boolean limitedAllowed =
         getIntent().getBooleanExtra("limited_entry", false)
-            || config.allowsLimitedEntry(controller.proot().environmentIdentity());
+            || EnvironmentGate.limitedAllowed(this, controller);
+    // 判据与应用级生命周期回调共用同一个 EnvironmentGate，避免两处漂移。
     if (!limitedAllowed
         && (com.deepseekharness.app.core.MaintenanceCoordinator.pending(controller)
-            || !skipExtract
-                && (!controller.isEnvironmentReady()
-                    || com.deepseekharness.app.core.EnvironmentAccess
-                        .requiresMaintenanceBeforeStart(controller)))) {
+            || !skipExtract && EnvironmentGate.blocksEntry(this, controller))) {
       startActivity(new Intent(this, ExtractActivity.class));
       finish();
       return;
@@ -429,6 +429,20 @@ public class MainActivity extends AppCompatActivity {
         .getUiLanguage()
         .equals(com.deepseekharness.app.util.UiText.language())) LanguageController.apply(this);
     recoveryHandler.removeCallbacks(refreshRecovery);
+    // 待处理的受管运行时维护只在「全新创建 MainActivity」时才会跳转到维护页；
+    // 热启动（进程还在、任务还在）会整段跳过，于是用户在主界面既看不到、也进不去。
+    // 这里在回到前台时探一次，让横幅在两种启动方式下都能看见并点进去恢复。
+    try {
+      HarnessController controller = HarnessController.get(this);
+      // 两种"需要维护"都要可见：① 有未完成的事务；② 运行身份与 APK 受管描述不一致（需要更新运行时）。
+      // 旧逻辑只在 onCreate 里判断并跳转，热启动完全看不到（实机反馈）。
+      maintenancePending =
+          com.deepseekharness.app.core.MaintenanceCoordinator.pending(controller)
+              || com.deepseekharness.app.core.EnvironmentAccess.requiresMaintenanceBeforeStart(
+                  controller);
+    } catch (RuntimeException ignored) {
+      maintenancePending = false;
+    }
     recoveryHandler.post(refreshRecovery);
     updateToolbar();
     if (!isFinishing()
@@ -603,12 +617,15 @@ public class MainActivity extends AppCompatActivity {
           boolean limited = EnvironmentUiStatus.get(MainActivity.this).recovery;
           boolean busy =
               com.deepseekharness.app.core.BackupTask.get(MainActivity.this).maintenanceBusy();
+          boolean pending = maintenancePending;
           banner.setVisibility(
-              limited || busy ? android.view.View.VISIBLE : android.view.View.GONE);
+              limited || busy || pending ? android.view.View.VISIBLE : android.view.View.GONE);
           banner.setText(
               busy
                   ? com.deepseekharness.app.util.UiText.text("环境维护进行中 · 点击查看进度")
-                  : com.deepseekharness.app.util.UiText.text("受限模式：环境需要恢复 · 点击处理"));
+                  : pending
+                      ? com.deepseekharness.app.util.UiText.text("环境维护待处理 · 点击处理")
+                      : com.deepseekharness.app.util.UiText.text("受限模式：环境需要恢复 · 点击处理"));
           com.deepseekharness.app.util.BackupTaskState.Snapshot task =
               com.deepseekharness.app.core.BackupTask.get(MainActivity.this).snapshot();
           if (busy && task.busy())

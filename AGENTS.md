@@ -6,6 +6,20 @@ DSHA 的 AI / 新贡献者入口。本文让你不扫全库就能上手 —— �
 
 **build170 当前策略（覆盖下文同项历史说明）**：移动 UI 3.0.5；第三方插件检查后自动提交/启用，允许依赖生命周期脚本和 pnpmfile；新导出为无密码 tar.gz，内部自动副本及旧加密原件读取保留。两版各45项关联检查和 Android13 非破坏性正式包验收范围见[当前发布说明](docs/releases/v0.2.0-rc2-notes.md)与[build170](docs/releases/v0.2.21-build170-20261009.md)。下方目录数量为历史索引，不代表当前源码统计。
 
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues（`DSH-APP/DSHA`，用 `gh` CLI 读写）。See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+triage 五角色沿用默认标签（`needs-triage` / `needs-info` / `ready-for-agent` / `ready-for-human` / `wontfix`），另有 wayfinder 五枚 `wayfinder:*` 标签。See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+single-context（全仓库共用一份根目录 `GLOSSARY.md`，架构决定放 `docs/adr/`）。See `docs/agents/domain.md`.
+
 ---
 
 ## 目录地图（按包，先看这里）
@@ -140,6 +154,7 @@ bash build.sh :app:testStandardDebugUnitTest   # 全量单测
 - **麦克风**：清单同时声明 `RECORD_AUDIO` 与 `MODIFY_AUDIO_SETTINGS`；由 `BrowserMicrophone` 按网页请求申请，不能在普通启动时预授权；只放行当前本机页面的纯音频请求，摄像头 / 屏幕音频拒绝；旧回调不能批准新页。
 - **设备验收经验**：`uiautomator dump` 会抑制其他无障碍服务；截图授权绑定 DSH generation，停止 / 断连 / 撤销后失效；截图存应用私有 Pictures/DSHA，无需所有文件访问；PiP 可能盖住底部控件，自动化必须核对实际可见区域与屏幕方向；截图 / 读屏不可将敏感值写入公开取证文件。
 - **ADB 通道经验**：保持 Root → Shizuku → ADB 的发送前选择，显式 `--host`/`--port` 强制 ADB 计划。daemon UID/域与客户端会话分别取证，固定列捕获须有真实退出码、完整性和 PID 出生身份；不能由 daemon UID 0 推导所有会话同权。属性回显不证明 loopback 绑定，IPv4 规则不证明 IPv6 防护。自举默认关闭、双栈先防护后授权/监听，撤销仅移除本应用拥有的公钥。已接通固定原生命名入口、短期授权与 UI，通用命令白名单不放宽；历史脚本已停用，设备矩阵仍须独立验收；修订设计与本轮验证见 [root 支持评估](docs/audits/root-adb-bringup-20261009/README.md)。**无线调试与自举互斥**：系统无线调试是独立的 ADB TLS 入口，自举按设计拒绝接管（`WIRELESS_DEBUG_IN_USE`），保活在自举期间及刚被拒后不得自动重开它（`AdbBootstrapController.blocksWirelessReopen`）；卡片负责把用户指到开发者选项，改设置仍由用户自己确认。
+- **ADB 自举修复入口**：改授权撤销/续链、未决事务、无线保活、首次建表或自举界面时，先读[审查与修复交接计划](docs/audits/root-adb-bringup-20261009/remediation-plan-20261011.md) §7。**F01–F05、F07、F08 的生产路径已实施（2026-10-11 第二轮）；F06 只完成 D1 前置拒绝，首次建表（D2）未实施。** 判定逻辑都有 `util/` 主机测试，但控制器级并发用例、开机广播写入计数和界面仪器验收仍未交付；不能把主机测试通过或文档修订当成设备验收/代码修复完成。
 - Shizuku 必须注册 `rikka.shizuku.ShizukuProvider`；标准版 13.1.5 / 兼容版 12.2.0（不用 overrideLibrary 掩盖 minSdk 24）。回调严格核对管理器 UID、Binder 描述符、单次请求与超时。
 - 内置移动插件 `dsh-web-mobile` 标 3.0.3，源码固定到 `a094288883b343e848d7f9cf302d73ad8ed4794b`；`tools/apply-mobile-client-patches.mjs` 管理本地差异，不恢复上游已撤回的整批改动；上游已接管的 rc1 导航补丁不要重新套回。
 
@@ -194,6 +209,7 @@ bash build.sh :app:testStandardDebugUnitTest   # 全量单测
 |---|---|
 | [BUILD.md](BUILD.md) | 环境（JDK 17 / SDK 37 / NDK 26 / Python 3.9+）、构建、签名与发布交付流程 |
 | [docs/security-model.md](docs/security-model.md) | 安全模型与已知弱点 |
+| [docs/environment-maintenance.md](docs/environment-maintenance.md) | 环境维护（受管运行时更新）：触发条件、四阶段、冷/热启动可见性、处置表 |
 | [docs/plugins.md](docs/plugins.md) | 插件安装、打包契约与验证范围 |
 | [docs/android-low.md](docs/android-low.md) | Low 版兼容差异（API 23 重编、desugaring、老系统权限） |
 | [docs/releases/](docs/releases/) | 各版本发布说明与真机验收记录（新版本验收写这里） |

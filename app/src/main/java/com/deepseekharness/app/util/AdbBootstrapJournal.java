@@ -27,7 +27,22 @@ public final class AdbBootstrapJournal {
           "revokeStarted",
           "revokeBoot");
 
+  /** 网络事务允许的未决阶段；与公钥事务分开表达，互不覆盖。 */
+  public static final Set<String> NETWORK_PHASES =
+      Set.of("", "NARROW", "OPEN", "CLOSE", "CLOSE_RESTART_SENT");
+  /** 公钥事务允许的未决阶段。 */
+  public static final Set<String> KEY_PHASES =
+      Set.of("", "AUTHORIZE", "REVOKE", "REVOKE_RESTART_SENT");
+
   private AdbBootstrapJournal() {}
+
+  public static boolean validNetworkPhase(String phase) {
+    return phase != null && NETWORK_PHASES.contains(phase);
+  }
+
+  public static boolean validKeyPhase(String phase) {
+    return phase != null && KEY_PHASES.contains(phase);
+  }
 
   public static void validate(Map<String, ?> record, String packageName, int uid)
       throws IOException {
@@ -52,10 +67,9 @@ public final class AdbBootstrapJournal {
           "keyAfterSha",
           "keyBackup"
         }) if (record.containsKey(key) && !(record.get(key) instanceof String)) fail();
-    if (!Set.of("", "NARROW", "OPEN", "CLOSE", "CLOSE_RESTART_SENT")
-        .contains(text(record, "pending"))) fail();
+    if (!validNetworkPhase(text(record, "pending"))) fail();
     String phase = text(record, "keyPending");
-    if (!Set.of("", "AUTHORIZE", "REVOKE", "REVOKE_RESTART_SENT").contains(phase)) fail();
+    if (!validKeyPhase(phase)) fail();
     for (String key : new String[] {"keyBeforeSha", "keyAfterSha"})
       if (record.containsKey(key) && !text(record, key).matches("[a-f0-9]{64}")) fail();
     if (record.containsKey("keyBackup")
@@ -94,13 +108,24 @@ public final class AdbBootstrapJournal {
     return "REVOKE".equals(phase);
   }
 
-  /** 请求结果与待核验设备动作分开；失败刷新不能洗掉上次未知。 */
+  /**
+   * 是否仍要保留「上次结果未确认」的屏障。
+   *
+   * <p>只有**可信响应**同时确认「持久未决状态已核实」「网络与公钥两个阶段都已结束」「观测完整」
+   * 且本次结果成功时，才允许解除。旧格式、缺字段、原生异常（{@code reply == null}）都回到
+   * 旧的结果码判据：可能已写入设备的未知结果保持未决，绝不会把已有的未决清成已确认。
+   */
   public static boolean unresolved(
-      boolean previous, String outcome, String code, String key, String listener, String guard) {
+      boolean previous, AdbBootstrapReply reply, String outcome, String code) {
+    if (reply != null && reply.trusted) {
+      if (!reply.pendingVerified) return true;
+      if (!reply.networkPending.isEmpty() || !reply.keyPending.isEmpty()) return true;
+      if ("PENDING_ACTION".equals(code)) return true;
+      if (!"OK".equals(outcome)) return previous;
+      if ("OBSERVATION_INCOMPLETE".equals(code) || !reply.observationComplete()) return true;
+      return false;
+    }
     if ("UNKNOWN".equals(outcome) || "PENDING_ACTION".equals(code)) return true;
-    if ("OK".equals(outcome)
-        && !"OBSERVATION_INCOMPLETE".equals(code)
-        && new AdbBootstrapEngine.Snapshot(key, listener, guard).complete()) return false;
     return previous;
   }
 

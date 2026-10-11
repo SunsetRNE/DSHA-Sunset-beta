@@ -787,26 +787,41 @@ public final class HttpShellService {
       org.json.JSONObject plan = new org.json.JSONObject(planned);
       if (plan.optString("kind").equals("DENY"))
         return completedExecution("policy", plan.optString("reason") + "\n[EXIT=126]");
-      boolean sms = "sms.read".equals(plan.optString("capability"));
-      if (!forceAdb && RootShell.enabled(ctx) && RootShell.present()) {
-        int user = sms ? android.os.Process.myUid() / 100000 : -1;
-        return completedExecution("root", RootShell.exec(ctx, command, user));
+      // 授权只决定「有没有通道」，不决定「哪条命令能执行」：命令策略已在 devicePlan 里判定完。
+      // 顺序与理由只有 DeviceAuthorization 一处（Root 独立；ADB 总开关关 = 连 Shizuku 也不用）。
+      com.deepseekharness.app.util.DeviceAuthorization.Decision decision =
+          com.deepseekharness.app.util.DeviceAuthorization.plan(
+              com.deepseekharness.app.core.DeviceAuthorizationReader.snapshot(ctx),
+              forceRoot,
+              forceAdb,
+              plan.optString("capability"));
+      if (!decision.executable || decision.pipe == null)
+        return completedExecution("none", channelUnavailable(decision));
+      switch (decision.pipe) {
+        case ROOT_SU:
+          int user = decision.restrictToAppUser ? android.os.Process.myUid() / 100000 : -1;
+          return completedExecution("root", RootShell.exec(ctx, command, user));
+        case SHIZUKU_BINDER:
+          return completedExecution("shizuku", ShizukuShell.exec(command));
+        default:
+          plan.put("su", forceRoot);
+          return new org.json.JSONObject().put("state", "adb").put("plan", plan).toString();
       }
-      if (!forceAdb && !forceRoot && !sms && ShizukuShell.hasPermission()) {
-        return completedExecution("shizuku", ShizukuShell.exec(command));
-      }
-      if (!DeviceBridgeService.isAdbEnabled(ctx))
-        return completedExecution(
-            "none",
-            com.deepseekharness.app.util.UiText.text(
-                "[DEVICE_CHANNEL_UNAVAILABLE] 请在设置 → 设备能力授权中连接 root、Shizuku 或 ADB 通道\n[EXIT=124]"));
-      plan.put("su", forceRoot);
-      return new org.json.JSONObject().put("state", "adb").put("plan", plan).toString();
     } catch (Exception error) {
       // 此时可能已经向设备发过命令，绝不能返回可重试的 ADB 计划。
       return completedExecution(
           "unknown", "[EXECUTION_UNKNOWN] " + safeError(error) + "\n[EXIT=125]");
     }
+  }
+
+  /** 无通道时把决策理由一并返回；协议标记与退出码保持历史语义。 */
+  private String channelUnavailable(
+      com.deepseekharness.app.util.DeviceAuthorization.Decision decision) {
+    String reason =
+        com.deepseekharness.app.core.DeviceAuthorizationReader.reasonLabel(decision.reason);
+    return com.deepseekharness.app.util.UiText.format(
+        "[DEVICE_CHANNEL_UNAVAILABLE] 请在设置 → 设备能力授权中连接 root、Shizuku 或 ADB 通道（%s）\n[EXIT=124]",
+        reason);
   }
 
   /** ADB-only typed start plan; a one-use ticket is minted by VirtualScreenManager after native authorization. */

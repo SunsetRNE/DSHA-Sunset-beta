@@ -23,31 +23,41 @@ final class RootBootstrapNative implements RootBootstrapExecutor.SystemAccess {
   static String execute(
       SelfPackageIdentity identity, AdbBootstrapPolicy.Action action, String ticket) {
     boolean dispatched = false;
+    RootBootstrapExecutor host = null;
     try {
       RootBootstrapNative system = new RootBootstrapNative(identity, ticket);
       system.grant(action);
       try (RootBootstrapFiles files =
           new RootBootstrapFiles(identity, action != AdbBootstrapPolicy.Action.STATUS)) {
-        RootBootstrapExecutor host = new RootBootstrapExecutor(identity, action, files, system);
+        host = new RootBootstrapExecutor(identity, action, files, system);
         dispatched = true;
         AdbBootstrapEngine.Outcome result = AdbBootstrapEngine.execute(action, host);
-        return new JSONObject()
-                .put("status", result.status)
-                .put(
-                    "code",
-                    action == AdbBootstrapPolicy.Action.STATUS
-                            && host.pending()
-                            && result.status.equals("OK")
-                        ? "PENDING_ACTION"
-                        : result.code)
-                .put("keyState", result.snapshot.key)
-                .put("listenerState", result.snapshot.listener)
-                .put("guardState", result.snapshot.guard)
-                .put("evidence", result.evidence)
-                .toString()
-            + "\n[EXIT="
-            + (result.status.equals("OK") ? 0 : result.status.equals("REFUSED") ? 126 : 125)
-            + "]";
+        // 未决状态只能来自重新读取的持久记录；读不到就是未知，不能沿用内存里的乐观值。
+        boolean pendingVerified = false;
+        String networkPending = "";
+        String keyPending = "";
+        try {
+          JSONObject durable = host.durableRecord();
+          pendingVerified = true;
+          networkPending = durable.optString("pending", "");
+          keyPending = durable.optString("keyPending", "");
+        } catch (Throwable unreadable) {
+          pendingVerified = false;
+        }
+        String code = result.code;
+        if (pendingVerified
+            && result.status.equals("OK")
+            && (!networkPending.isEmpty() || !keyPending.isEmpty())) code = "PENDING_ACTION";
+        return AdbBootstrapReply.encode(
+            result.status,
+            code,
+            result.snapshot.key,
+            result.snapshot.listener,
+            result.snapshot.guard,
+            result.evidence,
+            pendingVerified,
+            networkPending,
+            keyPending);
       }
     } catch (Throwable error) {
       if (error instanceof InterruptedException) Thread.currentThread().interrupt();
@@ -57,16 +67,17 @@ final class RootBootstrapNative implements RootBootstrapExecutor.SystemAccess {
           error instanceof com.deepseekharness.app.util.AdbBootstrapEngine.BootstrapFailure
               ? ((com.deepseekharness.app.util.AdbBootstrapEngine.BootstrapFailure) error).evidence
               : "";
-      // 预检失败也要有原文：JSON 手工拼装，evidence 必须转义后再进字符串。
-      return "{\"status\":\""
-          + (dispatched ? "UNKNOWN" : "REFUSED")
-          + "\",\"code\":\""
-          + code
-          + "\",\"keyState\":\"UNKNOWN\",\"listenerState\":\"UNKNOWN\",\"guardState\":\"UNKNOWN\",\"evidence\":"
-          + org.json.JSONObject.quote(evidence)
-          + "}\n[EXIT="
-          + (dispatched ? 125 : 126)
-          + "]";
+      // 预检失败也必须如实报告「未决状态未核实」；异常原文经统一编码转义。
+      return AdbBootstrapReply.encode(
+          dispatched ? "UNKNOWN" : "REFUSED",
+          code,
+          "UNKNOWN",
+          "UNKNOWN",
+          "UNKNOWN",
+          evidence,
+          false,
+          "",
+          "");
     }
   }
 

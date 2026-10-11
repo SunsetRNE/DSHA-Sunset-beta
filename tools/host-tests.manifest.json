@@ -1671,6 +1671,44 @@
       ],
       "environment": {},
       "cli": "--jdk <JDK17 directory> --fixture <runner-owned directory>; missing locked JARs are fetched from Maven Central and checked by SHA256. The legacy single fixture argument remains an optional compound mode."
+    },
+    {
+      "path": "tools/test-mobile-reasoning-defaults.mjs",
+      "stage": "fast",
+      "reason": "Current built-in dsh-web-mobile 3.0.5 reasoning-defaults fill plus the deployed-module graph over the real managed-runtime-inputs.json; source and asset fixtures only, no Android or device operations.",
+      "args": [],
+      "timeoutSeconds": 300,
+      "requires": [
+        "node24"
+      ],
+      "environment": {},
+      "cli": "no positional arguments; see explicit environment/requirements"
+    },
+    {
+      "path": "tools/test-mobile-refresh.mjs",
+      "stage": "support",
+      "reason": "浏览器夹具验证实际随包 bundle 与 rc2 前端样式；需要先由构建产出 app/build/test-runtimes/current.json（本清单不生成该产物），因此不纳入默认主机测试运行，构建运行时后用 --stage 显式运行。",
+      "args": [],
+      "timeoutSeconds": 900,
+      "requires": [
+        "node24",
+        "browser"
+      ],
+      "environment": {},
+      "cli": "requires app/build/test-runtimes/current.json produced by the build; no positional arguments"
+    },
+    {
+      "path": "tools/test-web-file-actions.mjs",
+      "stage": "support",
+      "reason": "浏览器夹具验证随包 JS 的字节传输路径（原生端结果由夹具控制）；同样依赖构建产出的 app/build/test-runtimes/current.json，不纳入默认主机测试运行，不能冒充 Android 分享 / SAF 验收。",
+      "args": [],
+      "timeoutSeconds": 900,
+      "requires": [
+        "node24",
+        "browser"
+      ],
+      "environment": {},
+      "cli": "requires app/build/test-runtimes/current.json produced by the build; no positional arguments"
     }
   ],
   "historicalExcluded": [

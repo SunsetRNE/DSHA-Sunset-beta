@@ -31,6 +31,21 @@ extends IShellService.Stub {
         try{return DeviceShellExecutor.execute(cmd,this::executeArgv,plan.kind==com.deepseekharness.app.util.DeviceShellPolicy.Kind.STOP?identity():null);}
         catch(java.io.IOException error){return "[POLICY_BLOCKED] "+SensitiveData.redact(error.getMessage())+"\n[EXIT=126]";}
     }
+    /**
+     * Shizuku 的销毁事务走的是服务端原始事务码（16777115），不是本仓库 AIDL 生成的那个（16777114，
+     * 见 util/ShizukuUserServiceProtocol）。AIDL 里的声明 ID 差一就会让这条事务落进默认分支被丢掉，
+     * 用户服务进程于是永远不退出 —— 这里按真实契约显式兜住，不再依赖 AIDL 声明的数值。
+     */
+    @Override
+    public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
+        if (com.deepseekharness.app.util.ShizukuUserServiceProtocol.isDestroyTransaction(code)) {
+            data.enforceInterface(getInterfaceDescriptor());
+            destroy();
+            if ((flags & android.os.IBinder.FLAG_ONEWAY) == 0) reply.writeNoException();
+            return true;
+        }
+        return super.onTransact(code, data, reply, flags);
+    }
     @Override public String execVirtualScreen(String command) {
         try{return DeviceShellExecutor.executeVirtualScreen(command,this::executeArgv,identity());}
         catch(java.io.IOException error){return "[POLICY_BLOCKED] "+SensitiveData.redact(error.getMessage())+"\n[EXIT=126]";}
@@ -43,8 +58,7 @@ extends IShellService.Stub {
         synchronized (processes) { closing = true; owned = new java.util.ArrayList<>(processes); }
         for (Process process : owned) Compat.destroy(process);
         // 此协议只负责 Shizuku 的特权进程；本进程中的测试实例不能退出 DSHA。
-        int uid = android.os.Process.myUid();
-        if (uid == 0 || uid == 2000) System.exit(0);
+        if (com.deepseekharness.app.util.ShizukuUserServiceProtocol.ownsServiceProcess(android.os.Process.myUid())) System.exit(0);
     }
 
     /** 只供原生授权后的 root 子进程调用；Binder exec 不能选择此分支。 */

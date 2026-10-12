@@ -142,7 +142,14 @@ public final class AdbBootstrapJournalTest {
         AdbBootstrapJournal.unresolved(
             false,
             reply(
-                "OK", "PENDING_ACTION", "NOT_REGISTERED", "CLOSED", "UNPROTECTED", true, "NARROW", ""),
+                "OK",
+                "PENDING_ACTION",
+                "NOT_REGISTERED",
+                "CLOSED",
+                "UNPROTECTED",
+                true,
+                "NARROW",
+                ""),
             "OK",
             "PENDING_ACTION"));
   }
@@ -165,13 +172,15 @@ public final class AdbBootstrapJournalTest {
     assertTrue(
         AdbBootstrapJournal.unresolved(
             true,
-            reply("REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
+            reply(
+                "REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
             "REFUSED",
             "WIRELESS_DEBUG_IN_USE"));
     assertFalse(
         AdbBootstrapJournal.unresolved(
             false,
-            reply("REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
+            reply(
+                "REFUSED", "WIRELESS_DEBUG_IN_USE", "UNKNOWN", "UNKNOWN", "UNKNOWN", true, "", ""),
             "REFUSED",
             "WIRELESS_DEBUG_IN_USE"));
   }

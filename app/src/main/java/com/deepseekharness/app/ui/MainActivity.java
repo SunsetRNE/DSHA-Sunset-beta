@@ -40,8 +40,10 @@ public class MainActivity extends AppCompatActivity {
   private boolean pendingOpenWeb;
 
   private String openedRecovery = "";
+
   /** 待处理的受管运行时维护；回到前台时探一次，供横幅显示（热启动原本完全看不到）。 */
   private boolean maintenancePending;
+
   private final androidx.activity.result.ActivityResultLauncher<String> localNetworkPermission =
       registerForActivityResult(
           new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),

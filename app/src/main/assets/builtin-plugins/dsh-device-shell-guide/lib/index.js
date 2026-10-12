@@ -1,55 +1,118 @@
 /** DSHA 设备能力引导：使用 dsh 0.1.5 的消息工厂与已提交事件判重。 */
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import { openSync, readSync, closeSync, lstatSync, fstatSync, constants } from 'node:fs';
+import { join } from 'node:path';
 export const name = 'dsh-device-shell-guide';
 
-const PROMPT = [
-  '【设备操作能力 · DSHA】你正运行在用户 Android 手机的容器里，可以干预这台实体手机。',
+/* 桥端点：端口文件与 .bridge_token 同数据根（DSH_HOME 优先），注入时读取一次。
+   契约文件是 ≤16 字节的普通文件（同原生 BridgeEndpointFiles.READ_LIMIT），内容只有 ASCII
+   十进制 + 一个可选换行。只有真正缺目录项才回退旧默认 3090；0、坏格式、越界、非 ASCII、
+   带垃圾尾巴、目录、符号链接（含悬空链接）或读不动都算「端口未知」——提示词里写明未知
+   并让 agent 先报告，绝不猜一个端口：同机可能有第二个 DSHA 实例，猜端口等于去打它的桥。 */
+const LEGACY_BRIDGE_PORT = 3090;
+const BRIDGE_PORT_LIMIT = 16;
+function bridgeRoot() {
+  const home = process.env.DSH_HOME;
+  return typeof home === 'string' && home.trim() && home.trim() !== '/'
+    ? home.trim().replace(/\/+$/, '')
+    : '/root/.dsh';
+}
+function readBridgePortFile(file) {
+  // 'missing' 只有真正没有这个目录项；悬空符号链接的 ENOENT 也算已存在 → 'invalid'。
+  let entry;
+  try { entry = lstatSync(file); }
+  catch (error) { return error && error.code === 'ENOENT' ? 'missing' : 'invalid'; }
+  if (!entry.isFile()) return 'invalid';
+  let descriptor;
+  try {
+    descriptor = openSync(file, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+    const stats = fstatSync(descriptor);
+    if (!stats.isFile() || stats.size < 1 || stats.size > BRIDGE_PORT_LIMIT) return 'invalid';
+    const buffer = Buffer.alloc(stats.size);
+    let filled = 0;
+    while (filled < stats.size) {
+      const count = readSync(descriptor, buffer, filled, stats.size - filled, filled);
+      if (count <= 0) break;
+      filled += count;
+    }
+    if (filled !== stats.size) return 'invalid';
+    // 整份内容必须就是端口：'3091\n' 后面再有空白/垃圾就不是契约文件；不做 Unicode trim。
+    const text = buffer.toString('utf8');
+    if (!/^[0-9]{1,5}\n?$/.test(text)) return 'invalid';
+    const port = Number(text.replace(/\n$/, ''));
+    return port >= 1 && port <= 65535 ? port : 'invalid';
+  } catch {
+    return 'invalid';
+  } finally {
+    try { if (descriptor !== undefined) closeSync(descriptor); } catch {}
+  }
+}
+function bridgePort() {
+  const value = readBridgePortFile(join(bridgeRoot(), '.bridge_port'));
+  if (value === 'missing') return LEGACY_BRIDGE_PORT;
+  return value === 'invalid' ? null : value;
+}
 
-  '■ 三条通道，按这个顺序选：',
-  '  1) Ubuntu 工作区内的开发与文件操作使用普通工具；Android 设备文件写入必须走受保护的设备 shell。',
-  '  2) App 层接口 /app/*（走 127.0.0.1:3090，零配置，不需要 ADB，也不需要 Shizuku）',
-  '  3) 设备 shell（adb-shell 命令自动选择已授权的 root、Shizuku 或 ADB）—— 查询设备日志、普通设备文件操作和结束用户应用。',
-  '  例：查设备状态用 /app/device 而不是 dumpsys battery；启动应用用 /app/launch 而不是 am start。',
+/** @param {number|null} port 本实例桥端口；null = 端点未知（fail-closed）。 */
+function deviceGuidePrompt(port) {
+  const home = bridgeRoot();
+  const access = port === null
+    ? '  2) App 层接口 /app/*（本机桥端口未知：.bridge_port 无效，先让用户检查 DSHA，不要猜端口；零配置，不需要 ADB，也不需要 Shizuku）'
+    : '  2) App 层接口 /app/*（走 127.0.0.1:' + port + '，零配置，不需要 ADB，也不需要 Shizuku）';
+  const help = port === null
+    ? '  # 本机桥端口未知（.bridge_port 无效）：先报告用户检查 DSHA，不要猜端口或改试别的桥。'
+    : '  curl -s -H @' + home + '/.bridge_headers "http://127.0.0.1:' + port + '/app/help"';
+  return [
+    '【设备操作能力 · DSHA】你正运行在用户 Android 手机的容器里，可以干预这台实体手机。',
 
-  '■ 完整端点清单（读屏 / 点按 / 输入 / 截屏 / 通知 / 剪贴板 / 传感器 / 导出文件 …）：',
-  '  # Credentials are sent by header file; do not place them in URLs or argv.',
-  '  curl -s -H @/root/.dsh/.bridge_headers "http://127.0.0.1:3090/app/help"',
-  '  → 要用设备能力时查这一次，里面有每个端点的参数和写法。',
-  '    清单刻意没写在这里 —— 它有十几 KB，写进提示词就是每一轮都替你付一次上下文。',
-  '  ⚠ /app/help 与 /app/version 只有较新的 App 才有（老版本会把未知路径当 shell 命令处理，',
-  '    回给你的东西不像清单）。那种情况按下面这份最小清单用，别反复重试 /app/help：',
-  '    设备信息 /app/device · 应用列表 /app/apps?q= · 启动应用 /app/launch?pkg=',
-  '    读屏 /app/ui/dump · 按文字点按 /app/ui/tap?text= · 输入 /app/ui/input?text=',
-  '    滑动 /app/ui/swipe · 截屏 /app/ui/screenshot · 按键 /app/ui/key',
-  '    通知 /app/notify?title=&text= · 提问 /app/ask?q=&options=a|b · Toast /app/toast?text=',
-  '    剪贴板 /app/clip（写入加 ?text=） · 分享 /app/share?text= · 开链接 /app/open?url=',
-  '    震动 /app/vibrate?ms= · 导出文件 /app/export?path= · 读 sdcard 文件 /app/readfile?path=',
-  '    位置 /app/location · 传感器 /app/sensors 与 /app/sensor?type= · 手电 /app/torch?on=1',
+    '■ 三条通道，按这个顺序选：',
+    '  1) Ubuntu 工作区内的开发与文件操作使用普通工具；Android 设备文件写入必须走受保护的设备 shell。',
+    access,
+    '  3) 设备 shell（adb-shell 命令自动选择已授权的 root、Shizuku 或 ADB）—— 查询设备日志、普通设备文件操作和结束用户应用。',
+    '  例：查设备状态用 /app/device 而不是 dumpsys battery；启动应用用 /app/launch 而不是 am start。',
 
-  '■ 硬约束（几条，都别违）：',
-  '  - 短信是独立敏感能力：用 adb-shell 执行 content query --uri content://sms，默认逐次确认。' +
-  '    持续自动化需用户在设置 → 设备能力授权中开启短信读取，可随时撤销；仅当前 Android 用户，' +
-  '    不允许发送、修改或删除短信。DSHA 授权不能替代 Android 权限，拒绝时不要绕过；',
-  '  - 设备命令保护始终开启：允许读取任何目录（仍受 Android 权限限制）；根目录和系统目录、' +
-  '    DCIM、Pictures、Android/data、Android/obb 及其子目录只读。普通 Download 文件操作允许；',
-  '  - 禁止块设备/分区、SELinux 修改、settings put/setprop、挂载、刷机、卸载/清应用数据，未知命令直接拦截；',
-  '  - 结束应用前自动刷新全部应用并分用户/系统两组；普通用户应用直接结束，系统应用与关键进程禁止结束。' +
-  '    使用完整包名或明确正数 PID，禁止模糊匹配与整组杀进程；',
-  '  - [POLICY_BLOCKED] 表示不执行，不能靠 Root、旧确认开关、环境变量放行。' +
-  '    不可用普通 shell、Python/Node、裸 ADB 或 UI 操作绕过设备策略；',
-  '  - 接口回 DISABLED / NO_PERMISSION、或 ADB 连不上时，照原话告诉用户去哪里开，' +
-  '    不要反复重试同一条 —— 重试不会让开关自己变；',
-  '  - 屏幕操作的节奏：每次点按或输入之后先 /app/ui/dump 再决定下一步，别凭记忆连点，' +
-  '    界面可能已经变了；',
-  '  - 设备 shell 优先使用用户已在「设置 → 设备能力授权」开启且经 root 管理器授权的 su，可直接执行，无需 ADB 配对；' +
-  '    否则使用已授权的 Shizuku，再尝试已启用的 ADB。用 id 核验实际身份，不假设一定是 uid=2000 或 root。' +
-  '    --su 只在明确需要 root 时使用，仍须原生授权，不能绕过任何设备保护；',
-  '  - [EXECUTION_UNKNOWN] 表示命令可能已执行。先检查实际状态，不得切换通道或自动重放；',
-  '  - 不要用 /root/dsh-bin/adb 或裸 adb 命令 —— 那是守卫包装脚本，会失败；',
-  '  - 与用户交流一律使用中文。',
-].join('\n')
+    '■ 完整端点清单（读屏 / 点按 / 输入 / 截屏 / 通知 / 剪贴板 / 传感器 / 导出文件 …）：',
+    '  # Credentials are sent by header file; do not place them in URLs or argv.',
+    help,
+    '  → 要用设备能力时查这一次，里面有每个端点的参数和写法。',
+    '    清单刻意没写在这里 —— 它有十几 KB，写进提示词就是每一轮都替你付一次上下文。',
+    '  ⚠ /app/help 与 /app/version 只有较新的 App 才有（老版本会把未知路径当 shell 命令处理，',
+    '    回给你的东西不像清单）。那种情况按下面这份最小清单用，别反复重试 /app/help：',
+    '    设备信息 /app/device · 应用列表 /app/apps?q= · 启动应用 /app/launch?pkg=',
+    '    读屏 /app/ui/dump · 按文字点按 /app/ui/tap?text= · 输入 /app/ui/input?text=',
+    '    滑动 /app/ui/swipe · 截屏 /app/ui/screenshot · 按键 /app/ui/key',
+    '    通知 /app/notify?title=&text= · 提问 /app/ask?q=&options=a|b · Toast /app/toast?text=',
+    '    剪贴板 /app/clip（写入加 ?text=） · 分享 /app/share?text= · 开链接 /app/open?url=',
+    '    震动 /app/vibrate?ms= · 导出文件 /app/export?path= · 读 sdcard 文件 /app/readfile?path=',
+    '    位置 /app/location · 传感器 /app/sensors 与 /app/sensor?type= · 手电 /app/torch?on=1',
+
+    '■ 硬约束（几条，都别违）：',
+    '  - 短信是独立敏感能力：用 adb-shell 执行 content query --uri content://sms，默认逐次确认。' +
+    '    持续自动化需用户在设置 → 设备能力授权中开启短信读取，可随时撤销；仅当前 Android 用户，' +
+    '    不允许发送、修改或删除短信。DSHA 授权不能替代 Android 权限，拒绝时不要绕过；',
+    '  - 设备命令保护始终开启：允许读取任何目录（仍受 Android 权限限制）；根目录和系统目录、' +
+    '    DCIM、Pictures、Android/data、Android/obb 及其子目录只读。普通 Download 文件操作允许；',
+    '  - 禁止块设备/分区、SELinux 修改、settings put/setprop、挂载、刷机、卸载/清应用数据，未知命令直接拦截；',
+    '  - 结束应用前自动刷新全部应用并分用户/系统两组；普通用户应用直接结束，系统应用与关键进程禁止结束。' +
+    '    使用完整包名或明确正数 PID，禁止模糊匹配与整组杀进程；',
+    '  - [POLICY_BLOCKED] 表示不执行，不能靠 Root、旧确认开关、环境变量放行。' +
+    '    不可用普通 shell、Python/Node、裸 ADB 或 UI 操作绕过设备策略；',
+    '  - 接口回 DISABLED / NO_PERMISSION、或 ADB 连不上时，照原话告诉用户去哪里开，' +
+    '    不要反复重试同一条 —— 重试不会让开关自己变；',
+    '  - 屏幕操作的节奏：每次点按或输入之后先 /app/ui/dump 再决定下一步，别凭记忆连点，' +
+    '    界面可能已经变了；',
+    '  - 设备 shell 优先使用用户已在「设置 → 设备能力授权」开启且经 root 管理器授权的 su，可直接执行，无需 ADB 配对；' +
+    '    否则使用已授权的 Shizuku，再尝试已启用的 ADB。用 id 核验实际身份，不假设一定是 uid=2000 或 root。' +
+    '    --su 只在明确需要 root 时使用，仍须原生授权，不能绕过任何设备保护；',
+    '  - [EXECUTION_UNKNOWN] 表示命令可能已执行。先检查实际状态，不得切换通道或自动重放；',
+    '  - 不要用 /root/dsh-bin/adb 或裸 adb 命令 —— 那是守卫包装脚本，会失败；',
+    '  - 与用户交流一律使用中文。',
+  ].join('\n');
+}
 
 export function apply(ctx) {
+  // 每次装配提示词时读取当前端口，启动时的 0 和后续桥重启均不能永久缓存。
+  const guidePrompt = () => deviceGuidePrompt(bridgePort());
   let systemActive = false;
   const guided = new WeakSet();
   const inspected = new WeakSet();
@@ -57,7 +120,7 @@ export function apply(ctx) {
     && event.data?.source?.kind === 'plugin' && event.data.source.plugin === name;
   // 作用域注入不会阻塞极简配置的启动；标准配置只走系统提示，避免双份引导。
   ctx.inject(['systemPrompt'], promptCtx => {
-    promptCtx.systemPrompt.section({ name: 'dsh:device-shell-guide', order: 150, text: PROMPT });
+    promptCtx.systemPrompt.section({ name: 'dsh:device-shell-guide', order: 150, text: guidePrompt });
     promptCtx.effect(() => { systemActive = true; return () => { systemActive = false; }; });
   });
   ctx.on('session/event', (session, event) => { if (isGuide(event)) guided.add(session); });
@@ -72,9 +135,10 @@ export function apply(ctx) {
       if (session.snapshotEvents?.().some(isGuide)) guided.add(session);
     }
     if (guided.has(session)) return decision;
+    const text = guidePrompt();
     const guide = createUserMessage({
-      content: [{ type: 'text', text: PROMPT }],
-      source: { kind: 'plugin', plugin: name, form: 'snapshot', sections: [{ name, text: PROMPT }] },
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin', plugin: name, form: 'snapshot', sections: [{ name, text }] },
     });
     // 后续插件仍可能拒绝步骤，因此仅在 session/event 确认写入后标记已注入。
     return { ...decision, messages: [guide, ...decision.messages] };

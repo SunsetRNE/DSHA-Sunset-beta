@@ -37,7 +37,7 @@ public final class ColdSetupSpeedActivity extends androidx.appcompat.app.AppComp
     setContentView(page.root);
     status =
         page.text(
-            com.deepseekharness.app.runtime.ColdSetupTiming.report(this, false), 14, R.color.text);
+            com.deepseekharness.app.core.ColdSetupTiming.report(this, false), 14, R.color.text);
     page.content.addView(status);
     start = page.button(page.footer, UiText.choose("开始测速", "Start timing"), true, this::run);
     back =
@@ -62,7 +62,7 @@ public final class ColdSetupSpeedActivity extends androidx.appcompat.app.AppComp
             () -> {
               try {
                 double seconds =
-                    com.deepseekharness.app.runtime.ColdSetupTiming.run(
+                    com.deepseekharness.app.core.ColdSetupTiming.run(
                         this,
                         value ->
                             runOnUiThread(
@@ -73,8 +73,7 @@ public final class ColdSetupSpeedActivity extends androidx.appcompat.app.AppComp
                     () ->
                         status.setText(
                             UiText.format("完整首次安装完成：%.2f 秒；临时环境已清理，原数据保留。", seconds)
-                                + com.deepseekharness.app.runtime.ColdSetupTiming.report(
-                                    this, true)));
+                                + com.deepseekharness.app.core.ColdSetupTiming.report(this, true)));
               } catch (Exception error) {
                 runOnUiThread(
                     () ->
@@ -83,7 +82,7 @@ public final class ColdSetupSpeedActivity extends androidx.appcompat.app.AppComp
                                     "测速未完成：%s",
                                     com.deepseekharness.app.util.SensitiveData.redact(
                                         String.valueOf(error)))
-                                + com.deepseekharness.app.runtime.ColdSetupTiming.report(
+                                + com.deepseekharness.app.core.ColdSetupTiming.report(
                                     this, false)));
               } finally {
                 runOnUiThread(

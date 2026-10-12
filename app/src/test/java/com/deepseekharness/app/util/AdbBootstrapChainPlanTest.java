@@ -17,8 +17,7 @@ public final class AdbBootstrapChainPlanTest {
 
   @Test
   public void submittedNextStepContinues() {
-    assertEquals(
-        AdbBootstrapChainPlan.Outcome.CONTINUE, after(true, true, true, true, true));
+    assertEquals(AdbBootstrapChainPlan.Outcome.CONTINUE, after(true, true, true, true, true));
   }
 
   @Test
@@ -54,8 +53,7 @@ public final class AdbBootstrapChainPlanTest {
 
   @Test
   public void nothingHappensWhenNoChainIsRunning() {
-    assertEquals(
-        AdbBootstrapChainPlan.Outcome.IDLE, after(false, true, true, true, true));
+    assertEquals(AdbBootstrapChainPlan.Outcome.IDLE, after(false, true, true, true, true));
   }
 
   @Test

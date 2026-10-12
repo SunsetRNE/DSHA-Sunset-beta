@@ -58,6 +58,7 @@ public final class AdbBootstrapEngine {
   public static final class Outcome {
     public final String status, code;
     public final Snapshot snapshot;
+
     /** 失败时的可显示原文（通常是失败的设备命令）；成功或未采集时为空。 */
     public final String evidence;
 
@@ -153,7 +154,8 @@ public final class AdbBootstrapEngine {
       String code = error.getMessage();
       if (code == null || !code.matches("[A-Z0-9_]{1,96}")) code = "BOOTSTRAP_IO_FAILED";
       // evidence 只用于显示与诊断；门禁、事务日志与未知语义仍只看 status/code。
-      String evidence = error instanceof BootstrapFailure ? ((BootstrapFailure) error).evidence : "";
+      String evidence =
+          error instanceof BootstrapFailure ? ((BootstrapFailure) error).evidence : "";
       return new Outcome(status, code, new Snapshot("UNKNOWN", "UNKNOWN", "UNKNOWN"), evidence);
     }
   }

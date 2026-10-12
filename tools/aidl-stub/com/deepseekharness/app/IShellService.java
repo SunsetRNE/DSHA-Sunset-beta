@@ -93,7 +93,8 @@ public interface IShellService extends android.os.IInterface {
         }
         static final int TRANSACTION_exec = android.os.IBinder.FIRST_CALL_TRANSACTION + 0;
         static final int TRANSACTION_execVirtualScreen = android.os.IBinder.FIRST_CALL_TRANSACTION + 1;
-        static final int TRANSACTION_destroy = 16777114;
+        // 声明 ID 16777114 + FIRST_CALL_TRANSACTION(1)；Shizuku 服务端发的就是这个 16777115。
+        static final int TRANSACTION_destroy = 16777115;
     }
     public static final String DESCRIPTOR = "com.deepseekharness.app.IShellService";
     public String exec(String cmd) throws android.os.RemoteException;

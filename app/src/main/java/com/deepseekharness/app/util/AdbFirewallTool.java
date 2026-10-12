@@ -185,6 +185,8 @@ public final class AdbFirewallTool {
       if (text.length() > 0) text.append('\n');
       text.append(line);
     }
-    return text.length() > EVIDENCE_LIMIT * 2 ? text.substring(0, EVIDENCE_LIMIT * 2) : text.toString();
+    return text.length() > EVIDENCE_LIMIT * 2
+        ? text.substring(0, EVIDENCE_LIMIT * 2)
+        : text.toString();
   }
 }

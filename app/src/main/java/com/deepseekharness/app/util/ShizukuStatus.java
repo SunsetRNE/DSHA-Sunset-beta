@@ -39,8 +39,7 @@ public final class ShizukuStatus {
       case NOT_INSTALLED:
         return UiText.text("尚未安装 Shizuku。安装并启动后可在这里授权。");
       case MANAGER_INSTALLED:
-        return UiText.text(
-            "管理器已安装，服务尚未连接。点击授权重新连接；若仍未连接，请启动管理器服务，并检查隐藏模式是否允许 DSHA。");
+        return UiText.text("管理器已安装，服务尚未连接。点击授权重新连接；若仍未连接，请启动管理器服务，并检查隐藏模式是否允许 DSHA。");
       case PERMISSION_REQUIRED:
         return UiText.text("服务已连接，尚未授权 DSHA。点击下方授权。");
       case READY:

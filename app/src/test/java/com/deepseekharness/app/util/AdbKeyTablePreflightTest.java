@@ -14,7 +14,8 @@ public final class AdbKeyTablePreflightTest {
       boolean mode,
       boolean canonical,
       boolean label) {
-    return AdbKeyTablePreflight.reason(directory, present, regular, link, owner, mode, canonical, label);
+    return AdbKeyTablePreflight.reason(
+        directory, present, regular, link, owner, mode, canonical, label);
   }
 
   private static String ready(boolean present) {
@@ -44,15 +45,27 @@ public final class AdbKeyTablePreflightTest {
 
   @Test
   public void symlinkHardlinkAndMetadataAnomaliesAreIdentityFailures() {
-    assertEquals(AdbKeyTablePreflight.IDENTITY_UNVERIFIED, reason(true, true, false, true, true, true, true, true));
-    assertEquals(AdbKeyTablePreflight.IDENTITY_UNVERIFIED, reason(true, true, true, false, true, true, true, true));
-    assertEquals(AdbKeyTablePreflight.IDENTITY_UNVERIFIED, reason(true, true, true, true, true, true, false, true));
-    assertEquals(AdbKeyTablePreflight.IDENTITY_UNVERIFIED, reason(true, true, true, true, false, true, true, true));
-    assertEquals(AdbKeyTablePreflight.IDENTITY_UNVERIFIED, reason(true, true, true, true, true, false, true, true));
+    assertEquals(
+        AdbKeyTablePreflight.IDENTITY_UNVERIFIED,
+        reason(true, true, false, true, true, true, true, true));
+    assertEquals(
+        AdbKeyTablePreflight.IDENTITY_UNVERIFIED,
+        reason(true, true, true, false, true, true, true, true));
+    assertEquals(
+        AdbKeyTablePreflight.IDENTITY_UNVERIFIED,
+        reason(true, true, true, true, true, true, false, true));
+    assertEquals(
+        AdbKeyTablePreflight.IDENTITY_UNVERIFIED,
+        reason(true, true, true, true, false, true, true, true));
+    assertEquals(
+        AdbKeyTablePreflight.IDENTITY_UNVERIFIED,
+        reason(true, true, true, true, true, false, true, true));
   }
 
   @Test
   public void unreadableLabelStopsTheWrite() {
-    assertEquals(AdbKeyTablePreflight.LABEL_UNVERIFIED, reason(true, true, true, true, true, true, true, false));
+    assertEquals(
+        AdbKeyTablePreflight.LABEL_UNVERIFIED,
+        reason(true, true, true, true, true, true, true, false));
   }
 }

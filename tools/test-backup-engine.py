@@ -50,7 +50,46 @@ class LocalDeviceCredentialsTest(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(data, encoding="utf-8")
 
-    def test_bridge_token_and_device_id_are_excluded(self):
+    def pack(self, entries):
+        with tarfile.open(self.archive, "w:gz") as tar:
+            for name, content in entries:
+                member = tarfile.TarInfo(name)
+                content = content.encode() if isinstance(content, str) else content
+                member.size = len(content)
+                tar.addfile(member, io.BytesIO(content))
+
+    def test_bridge_port_endpoint_never_ships_or_restores(self):
+        """.bridge_port 是本机发现端点：既不进备份，也不从旧代次归档恢复。
+
+        旧缺陷：归档里的 .bridge_token/.bridge_status 曾覆盖当前机器记录，
+        会把这一代实例指到上一代的端口或凭据上。端口端点必须与 token 同组。
+        消费者语义：文件真缺失才兼容 3090；读到 0 / 坏格式 / 读取失败必须拒绝。
+        """
+        self.put('.dsh/.bridge_port', '3091\n')
+        self.put('.dsh/.bridge_port.atomic-77', '0\n')
+        self.put('.dsh/.bridge_port.previous', '3090\n')
+        self.put('.dsh/my-project/.bridge_port', 'not-a-machine-endpoint\n')
+        engine.make_backup(self.root, self.archive, 'full')
+        with tarfile.open(self.archive) as tar:
+            names = tar.getnames()
+        self.assertFalse(any(name.startswith('.dsh/.bridge_port') for name in names),
+                         '端口端点（含派生原子文件）不能进备份：归档会把它带回别的代次/实例')
+        self.assertIn('.dsh/my-project/.bridge_port', names,
+                      '项目内同名文件是用户数据，不能按机器端点误排除')
+
+        self.pack([('.dsh/sessions/restored.jsonl', 'restored-session'),
+                   ('.dsh/.bridge_port', '65535\n'),
+                   ('.dsh/.bridge_port.atomic-99', '0\n'),
+                   ('.dsh/.bridge_port.previous', '3090\n')])
+        engine.restore_archive(self.root, self.archive, 'full')
+        self.assertEqual('3091\n', (self.root / '.dsh/.bridge_port').read_text(),
+                         '恢复不能把旧代次端点写进当前实例')
+        self.assertEqual('0\n', (self.root / '.dsh/.bridge_port.atomic-77').read_text())
+        self.assertEqual('3090\n', (self.root / '.dsh/.bridge_port.previous').read_text())
+        self.assertFalse((self.root / '.dsh/.bridge_port.atomic-99').exists(),
+                         '归档里的派生端点文件不得落地')
+
+    def test_backup_token_and_device_id_are_excluded(self):
         self.put(".dsh/.bridge_token", "bridgetok-should-not-ship\n")
         self.put(".dsh/.anonymous-user-id", "anon-should-not-ship\n")
         self.put(".dsh/settings.yaml", "model: test\n")

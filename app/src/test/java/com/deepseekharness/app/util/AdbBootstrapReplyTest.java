@@ -83,7 +83,8 @@ public final class AdbBootstrapReplyTest {
     // OK 却带 125：旧实现会当成结果未知，这里明确判为协议不可信。
     AdbBootstrapReply reply =
         AdbBootstrapReply.parse(
-            AdbBootstrapReply.encode("OK", "COMPLETE", COMPLETE_KEY, "CLOSED", "UNPROTECTED", "", true, "", "")
+            AdbBootstrapReply.encode(
+                    "OK", "COMPLETE", COMPLETE_KEY, "CLOSED", "UNPROTECTED", "", true, "", "")
                 .replace("[EXIT=0]", "[EXIT=125]"));
     assertFalse(reply.trusted);
     assertEquals(AdbBootstrapReply.PROTOCOL_INVALID, reply.code);
@@ -112,11 +113,13 @@ public final class AdbBootstrapReplyTest {
     // 编码只由 status 推导退出码：REFUSED → 126，UNKNOWN → 125。
     assertTrue(
         AdbBootstrapReply.parse(
-                AdbBootstrapReply.encode("REFUSED", "X", "UNKNOWN", "UNKNOWN", "UNKNOWN", "", false, "", ""))
+                AdbBootstrapReply.encode(
+                    "REFUSED", "X", "UNKNOWN", "UNKNOWN", "UNKNOWN", "", false, "", ""))
             .trusted);
     assertTrue(
         AdbBootstrapReply.parse(
-                AdbBootstrapReply.encode("UNKNOWN", "X", "UNKNOWN", "UNKNOWN", "UNKNOWN", "", false, "", ""))
+                AdbBootstrapReply.encode(
+                    "UNKNOWN", "X", "UNKNOWN", "UNKNOWN", "UNKNOWN", "", false, "", ""))
             .trusted);
   }
 }

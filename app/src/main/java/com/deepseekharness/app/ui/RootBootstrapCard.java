@@ -156,7 +156,8 @@ public final class RootBootstrapCard {
         snapshot.detail == null || snapshot.detail.isEmpty() ? "" : detailLabel(snapshot.detail));
     // 只有「被系统无线调试挡住」这一种拒绝给出直达入口：其它拒绝没有对应的单个开关。
     boolean wirelessBlocked =
-        !snapshot.busy && "WIRELESS_DEBUG_IN_USE".equals(snapshot.detail == null ? "" : snapshot.detail);
+        !snapshot.busy
+            && "WIRELESS_DEBUG_IN_USE".equals(snapshot.detail == null ? "" : snapshot.detail);
     devOptions.setVisibility(wirelessBlocked ? android.view.View.VISIBLE : android.view.View.GONE);
     if (wirelessBlocked)
       text(
@@ -166,9 +167,7 @@ public final class RootBootstrapCard {
     boolean hasEvidence = snapshot.evidence != null && !snapshot.evidence.isEmpty();
     evidenceButton.setVisibility(hasEvidence ? android.view.View.VISIBLE : android.view.View.GONE);
     if (hasEvidence)
-      text(
-          R.id.root_bootstrap_evidence,
-          UiText.choose("查看失败原文", "View failure details"));
+      text(R.id.root_bootstrap_evidence, UiText.choose("查看失败原文", "View failure details"));
     text(
         R.id.root_bootstrap_cleanup,
         UiText.choose(
@@ -199,14 +198,11 @@ public final class RootBootstrapCard {
   }
 
   /** 主按钮文案要能回答"现在到哪了"。 */
-  private String chainLabel(
-      AdbBootstrapController.Snapshot snapshot, boolean root, boolean grant) {
+  private String chainLabel(AdbBootstrapController.Snapshot snapshot, boolean root, boolean grant) {
     if (snapshot.busy)
       return UiText.format(
           "正在执行：%s…",
-          snapshot.action == null
-              ? UiText.choose("自举", "Setup")
-              : actionLabel(snapshot.action));
+          snapshot.action == null ? UiText.choose("自举", "Setup") : actionLabel(snapshot.action));
     return UiText.choose("一键完成 Root 自举", "Set up ADB via root in one step");
   }
 
@@ -256,7 +252,8 @@ public final class RootBootstrapCard {
       pendingAfterRefresh = false;
       toast(
           UiText.choose(
-              "无法刷新状态：已有任务执行中或授权已变化。", "Cannot refresh: another task is running or permission changed."));
+              "无法刷新状态：已有任务执行中或授权已变化。",
+              "Cannot refresh: another task is running or permission changed."));
     }
     render();
   }
@@ -448,7 +445,8 @@ public final class RootBootstrapCard {
   private void openDeveloperOptions() {
     try {
       app.startActivity(
-          new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+          new android.content.Intent(
+                  android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
               .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
     } catch (Throwable unavailable) {
       toast(
@@ -475,18 +473,23 @@ public final class RootBootstrapCard {
   }
 
   /**
-   * 把"另一个实例占着 3090 桥"这一条单独解释清楚。
+   * 把「桥拒绝了凭据」这一条单独解释清楚。
    *
-   * <p>它不是自举失败：前三步已经执行，只有最后一步「会话核验」必须经容器脚本向 3090 桥申请
-   * ADB 计划，而同机装了同源第二个包时，3090 属于启动它的那个实例（见上一轮审计的真因 4）。
+   * <p>不能据此断言自举失败，也不能反推前几步已经执行 —— 只以本页每一步的状态与设备 ADB
+   * 授权表为准。桥只接受启动它的那个实例的 token（loopback 拿不到调用者 UID，token 是唯一
+   * 认证）。本版本起每个实例会在 3090-3109 里选一个空闲端口并写进容器的
+   * {@code /root/.dsh/.bridge_port}，因此「被拒」通常意味着调用脚本用了旧的写死 3090 或过期
+   * 的端口/凭据，而不是必须单实例。
    */
   private static String crossInstanceNote(String evidence) {
     if (evidence == null) return "";
-    if (!evidence.contains("桥拒绝了这个 token") && !evidence.contains("DSHA 实例占用着桥"))
-      return "";
+    if (!evidence.contains("拒绝了这个 token")
+        && !evidence.contains("DSHA 实例占用着桥")
+        && !evidence.contains("BRIDGE_TOKEN_REFUSED")
+        && !evidence.contains("[UNAUTHORIZED]")) return "";
     return UiText.choose(
-        "\n\n说明：这不是自举失败。授权公钥 / 收窄双栈 / 开启监听三步已经执行，本页的「设备 ADB 授权表」也能核对。\n只有最后一步「会话核验」必须向本机 3090 桥申请 ADB 计划，而同机装了同源的第二个 DSHA 包时，3090 属于启动它的那个实例 —— 本包拿自己的 token 去问必然被拒。这是双实例环境的限制，需要单实例（正式包自己）才能把这一步跑绿。",
-        "\n\nNote: this is not a setup failure. Key authorization, loopback narrowing and the listener were executed, and you can confirm them in the device ADB key table below.\nOnly the final session check must ask the local 3090 bridge for an ADB plan; with a second same-origin DSHA package installed, port 3090 belongs to the instance that started it, so this package's token will always be refused. That is a two-instance environment limit; only a single instance (the release package itself) can turn this step green.");
+        "\n\n说明：这条只能说明桥拒绝了这次凭据，既不代表自举失败，也不能反推前几步已经执行 —— 请以本页每一步的状态和下方「设备 ADB 授权表」为准。\n桥只接受启动它的那个实例的 token：本包拿自己的 token 去问别人的桥，被拒是设计行为。\n本版本起每个实例会在 3090-3109 里挑一个空闲端口，并把实际端口写进容器的 /root/.dsh/.bridge_port；同机两个实例各用各的桥，不需要卸载另一个。\n如果这里仍然被拒，多半是调用脚本仍在用旧的写死 3090，或读到了过期的端口/凭据 —— 重启 Web 让本实例重新发布端口与凭据，再跑一次「会话核验」。",
+        "\n\nNote: this only says the bridge refused this credential. It is neither proof that setup failed nor proof that the earlier steps completed - check each step's state on this page and the device ADB key table below.\nA bridge only accepts the token of the instance that started it, so this package's token being refused by another instance's bridge is by design.\nFrom this version on, each instance picks a free port in 3090-3109 and writes the actual port to /root/.dsh/.bridge_port inside the container; two instances on one phone each keep their own bridge, so you do not need to uninstall the other one.\nIf the check is still refused, the calling script is probably still using the hard-coded 3090 or a stale port/credential - restart Web so this instance republishes its port and credentials, then run the session check again.");
   }
 
   private void reviewGrant() {
@@ -748,6 +751,14 @@ public final class RootBootstrapCard {
           UiText.choose(
               "你在自举过程中关闭或重新选择过 ADB 总开关：旧链已停止，不会再写入设备，也不会把总开关写回来。设备可能停在中间状态（例如公钥已授权但监听未开），请先只读刷新核对，需要时再单独清理。",
               "You turned the ADB master switch off or re-selected it during setup: the old chain stopped, performs no further device writes and will not flip the switch back. The device may be left mid-chain (for example key authorized but listener closed); refresh read-only and clean up separately if needed.");
+      case "ADB_SWITCH_ENABLE_NOT_PERSISTED" ->
+          UiText.choose(
+              "公钥与监听已确认打开，但「开启 ADB 总开关」这一次没有保存成功（系统未接受该写入）；这不是你中途关掉了开关。请到「设备能力授权」里手动打开 ADB 通道开关，或稍后重试；不要重放自举链。",
+              "The key and listener are confirmed open, but turning the ADB master switch on was not saved this time (the write was not accepted); this is not because you switched it off. Turn the ADB channel switch on under Device capabilities, or try again later; do not replay the setup chain.");
+      case "ADB_CHANNEL_START_FAILED" ->
+          UiText.choose(
+              "公钥与监听已确认打开，但随后启动 ADB 设备通道时出错（例如通道服务不可用）。设备侧改动可能已经生效，请先只读刷新核对，再手动打开 ADB 通道开关或按需单独清理；不要重放。",
+              "The key and listener are confirmed open, but starting the ADB device channel afterwards failed (for example the channel service was unavailable). Device changes may already be in place; refresh read-only first, then turn the ADB channel switch on manually or clean up separately. Do not replay.");
       case "KEY_TABLE_CHANGED", "KEY_OWNERSHIP_CONFLICT", "CLIENT_KEY_CHANGED_REVOKE_FIRST" ->
           UiText.choose(
               "公钥或授权表发生变化，不能确认安全修改范围；原件与事务记录已保留。",

@@ -22,6 +22,7 @@ import org.json.JSONObject;
 public final class AdbBootstrapReply {
   /** 不可信时使用的失败码：响应根本不是可解析的自举 JSON。 */
   public static final String UNPARSEABLE = "RESULT_UNPARSEABLE";
+
   /** 不可信时使用的失败码：解析成功但状态 / 退出码 / 字段组合不符合协议。 */
   public static final String PROTOCOL_INVALID = "RESULT_PROTOCOL_INVALID";
 
@@ -32,10 +33,13 @@ public final class AdbBootstrapReply {
   public final String listenerState;
   public final String guardState;
   public final String evidence;
+
   /** 持久未决状态是否已核实；false 表示未知，不能据此解除屏障。 */
   public final boolean pendingVerified;
+
   /** 网络事务未决阶段：""、NARROW、OPEN、CLOSE、CLOSE_RESTART_SENT。 */
   public final String networkPending;
+
   /** 公钥事务未决阶段：""、AUTHORIZE、REVOKE、REVOKE_RESTART_SENT。 */
   public final String keyPending;
 
@@ -132,7 +136,9 @@ public final class AdbBootstrapReply {
         || listenerState == null
         || guardState == null) return untrusted(PROTOCOL_INVALID, head);
     int expected = status.equals("OK") ? 0 : status.equals("REFUSED") ? 126 : 125;
-    if (!(status.equals("OK") || status.equals("REFUSED") || status.equals("UNKNOWN")
+    if (!(status.equals("OK")
+        || status.equals("REFUSED")
+        || status.equals("UNKNOWN")
         || status.equals("FAILED"))) return untrusted(PROTOCOL_INVALID, head);
     if (probe.exitCode != expected) return untrusted(PROTOCOL_INVALID, head);
     // 未决字段是新协议的核心：缺失或类型不符就保持未知，而不是退回旧判据。

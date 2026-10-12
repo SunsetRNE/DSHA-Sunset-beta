@@ -92,7 +92,8 @@ try:
     require(forwarded.returncode == 0, 'USB 端口转发就绪')
     port = int(forwarded.stdout.strip())
     require(request('/health') == 'OK', '真实原生桥健康检查')
-    require('BRIDGE_PROTOCOL=2' in request('/app/version'), '桥协议版本 2')
+    protocol = re.search(r'^BRIDGE_PROTOCOL=(\d+)$', request('/app/version'), re.MULTILINE)
+    require(protocol is not None and int(protocol.group(1)) >= 3, '桥协议支持版本 3 能力')
     denied = ['mkdir /system/test', 'touch /sdcard/DCIM/test', 'cp /system/build.prop /sdcard/Pictures/test',
               'mv /sdcard/DCIM/a /sdcard/Download/a', 'rm -rf /*', 'rename /sdcard/Android/data/a /sdcard/Download/a',
               'dd if=/dev/zero of=/dev/block/sda', 'mkfs.ext4 /dev/block/sda', 'fdisk -l', 'parted /dev/block/sda print',

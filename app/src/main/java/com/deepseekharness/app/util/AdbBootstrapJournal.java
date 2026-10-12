@@ -30,6 +30,7 @@ public final class AdbBootstrapJournal {
   /** 网络事务允许的未决阶段；与公钥事务分开表达，互不覆盖。 */
   public static final Set<String> NETWORK_PHASES =
       Set.of("", "NARROW", "OPEN", "CLOSE", "CLOSE_RESTART_SENT");
+
   /** 公钥事务允许的未决阶段。 */
   public static final Set<String> KEY_PHASES =
       Set.of("", "AUTHORIZE", "REVOKE", "REVOKE_RESTART_SENT");

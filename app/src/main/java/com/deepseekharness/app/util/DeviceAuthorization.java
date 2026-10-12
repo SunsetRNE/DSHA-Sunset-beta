@@ -235,8 +235,10 @@ public final class DeviceAuthorization {
     public final Authority authority;
     public final Reason reason;
     public final boolean executable;
+
     /** 与 {@code deviceExecute} 既有 transport 字符串完全一致：root / shizuku / adb / none。 */
     public final String transport;
+
     /** 短信读这类敏感能力在 root 通道上必须限制到当前 Android 用户。 */
     public final boolean restrictToAppUser;
 
@@ -272,12 +274,7 @@ public final class DeviceAuthorization {
     boolean sensitiveRead = "sms.read".equals(capability);
     if (!forceAdb && snapshot.rootEnabled && snapshot.rootPresent)
       return new Decision(
-          Pipe.ROOT_SU,
-          Authority.ROOT_UID0,
-          Reason.READY,
-          true,
-          "root",
-          sensitiveRead);
+          Pipe.ROOT_SU, Authority.ROOT_UID0, Reason.READY, true, "root", sensitiveRead);
     if (!snapshot.adbEnabled)
       return new Decision(
           null,
@@ -326,8 +323,7 @@ public final class DeviceAuthorization {
 
   public static Reason globalReason(Snapshot s) {
     if (!s.adbEnabled) return Reason.ADB_GLOBAL_OFF;
-    for (PipeStatus status : adbSources(s))
-      if (status.state == State.GRANTED) return status.reason;
+    for (PipeStatus status : adbSources(s)) if (status.state == State.GRANTED) return status.reason;
     // 还没取得时，给出「最接近可用」那条来源的原因。
     for (PipeStatus status : adbSources(s))
       if (status.state != State.ABSENT && status.state != State.UNKNOWN) return status.reason;
@@ -337,8 +333,7 @@ public final class DeviceAuthorization {
   /** 已取得的来源（用于「来源=…」这一行）；没有则返回 null。 */
   public static Pipe grantedSource(Snapshot s) {
     if (!s.adbEnabled) return null;
-    for (PipeStatus status : adbSources(s))
-      if (status.state == State.GRANTED) return status.pipe;
+    for (PipeStatus status : adbSources(s)) if (status.state == State.GRANTED) return status.pipe;
     return null;
   }
 

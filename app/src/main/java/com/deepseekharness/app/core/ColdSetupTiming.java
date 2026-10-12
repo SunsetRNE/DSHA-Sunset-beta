@@ -1,12 +1,13 @@
-package com.deepseekharness.app.runtime;
+package com.deepseekharness.app.core;
 
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import com.deepseekharness.app.backup.*;
-import com.deepseekharness.app.core.HarnessController;
-import com.deepseekharness.app.core.MaintenanceCoordinator;
+import com.deepseekharness.app.runtime.ProotBootstrap;
+import com.deepseekharness.app.runtime.RuntimeHostPorts;
+import com.deepseekharness.app.runtime.RuntimeTrial;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -44,8 +45,7 @@ public final class ColdSetupTiming {
           ProotBootstrap boot = new ProotBootstrap(scoped, false);
           boolean completed = false;
           try {
-            com.deepseekharness.app.core.EnvironmentMaintenance.initializeFresh(
-                scoped, boot, timedProgress);
+            EnvironmentMaintenance.initializeFresh(scoped, boot, timedProgress);
             var health = boot.runtimeHealth();
             if (!boot.isEnvironmentReady()) throw new IOException("COLD_TIMING_NOT_READY");
             double seconds = (android.os.SystemClock.elapsedRealtime() - started) / 1000.0;

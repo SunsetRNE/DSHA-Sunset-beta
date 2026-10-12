@@ -64,6 +64,7 @@ def main():
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument("--pack", type=Path)
     modes.add_argument("--url")
+    modes.add_argument("--file", type=Path, help="已通过认证下载的本地输入包；仍须 --sha256")
     parser.add_argument("--sha256")
     args = parser.parse_args()
     names = allowed()
@@ -78,17 +79,24 @@ def main():
                 output.write(path, name)
         print(json.dumps({"sha256": digest(args.pack), "bytes": args.pack.stat().st_size}))
         return
-    if not args.url.startswith("https://") or not re.fullmatch(r"[a-f0-9]{64}", args.sha256 or ""):
-        parser.error("HTTPS 输入包及固定 SHA-256 必需")
+    if not re.fullmatch(r"[a-f0-9]{64}", args.sha256 or ""):
+        parser.error("固定 SHA-256 必需")
+    if args.url and not args.url.startswith("https://"):
+        parser.error("输入包 URL 必须为 HTTPS")
+    if args.file and (not args.file.is_file() or args.file.is_symlink()):
+        parser.error("输入包必须为普通文件")
     with tempfile.TemporaryDirectory(prefix="ci-assets-", dir=bounded("app")) as directory:
-        package = Path(directory) / "inputs.zip"
-        total = 0
-        with urllib.request.urlopen(args.url, timeout=60) as stream, package.open("wb") as output:
-            for chunk in iter(lambda: stream.read(1048576), b""):
-                total += len(chunk)
-                if total > 2 * 1024 ** 3:
-                    raise ValueError("CI_ASSET_DOWNLOAD_LIMIT")
-                output.write(chunk)
+        package = args.file if args.file else Path(directory) / "inputs.zip"
+        if args.url:
+            total = 0
+            with urllib.request.urlopen(args.url, timeout=60) as stream, package.open("wb") as output:
+                for chunk in iter(lambda: stream.read(1048576), b""):
+                    total += len(chunk)
+                    if total > 2 * 1024 ** 3:
+                        raise ValueError("CI_ASSET_DOWNLOAD_LIMIT")
+                    output.write(chunk)
+        if package.stat().st_size > 2 * 1024 ** 3:
+            raise ValueError("CI_ASSET_DOWNLOAD_LIMIT")
         if digest(package) != args.sha256:
             raise ValueError("CI_ASSET_BUNDLE_SHA256")
         with zipfile.ZipFile(package) as archive:

@@ -18,6 +18,7 @@ public final class AdbKeyTable {
   public static final class Entry {
     public final String fingerprint;
     public final String comment;
+
     /** 备注里带本应用包名或 `dsha:` 前缀，说明是本应用自举写进去的那把。 */
     public final boolean appOwned;
 

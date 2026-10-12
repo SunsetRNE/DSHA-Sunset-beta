@@ -77,12 +77,10 @@ public class BootReceiver extends BroadcastReceiver {
               com.deepseekharness.app.util.UiText.format(
                   "自动开无线调试失败: %s", SensitiveData.redact(String.valueOf(e))));
         }
-      } else if (decision
-          == com.deepseekharness.app.util.WirelessBootAction.Decision.SKIP_MUTEX) {
+      } else if (decision == com.deepseekharness.app.util.WirelessBootAction.Decision.SKIP_MUTEX) {
         android.util.Log.i(
             "DSHA-ADB",
-            com.deepseekharness.app.util.UiText.text(
-                "自举互斥意图生效：开机/升级不自动开启无线调试（自举未决或最近一次正因它被拒）"));
+            com.deepseekharness.app.util.UiText.text("自举互斥意图生效：开机/升级不自动开启无线调试（自举未决或最近一次正因它被拒）"));
       } else if (decision
           == com.deepseekharness.app.util.WirelessBootAction.Decision.SKIP_NO_PERMISSION) {
         android.util.Log.i(

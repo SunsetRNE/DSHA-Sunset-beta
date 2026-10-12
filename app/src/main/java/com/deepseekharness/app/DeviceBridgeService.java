@@ -572,9 +572,7 @@ public class DeviceBridgeService extends Service {
     // 自举需要无线调试关闭；自举进行中、或最近一次正因它被拒时，保活不得把它开回来，
     // 否则用户刚在开发者选项里关掉，这里又打开，root 免配对自举永远走不完。
     if (com.deepseekharness.app.core.AdbBootstrapController.get(this).blocksWirelessReopen()) {
-      Log.i(
-          "DSHA-ADB",
-          com.deepseekharness.app.util.UiText.text("保活：自举需要无线调试关闭，跳过自动重开"));
+      Log.i("DSHA-ADB", com.deepseekharness.app.util.UiText.text("保活：自举需要无线调试关闭，跳过自动重开"));
       return false;
     }
     try {

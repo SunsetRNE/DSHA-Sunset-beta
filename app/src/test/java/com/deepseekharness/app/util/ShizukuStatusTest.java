@@ -9,17 +9,13 @@ public class ShizukuStatusTest {
   @Test
   public void levelsFollowObservedFacts() {
     Assert.assertEquals(
-        ShizukuStatus.Level.NOT_INSTALLED,
-        ShizukuStatus.level(false, false, false, false, ""));
+        ShizukuStatus.Level.NOT_INSTALLED, ShizukuStatus.level(false, false, false, false, ""));
     Assert.assertEquals(
-        ShizukuStatus.Level.MANAGER_INSTALLED,
-        ShizukuStatus.level(false, true, false, false, ""));
+        ShizukuStatus.Level.MANAGER_INSTALLED, ShizukuStatus.level(false, true, false, false, ""));
     Assert.assertEquals(
-        ShizukuStatus.Level.PERMISSION_REQUIRED,
-        ShizukuStatus.level(true, true, false, false, ""));
+        ShizukuStatus.Level.PERMISSION_REQUIRED, ShizukuStatus.level(true, true, false, false, ""));
     Assert.assertEquals(
-        ShizukuStatus.Level.CONNECTING,
-        ShizukuStatus.level(true, true, true, false, ""));
+        ShizukuStatus.Level.CONNECTING, ShizukuStatus.level(true, true, true, false, ""));
     Assert.assertEquals(
         ShizukuStatus.Level.CONNECT_FAILED,
         ShizukuStatus.level(true, true, true, false, "binder died"));
@@ -51,8 +47,7 @@ public class ShizukuStatusTest {
 
   @Test
   public void summaryNeverClaimsShizukuAloneGrantsAccess() {
-    String summary =
-        ShizukuStatus.summary(ShizukuStatus.Level.READY, "", ShizukuStatus.Source.ADB);
+    String summary = ShizukuStatus.summary(ShizukuStatus.Level.READY, "", ShizukuStatus.Source.ADB);
     Assert.assertTrue(summary, summary.contains("无需 ADB 配对"));
     Assert.assertTrue(summary, summary.contains("不是授权本身"));
   }

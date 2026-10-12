@@ -40,11 +40,7 @@ public final class AdbSwitch {
     synchronized (LOCK) {
       long revision = revision(ctx);
       if (revision == Long.MAX_VALUE) return false;
-      return prefs(ctx)
-          .edit()
-          .putBoolean(VALUE, value)
-          .putLong(REVISION, revision + 1)
-          .commit();
+      return prefs(ctx).edit().putBoolean(VALUE, value).putLong(REVISION, revision + 1).commit();
     }
   }
 
@@ -55,8 +51,7 @@ public final class AdbSwitch {
    */
   public static boolean autoEnable(Context ctx, long capturedRevision) {
     synchronized (LOCK) {
-      if (!AdbBootstrapChainPlan.autoEnableAllowed(capturedRevision, revision(ctx)))
-        return false;
+      if (!AdbBootstrapChainPlan.autoEnableAllowed(capturedRevision, revision(ctx))) return false;
       if (enabled(ctx)) return true;
       return prefs(ctx).edit().putBoolean(VALUE, true).commit();
     }

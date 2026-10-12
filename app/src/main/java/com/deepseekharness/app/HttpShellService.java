@@ -44,7 +44,20 @@ import java.util.concurrent.TimeUnit;
  */
 public final class HttpShellService {
 
-  public static final int PORT = 3090;
+  /**
+   * 首选端口。同机装了同源第二个包时首选端口会被另一个实例占用，实际监听端口回退到
+   * 3090..3109 中的空闲端口；唯一权威来源见 {@link com.deepseekharness.app.util.BridgePortPolicy}。
+   */
+  public static final int PORT = com.deepseekharness.app.util.BridgePortPolicy.PREFERRED;
+
+  /** 当前就绪监听的实际端口；0 = 桥不可用（未绑定 / 已停止 / 回退范围耗尽）。 */
+  private static volatile int boundPort;
+
+  /** 供容器脚本与诊断核对实际端口，不用首选端口冒充实际端口。 */
+  public static int activePort() {
+    return boundPort;
+  }
+
   private static final String CONFIRM_CHANNEL = "dsh_confirm_channel";
   private static final int CONFIRM_NOTIF_ID = Constants.NOTIF_SHELL_CONFIRM;
 
@@ -228,6 +241,10 @@ public final class HttpShellService {
   private static final class BridgeRun {
     final long generation;
     volatile ServerSocket server, server6;
+
+    /** 本轮实际绑定端口；0 = 还没绑上（或已随本轮结束失效）。 */
+    volatile int port;
+
     final java.util.Set<Socket> clients =
         java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
     final java.util.concurrent.ExecutorService pool =
@@ -405,9 +422,10 @@ public final class HttpShellService {
     return bindError;
   }
 
-  private void noteBindOk() {
+  private void noteBindOk(int port) {
     bindError = "";
-    writeBridgeStatus("ok port=" + PORT);
+    boundPort = port;
+    writeBridgeStatus("ok port=" + port);
   }
 
   private void noteBindError(String why) {
@@ -430,6 +448,71 @@ public final class HttpShellService {
               f.getName(),
               (s + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
     } catch (Throwable ignored) {
+    }
+  }
+
+  /** 端点契约文件（与 .bridge_token 同目录）；数据根还不可用时返回 null。 */
+  private static java.io.File endpointFile() {
+    java.io.File token = tokenFileIfPossible();
+    return token == null || token.getParentFile() == null
+        ? null
+        : new java.io.File(
+            token.getParentFile(), com.deepseekharness.app.util.BridgeEndpointFiles.FILE_NAME);
+  }
+
+  /**
+   * 端点发布守卫：只有仍是本代次、仍持有 activeRun 时才允许写文件。
+   *
+   * <p>「检查代次」「解析数据根」与「写文件」都必须在同一把 {@link #LIFECYCLE} 锁内完成：
+   * 迟到的旧代次 stop/finish 不能擦除新代次已发布的端口，也避免在 LIFECYCLE 之外先做
+   * tokenFileIfPossible()/HarnessController 解析、再回来抢 LIFECYCLE 的反向锁序。
+   *
+   * <p>数据根还不可用时抛 {@code BRIDGE_DATA_ROOT_UNAVAILABLE}：调用方必须据此不发布就绪，
+   * 不能把「没有契约文件」当成发布成功。
+   */
+  private boolean publishEndpointFor(BridgeRun run, int port) throws IOException {
+    synchronized (LIFECYCLE) {
+      if (run != activeRun || !LIFECYCLE.isCurrent(run.generation)) return false;
+      return com.deepseekharness.app.util.BridgeEndpointFiles.publishIfCurrent(
+          new com.deepseekharness.app.backup.AndroidBackupFileSystem(),
+          requireEndpointFile(),
+          port,
+          () -> run == activeRun && LIFECYCLE.isCurrent(run.generation));
+    }
+  }
+
+  /**
+   * 就绪前的端口发布：同一数据根的 token/header 必须在位，再原子发布实际端口并读回。
+   *
+   * <p>这是「成功就绪」的唯一入口；内存 token、缺根、凭据读回失败都不会写出端口，
+   * 因此旧的无根内存 token 行为不能绕过这里的就绪门槛。
+   */
+  private boolean publishReadyEndpointFor(BridgeRun run, int port, String token)
+      throws IOException {
+    synchronized (LIFECYCLE) {
+      if (run != activeRun || !LIFECYCLE.isCurrent(run.generation)) return false;
+      return com.deepseekharness.app.util.BridgeEndpointFiles.publishReady(
+          new com.deepseekharness.app.backup.AndroidBackupFileSystem(),
+          requireEndpointFile(),
+          port,
+          token,
+          () -> run == activeRun && LIFECYCLE.isCurrent(run.generation));
+    }
+  }
+
+  /** 解析端点契约文件；数据根还不可用时明确报错，调用方据此不发布就绪。 */
+  private static java.io.File requireEndpointFile() throws IOException {
+    java.io.File file = endpointFile();
+    if (file == null) throw new IOException("BRIDGE_DATA_ROOT_UNAVAILABLE");
+    return file;
+  }
+
+  /** 停止/失败时的清理发布（0）：失败只如实记日志，不把桥的生命周期交给诊断文件。 */
+  private void publishEndpointQuietly(BridgeRun run, int port) {
+    try {
+      publishEndpointFor(run, port);
+    } catch (Throwable error) {
+      android.util.Log.w("DSHA", "BRIDGE_ENDPOINT_PUBLISH: " + safeError(error));
     }
   }
 
@@ -464,44 +547,68 @@ public final class HttpShellService {
   private void bindAndServe(BridgeRun run) {
     String failure = null;
     try {
+      String token;
       synchronized (LIFECYCLE) {
         if (!LIFECYCLE.isCurrent(run.generation) || activeRun != run) return;
-        ensureToken();
-        run.server = new ServerSocket();
+        token = ensureToken();
       }
-      // IPv4 是主通道；失败时不得启动仅 IPv6 的假就绪服务。
-      run.server.setReuseAddress(true);
-      run.server.bind(
-          new java.net.InetSocketAddress(java.net.InetAddress.getByName("127.0.0.1"), PORT));
+      if (token == null || token.isEmpty()) throw new IOException("BRIDGE_TOKEN_UNAVAILABLE");
+      // 启动即发布 0：这一步失败（含数据根不可用）必须让本次启动失败，不能 quiet 吞掉后继续绑定。
+      if (!publishEndpointFor(run, com.deepseekharness.app.util.BridgeEndpointFiles.UNAVAILABLE))
+        return;
+      // IPv4 回环是主通道；3090 被同机另一个实例占用时依次回退到 3109，绝不绑公网地址。
+      run.server = com.deepseekharness.app.util.BridgePortPolicy.bindLoopbackFirstAvailable();
+      if (!com.deepseekharness.app.util.BridgePortPolicy.loopbackOnly(run.server)) {
+        closeSocket(run.server);
+        throw new IOException("BRIDGE_NOT_LOOPBACK");
+      }
+      run.port = run.server.getLocalPort();
       synchronized (LIFECYCLE) {
-        if (activeRun != run || !LIFECYCLE.publish(run.generation)) return;
+        // 端点落盘与就绪转换必须是同一个临界区；恢复不能在两步之间写回 0。
+        // 凭据若已被恢复轮换，publishReady 会拒绝旧 token，本次监听不进入就绪。
+        if (!publishReadyEndpointFor(run, run.port, token)) {
+          closeSocket(run.server);
+          return;
+        }
+        if (activeRun != run || !LIFECYCLE.publish(run.generation)) {
+          // 代次已过期：finishRun 会早退，这里必须自己关掉刚绑上的 socket，不能漏监听。
+          closeSocket(run.server);
+          return;
+        }
         running = true;
         instance = this;
-        noteBindOk();
-        Thread t6 = new Thread(() -> serveIpv6(run), "http-shell-accept6");
+        noteBindOk(run.port);
+        // 端口在本轮内不可变，直接捕获；不依赖可能已被停止关闭的 socket 状态。
+        final int ipv6Port = run.port;
+        Thread t6 = new Thread(() -> serveIpv6(run, ipv6Port), "http-shell-accept6");
         t6.setDaemon(true);
         t6.start();
       }
       acceptLoop(run, run.server);
-    } catch (java.net.BindException error) {
-      failure =
-          com.deepseekharness.app.util.UiText.format(
-              "设备桥端口 3090 被占用，设备工具暂不可用；Web 可独立启动。关闭占用端口的其他实例后重试：%s", safeError(error));
-    } catch (IOException | RuntimeException error) {
+    } catch (java.io.IOException error) {
+      if ("BRIDGE_PORT_EXHAUSTED".equals(error.getMessage()))
+        failure =
+            com.deepseekharness.app.util.UiText.format(
+                "设备桥端口 3090 被占用，设备工具暂不可用；Web 可独立启动。关闭占用端口的其他实例后重试：%s",
+                "3090-3109 " + safeError(error));
+      else if ("BRIDGE_DATA_ROOT_UNAVAILABLE".equals(error.getMessage()))
+        failure = "BRIDGE_DATA_ROOT_UNAVAILABLE";
+      else failure = safeError(error);
+    } catch (RuntimeException error) {
       failure = safeError(error);
     } finally {
       finishRun(run, failure);
     }
   }
 
-  private void serveIpv6(BridgeRun run) {
+  private void serveIpv6(BridgeRun run, int port) {
     try {
       synchronized (LIFECYCLE) {
         if (!running || activeRun != run || !LIFECYCLE.isCurrent(run.generation)) return;
         run.server6 = new ServerSocket();
       }
       run.server6.setReuseAddress(true);
-      run.server6.bind(new java.net.InetSocketAddress(java.net.InetAddress.getByName("::1"), PORT));
+      run.server6.bind(new java.net.InetSocketAddress(java.net.InetAddress.getByName("::1"), port));
       acceptLoop(run, run.server6);
     } catch (IOException | RuntimeException error) {
       if (activeRun == run && running)
@@ -578,6 +685,11 @@ public final class HttpShellService {
         android.util.Log.w("DSHA", "BRIDGE_GRANT_REVOKE", error);
       }
       if (instance == this) instance = null;
+      // 停止/失败都发布 0：consumer 读到 0 必须按不可用处理，不能回退到缺省 3090。
+      // 仍在本代次守卫内（activeRun == run 且 isCurrent），迟到的旧代次进不来。
+      publishEndpointQuietly(run, com.deepseekharness.app.util.BridgeEndpointFiles.UNAVAILABLE);
+      boundPort = 0;
+      run.port = 0;
       closeSocket(run.server);
       closeSocket(run.server6);
       for (Socket client : run.clients) closeSocket(client);
@@ -622,13 +734,60 @@ public final class HttpShellService {
     return authToken == null ? "" : authToken;
   }
 
-  /** After a committed restore, atomically rotate the host bridge token and revoke screen grants. */
+  /**
+   * After a committed restore, atomically rotate the host bridge token and revoke screen grants.
+   *
+   * <p>恢复提交可能切换数据根（{@link com.deepseekharness.app.backup.UserDataLayout} 的选择记录），
+   * 所以凭据轮换与端点契约必须在同一把 {@link #LIFECYCLE} 锁里对**同一个**当前根完成：只轮换
+   * token 而不重发本活跃 run 的实际端口，会让新根缺 {@code .port}，消费者随后误回退到缺省 3090
+   * （很可能是另一个实例的桥）。仍在运行且已就绪的监听在正确代次守卫内重发实际端口；没有活跃
+   * 就绪监听时发布不可用哨兵，由正常 start 重新发布；重发失败则停止本代监听。
+   *
+   * <p>锁序固定为 {@code LIFECYCLE -> HttpShellService.class}，与 {@link #bindAndServe} 里
+   * {@code ensureToken()} 的取锁顺序一致，不引入反向死锁。这里只改原生端点生命周期，不动备份业务。
+   */
   public static void resetTokenAfterRestore(Context context) {
     bindTokenContext(context);
+    synchronized (LIFECYCLE) {
+      String rotated = rotateTokenAfterRestoreLocked(context);
+      HttpShellService current = instance;
+      BridgeRun run = current == null ? null : current.activeRun;
+      boolean ready = run != null && current.running && LIFECYCLE.isReady() && run.port > 0;
+      if (rotated.isEmpty()) {
+        if (ready) current.finishRun(run, "BRIDGE_TOKEN_ROTATION_FAILED");
+        return;
+      }
+      try {
+        java.io.File file = requireEndpointFile();
+        var fs = new com.deepseekharness.app.backup.AndroidBackupFileSystem();
+        if (ready) {
+          com.deepseekharness.app.util.BridgeEndpointFiles.publishReady(
+              fs,
+              file,
+              run.port,
+              rotated,
+              () -> run == current.activeRun && LIFECYCLE.isCurrent(run.generation));
+        } else {
+          com.deepseekharness.app.util.BridgeEndpointFiles.publish(
+              fs, file, com.deepseekharness.app.util.BridgeEndpointFiles.UNAVAILABLE);
+        }
+      } catch (Throwable error) {
+        // 发现文件失效时，已有监听也必须退出就绪；后续正常启动才可重新发布。
+        android.util.Log.w("DSHA", "BRIDGE_ENDPOINT_RESTORE_REPUBLISH: " + safeError(error));
+        if (ready) current.finishRun(run, "BRIDGE_ENDPOINT_RESTORE_REPUBLISH_FAILED");
+      }
+    }
+  }
+
+  /**
+   * 在当前数据根轮换 token/header。调用方必须持有 {@link #LIFECYCLE}；{@code authToken} 仍由
+   * {@code HttpShellService.class} 保护（内层取锁）。返回空串表示没有可用数据根或轮换失败。
+   */
+  private static String rotateTokenAfterRestoreLocked(Context context) {
     synchronized (HttpShellService.class) {
       authToken = "";
       java.io.File file = tokenFileIfPossible();
-      if (file == null) return;
+      if (file == null) return "";
       try {
         String token = java.util.UUID.randomUUID().toString().replace("-", "");
         com.deepseekharness.app.util.BridgeCredentialFiles.publish(
@@ -636,8 +795,10 @@ public final class HttpShellService {
         authToken = token;
         com.deepseekharness.app.util.SensitiveData.registerKnownSecret(token);
         revokeScreenGrant(context);
+        return token;
       } catch (Throwable error) {
         android.util.Log.w("DSHA", "BRIDGE_TOKEN_ROTATION_FAILED: " + safeError(error));
+        return "";
       }
     }
   }
@@ -1284,16 +1445,28 @@ public final class HttpShellService {
    * 而 dsh 与 DSHA 是各自升级的 —— 用户完全可能拿新插件配旧 App。
    */
   private String appVersion() {
+    // 保持原模板作为翻译键不变，端口是可变的协议事实，按原文追加（协议值不做翻译）。
     return com.deepseekharness.app.util.UiText.format(
-        "BRIDGE_PROTOCOL=%s\nBRIDGE_AUTH=header-x-token\nAPP_VERSION=%s\nAPP_CODE=%s\nHINT=端点清单见 /app/help；判版本请用 >= 而不是 ==\n",
-        BRIDGE_PROTOCOL, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
+            "BRIDGE_PROTOCOL=%s\nBRIDGE_AUTH=header-x-token\nAPP_VERSION=%s\nAPP_CODE=%s\nHINT=端点清单见 /app/help；判版本请用 >= 而不是 ==\n",
+            BRIDGE_PROTOCOL, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        + "BRIDGE_PORT="
+        + activePort()
+        + "\nBRIDGE_PORT_RANGE="
+        + com.deepseekharness.app.util.BridgePortPolicy.PREFERRED
+        + "-"
+        + com.deepseekharness.app.util.BridgePortPolicy.LAST
+        + "\n";
   }
 
   /** /app/help lists bridge endpoint parameters for authenticated clients. */
   private String appHelp() {
-    return com.deepseekharness.app.util.UiText.format(
-        "DSHA 3090 桥端点清单（BRIDGE_PROTOCOL=%s）\n凭据由宿主写入 /root/.dsh/.bridge_headers；使用 curl -H @/root/.dsh/.bridge_headers，不把 token 写进 URL 或命令参数。\n带中文/空格的参数一律用 -G --data-urlencode，别手写 URL 编码。\n\n== 屏幕操作（无障碍服务，不需要 ADB/Shizuku）==\n读屏  curl -s -H @/root/.dsh/.bridge_headers \"127.0.0.1:3090/app/ui/dump\"\n      → 每行「[序号] \"文字\" 可点击 中心=(x,y) 区域=l,t,r,b」\n点按  curl -s -G 127.0.0.1:3090/app/ui/tap --data-urlencode \"text=设置\" -H @/root/.dsh/.bridge_headers\n      → 优先按文字点：控件位置随滚动/动画变，文字不变。没有文字才用 ?x=&y=\n输入  curl -s -G 127.0.0.1:3090/app/ui/input --data-urlencode \"text=内容\" -H @/root/.dsh/.bridge_headers\n      → 填到当前焦点框；没有焦点先 tap 一下输入框\n按键  /app/ui/key?name=back  （back/home/recents/notifications/quicksettings/lock）\n滑动  /app/ui/swipe?x1=500&y1=1500&x2=500&y2=500&ms=300\n截屏  /app/ui/screenshot   → 存 PNG 到应用截图目录并返回路径（不回 base64）\n节奏：每次点按/输入后先 dump 再决定下一步，别凭记忆连点。\n\n== 独立虚拟屏（Android 11+；每次输入必须带最新 frameSeq）==\n/app/vscreen/create?orientation=portrait|landscape  创建虚拟屏\n/app/vscreen/status  查询 displayId、尺寸和 frameSeq\n/app/vscreen/launch?package=com.example.app  启动已安装应用\n/app/vscreen/see  获取最新预览；tap/swipe/type/key 必须携带该 frameSeq\n/app/vscreen/close  关闭并回收虚拟屏\n\n== 设备与应用 ==\n/app/device                     机型/系统/电量/网络/屏幕/存储/内存\n/app/apps                       全部已装应用，分用户应用与系统应用；可加 q/limit/user=1 筛选显示\n/app/launch?pkg=com.tencent.mm  启动应用\n/app/clip                       读剪贴板（需 App 在前台，系统限制）\n/app/clip + text=…              写剪贴板\n/app/readfile?path=/…          读取绝对路径的目录或文本，仍受 Android 权限限制；凭据区（.dsh/.ssh/.android）不可读\n设备文件写入请走下方受保护的设备 shell；普通 Download 文件可操作，DCIM/Pictures/Android/data/obb 只读。\n\n== 与用户交互 ==\n/app/ask?options=继续|取消 + q=…  弹窗阻塞等回答（最多三个选项）\n/app/notify?title=… + text=…      通知栏\n/app/toast + text=…               App 内提示\n/app/vibrate?ms=300               震动（长任务跑完叫醒用户）\n/app/share（text= 或 path=）      分享到其它应用\n/app/open?url=https://…           打开链接\n/app/export?path=/root/report.md  把产物交给用户 → 落 Download/DSHA；凭据区不可导出\n建议：需要用户拍板用 /app/ask 而不是干等；长任务结束用 notify 或 vibrate 叫人；\n产出报告用 /app/export，别只留在容器里。\n\n== 传感器与位置（默认关闭，需用户在配置页勾选）==\n/app/location（加 fresh=1 强制重新定位，可能等数秒）\n/app/sensors 列表 · /app/sensor?name=light 读值\n（light 环境光 lux / accel / gyro / magnet / pressure / proximity /\n gravity / rotation 姿态四元数 / steps 开机后步数）\n/app/torch?on=1 手电\n这三类返回 DISABLED（用户没开该能力）或 NO_PERMISSION（没授系统权限）时，\n照原话告诉用户去哪开，不要重试 —— 重试不会让开关自己变。\n\n== 元信息 ==\n/app/version                          桥协议版本 + App 版本（特性检测用）\n/app/help                             本清单\n\n== 插件状态 ==\n/app/plugins                          读回上次上报的加载状态\n/app/plugins?loaded=a,b&failed=c      上报（插件侧用）\n\n== 设备 shell（自动选择 root / Shizuku / ADB）==\n/root/dsh-bin/adb-shell \"命令\"        用 id 核验实际身份\n包装命令不存在时：python3 /root/.dsh/adb-shell.py \"命令\"\n短信只允许当前 Android 用户的 content query --uri content://sms，默认关闭；设置 → 设备能力授权可开启或撤销。\n短信预授权可能返回正文及验证码；不允许发送、修改或删除，Android 仍可拒绝访问。Shizuku 不执行此敏感查询。\n仅执行已识别的单条命令；允许读取各目录和明确路径的普通文件操作。禁止脚本、管道、重定向、未知命令。\n根目录及系统目录只读；禁止块设备/分区、SELinux、系统设置写入、挂载和刷机操作。\n结束进程前自动刷新全量用户/系统应用清单；普通用户应用直接结束，系统应用与关键进程拦截。\n按完整包名调用 am force-stop / killall / pkill -x；kill 正数 PID 会核对 UID 后按包名停止。\n策略拦截返回 [POLICY_BLOCKED]/126；root 和旧确认开关不能放行。不可用其它解释器或 UI 绕过。\n报连不上/未配对：先看上面的 App 层接口能不能办成；确实必须 shell 才请用户到\n设置 → 设备能力授权中连接可用通道，别反复试同一条命令。\n不要用 /root/dsh-bin/adb 或裸 adb —— 那是守卫包装脚本，会失败。\n\n== root（--su）==\n已启用并经 root 管理器授权的 su 可直接执行，无需 ADB 配对；其次使用 Shizuku，再使用 ADB。\n--su 仅在明确需要 root 时使用，须先在设备能力授权页允许；同一设备保护策略始终生效。\n[EXECUTION_UNKNOWN] 表示命令可能已执行，先核对实际状态，不能切换通道或自动重放。\n",
-        BRIDGE_PROTOCOL);
+    // 模板保持字节不变（它是既有翻译键）；实际端口在返回前替换，否则 agent 会被指到别的实例的桥。
+    String body =
+        com.deepseekharness.app.util.UiText.format(
+            "DSHA 3090 桥端点清单（BRIDGE_PROTOCOL=%s）\n凭据由宿主写入 /root/.dsh/.bridge_headers；使用 curl -H @/root/.dsh/.bridge_headers，不把 token 写进 URL 或命令参数。\n带中文/空格的参数一律用 -G --data-urlencode，别手写 URL 编码。\n\n== 屏幕操作（无障碍服务，不需要 ADB/Shizuku）==\n读屏  curl -s -H @/root/.dsh/.bridge_headers \"127.0.0.1:3090/app/ui/dump\"\n      → 每行「[序号] \"文字\" 可点击 中心=(x,y) 区域=l,t,r,b」\n点按  curl -s -G 127.0.0.1:3090/app/ui/tap --data-urlencode \"text=设置\" -H @/root/.dsh/.bridge_headers\n      → 优先按文字点：控件位置随滚动/动画变，文字不变。没有文字才用 ?x=&y=\n输入  curl -s -G 127.0.0.1:3090/app/ui/input --data-urlencode \"text=内容\" -H @/root/.dsh/.bridge_headers\n      → 填到当前焦点框；没有焦点先 tap 一下输入框\n按键  /app/ui/key?name=back  （back/home/recents/notifications/quicksettings/lock）\n滑动  /app/ui/swipe?x1=500&y1=1500&x2=500&y2=500&ms=300\n截屏  /app/ui/screenshot   → 存 PNG 到应用截图目录并返回路径（不回 base64）\n节奏：每次点按/输入后先 dump 再决定下一步，别凭记忆连点。\n\n== 独立虚拟屏（Android 11+；每次输入必须带最新 frameSeq）==\n/app/vscreen/create?orientation=portrait|landscape  创建虚拟屏\n/app/vscreen/status  查询 displayId、尺寸和 frameSeq\n/app/vscreen/launch?package=com.example.app  启动已安装应用\n/app/vscreen/see  获取最新预览；tap/swipe/type/key 必须携带该 frameSeq\n/app/vscreen/close  关闭并回收虚拟屏\n\n== 设备与应用 ==\n/app/device                     机型/系统/电量/网络/屏幕/存储/内存\n/app/apps                       全部已装应用，分用户应用与系统应用；可加 q/limit/user=1 筛选显示\n/app/launch?pkg=com.tencent.mm  启动应用\n/app/clip                       读剪贴板（需 App 在前台，系统限制）\n/app/clip + text=…              写剪贴板\n/app/readfile?path=/…          读取绝对路径的目录或文本，仍受 Android 权限限制；凭据区（.dsh/.ssh/.android）不可读\n设备文件写入请走下方受保护的设备 shell；普通 Download 文件可操作，DCIM/Pictures/Android/data/obb 只读。\n\n== 与用户交互 ==\n/app/ask?options=继续|取消 + q=…  弹窗阻塞等回答（最多三个选项）\n/app/notify?title=… + text=…      通知栏\n/app/toast + text=…               App 内提示\n/app/vibrate?ms=300               震动（长任务跑完叫醒用户）\n/app/share（text= 或 path=）      分享到其它应用\n/app/open?url=https://…           打开链接\n/app/export?path=/root/report.md  把产物交给用户 → 落 Download/DSHA；凭据区不可导出\n建议：需要用户拍板用 /app/ask 而不是干等；长任务结束用 notify 或 vibrate 叫人；\n产出报告用 /app/export，别只留在容器里。\n\n== 传感器与位置（默认关闭，需用户在配置页勾选）==\n/app/location（加 fresh=1 强制重新定位，可能等数秒）\n/app/sensors 列表 · /app/sensor?name=light 读值\n（light 环境光 lux / accel / gyro / magnet / pressure / proximity /\n gravity / rotation 姿态四元数 / steps 开机后步数）\n/app/torch?on=1 手电\n这三类返回 DISABLED（用户没开该能力）或 NO_PERMISSION（没授系统权限）时，\n照原话告诉用户去哪开，不要重试 —— 重试不会让开关自己变。\n\n== 元信息 ==\n/app/version                          桥协议版本 + App 版本（特性检测用）\n/app/help                             本清单\n\n== 插件状态 ==\n/app/plugins                          读回上次上报的加载状态\n/app/plugins?loaded=a,b&failed=c      上报（插件侧用）\n\n== 设备 shell（自动选择 root / Shizuku / ADB）==\n/root/dsh-bin/adb-shell \"命令\"        用 id 核验实际身份\n包装命令不存在时：python3 /root/.dsh/adb-shell.py \"命令\"\n短信只允许当前 Android 用户的 content query --uri content://sms，默认关闭；设置 → 设备能力授权可开启或撤销。\n短信预授权可能返回正文及验证码；不允许发送、修改或删除，Android 仍可拒绝访问。Shizuku 不执行此敏感查询。\n仅执行已识别的单条命令；允许读取各目录和明确路径的普通文件操作。禁止脚本、管道、重定向、未知命令。\n根目录及系统目录只读；禁止块设备/分区、SELinux、系统设置写入、挂载和刷机操作。\n结束进程前自动刷新全量用户/系统应用清单；普通用户应用直接结束，系统应用与关键进程拦截。\n按完整包名调用 am force-stop / killall / pkill -x；kill 正数 PID 会核对 UID 后按包名停止。\n策略拦截返回 [POLICY_BLOCKED]/126；root 和旧确认开关不能放行。不可用其它解释器或 UI 绕过。\n报连不上/未配对：先看上面的 App 层接口能不能办成；确实必须 shell 才请用户到\n设置 → 设备能力授权中连接可用通道，别反复试同一条命令。\n不要用 /root/dsh-bin/adb 或裸 adb —— 那是守卫包装脚本，会失败。\n\n== root（--su）==\n已启用并经 root 管理器授权的 su 可直接执行，无需 ADB 配对；其次使用 Shizuku，再使用 ADB。\n--su 仅在明确需要 root 时使用，须先在设备能力授权页允许；同一设备保护策略始终生效。\n[EXECUTION_UNKNOWN] 表示命令可能已执行，先核对实际状态，不能切换通道或自动重放。\n",
+            BRIDGE_PROTOCOL);
+    int port = activePort();
+    return port > 0 ? body.replace("3090", Integer.toString(port)) : body;
   }
 
   /** /app/plugins records actual startup loading observations; registration alone is not readiness. */

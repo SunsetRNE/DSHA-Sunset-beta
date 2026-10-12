@@ -12,7 +12,7 @@ import com.deepseekharness.app.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.JSONObject;
@@ -26,18 +26,18 @@ public final class AdbBootstrapController {
   private final Context app;
   private final SharedPreferences records;
   private final AtomicBoolean running = new AtomicBoolean();
-  private final ExecutorService worker =
-      Executors.newSingleThreadExecutor(
-          r -> {
-            Thread thread = new Thread(r, "adb-bootstrap");
-            thread.setDaemon(true);
-            return thread;
-          });
+  private final Executor worker;
+
+  /** 核验前等待的可控接缝（ADR 0007 方案 C）；生产固定 2.5 秒且只等一次。 */
+  private final Settle settle;
+
   private volatile Snapshot current;
   private volatile boolean rootRequestSent;
   private volatile boolean unresolved;
+
   /** 本轮进程内的保守互斥拦截；持久化失败时仍生效（F02）。 */
   private volatile boolean wirelessReopenLatched;
+
   /** 一键自举链的状态机：当前步骤 / 剩余步骤 / 最初确认的总开关意图（F01/F04）。 */
   private final AdbBootstrapChainSession session = new AdbBootstrapChainSession();
 
@@ -45,8 +45,10 @@ public final class AdbBootstrapController {
     public final boolean busy;
     public final AdbBootstrapPolicy.Action action;
     public final String outcome, detail, keyState, listenerState, guardState;
+
     /** 失败时设备命令的原文（argv / 退出码 / 输出首行）；只用于显示与诊断记录。 */
     public final String evidence;
+
     public final long observedAt;
 
     Snapshot(
@@ -71,8 +73,31 @@ public final class AdbBootstrapController {
     }
   }
 
+  /**
+   * 会话核验前的固定等待（ADR 0007 方案 C）。
+   *
+   * <p>只为让刚写入的公钥有机会被 adbd / 系统侧看到；**不轮询、不重试**，等待结束后仍然只核验一次。
+   * 被中断（页面 / 进程要求停止）时按打断处理，由上层保留现场。生产固定 2.5 秒；主机测试
+   * 注入自己的实现以可控重现「等待期间撤销」，不改变生产时长、次数或端点。
+   */
+  interface Settle {
+    void await() throws InterruptedException;
+  }
+
   private AdbBootstrapController(Context application) {
+    this(application, defaultWorker(), () -> Thread.sleep(SESSION_SETTLE_MS));
+  }
+
+  /**
+   * 主机测试接缝：注入可控执行器与等待时点。
+   *
+   * <p>生产路径只走上面的单参构造；这里注入的仍是同一个生产控制器类，组合逻辑（派发判据、
+   * 结果保存、续链、屏障）不复制一套只给测试用的实现。
+   */
+  AdbBootstrapController(Context application, Executor worker, Settle settle) {
     app = application.getApplicationContext();
+    this.worker = worker;
+    this.settle = settle;
     records = app.getSharedPreferences("dsha_device_grants", Context.MODE_PRIVATE);
     unresolved = records.getBoolean("bootstrap_request_pending", false);
     current =
@@ -82,6 +107,15 @@ public final class AdbBootstrapController {
             records.getBoolean("bootstrap_request_pending", false)
                 ? "PREVIOUS_REQUEST_OUTCOME_UNKNOWN"
                 : "");
+  }
+
+  private static Executor defaultWorker() {
+    return Executors.newSingleThreadExecutor(
+        r -> {
+          Thread thread = new Thread(r, "adb-bootstrap");
+          thread.setDaemon(true);
+          return thread;
+        });
   }
 
   public static synchronized AdbBootstrapController get(Context app) {
@@ -295,8 +329,7 @@ public final class AdbBootstrapController {
               : execute(action, "", lease);
       // 生产响应编码/解码与完成判据都在 AdbBootstrapReply 接缝里；这里不另写一套判断。
       reply = AdbBootstrapReply.parse(output);
-      if (!reply.trusted)
-        throw new AdbBootstrapEngine.BootstrapFailure(reply.code, reply.evidence);
+      if (!reply.trusted) throw new AdbBootstrapEngine.BootstrapFailure(reply.code, reply.evidence);
       result =
           new Snapshot(
               false,
@@ -339,9 +372,7 @@ public final class AdbBootstrapController {
     boolean persisted = false;
     try {
       // 只有可信响应确认两个未决阶段都已结束、观测完整，才允许解除屏障。
-      unresolved =
-          AdbBootstrapJournal.unresolved(
-              unresolved, reply, result.outcome, result.detail);
+      unresolved = AdbBootstrapJournal.unresolved(unresolved, reply, result.outcome, result.detail);
       boolean saved =
           records
               .edit()
@@ -387,22 +418,19 @@ public final class AdbBootstrapController {
    */
   private void advanceChain(boolean persisted, Snapshot result) {
     if (!session.active()) return;
-    boolean ok =
-        persisted && result != null && "OK".equals(result.outcome) && !unresolved;
+    boolean ok = persisted && result != null && "OK".equals(result.outcome) && !unresolved;
     boolean nextExists = session.hasNext();
     // 每次派发下一步**之前**回查最初确认的总开关意图：用户在步骤之间关闭或重新选择后，
     // 旧链不再获得任何新的设备写入（F01）。
     boolean intentUnchanged =
         AdbBootstrapChainPlan.autoEnableAllowed(session.intentRevision(), AdbSwitch.revision(app));
     AdbBootstrapPolicy.Action next = nextExists ? session.remaining().get(0) : null;
-    boolean accepted = ok && nextExists && intentUnchanged && session.beginNext() && submit(next, true);
+    boolean accepted =
+        ok && nextExists && intentUnchanged && session.beginNext() && submit(next, true);
     AdbBootstrapChainPlan.Outcome outcome =
         AdbBootstrapChainPlan.after(session.active(), ok, intentUnchanged, nextExists, accepted);
     if (outcome == AdbBootstrapChainPlan.Outcome.CONTINUE) return;
-    if (outcome == AdbBootstrapChainPlan.Outcome.ABORT
-        && ok
-        && nextExists
-        && !intentUnchanged) {
+    if (outcome == AdbBootstrapChainPlan.Outcome.ABORT && ok && nextExists && !intentUnchanged) {
       // 链停在中间状态：保留上一步的观测，但把结果标成未知并说明原因，
       // 而不是让卡片继续显示上一个「已完成」。
       unresolved = true;
@@ -432,21 +460,40 @@ public final class AdbBootstrapController {
   }
 
   /**
-   * 自举成功后自动开启 ADB 设备通道。
+   * 最初确认捕获的 ADB 总开关用户意图是否仍然有效（F01）。
+   *
+   * <p>{@code session.intentRevision()} 对整链是确认时捕获的那一次，对 standalone OPEN 是提交时
+   * 捕获的那一次；{@link AdbSwitch#autoEnable} 自身不递增代次，所以这里只会被用户的新选择
+   * （关闭、关闭再开启）改变。核验前后都用同一个判据，避免两处逻辑漂移。
+   */
+  private boolean userIntentUnchanged() {
+    return AdbBootstrapChainPlan.autoEnableAllowed(
+        this.session.intentRevision(), AdbSwitch.revision(app));
+  }
+
+  /**
+   * 自举成功后自动开启 ADB 设备通道（F01）。
    *
    * <p>只有最初确认捕获的总开关用户意图仍然有效时才能提交：用户在途中的关闭或重新选择
-   * 都会改变意图代次，旧完成回调不得把它反转回来（F01）。被拒时返回 false，由调用方
-   * 明确报告，不静默吞掉 commit 结果。
+   * 都会改变意图代次，旧完成回调不得把它反转回来。被拒时返回明确的失败码，由调用方报告，
+   * 不静默吞掉 commit 结果。
+   *
+   * @return 空串表示通道已开启或本来就是开启；否则是明确失败码。用户改意图与
+   *     {@code commit()} 没落盘必须分开报告，不能把写入失败说成"用户关闭了开关"。
    */
-  private boolean enableAdbChannel() {
+  private String openAdbChannel() {
     try {
-      if (!AdbSwitch.autoEnable(app, session.intentRevision())) return false;
+      if (!AdbSwitch.autoEnable(app, this.session.intentRevision()))
+        return AdbBootstrapChainPlan.autoEnableAllowed(
+                this.session.intentRevision(), AdbSwitch.revision(app))
+            ? "ADB_SWITCH_ENABLE_NOT_PERSISTED"
+            : "ADB_SWITCH_INTENT_CHANGED";
       // 服务启动前再读真实开关：写值与启动服务之间的用户关闭优先。
       DeviceBridgeService.apply(app);
-      return true;
+      return "";
     } catch (RuntimeException unavailable) {
       // 自举结果已经落盘；通道开启失败不改变本次结论，也不重放设备动作。
-      return false;
+      return "ADB_CHANNEL_START_FAILED";
     }
   }
 
@@ -463,16 +510,38 @@ public final class AdbBootstrapController {
         // 的顺序会让这里的会话核验永远拿不到计划（实机返回 [DEVICE_CHANNEL_UNAVAILABLE]）。
         // 因此先开启通道再核验；核验失败时保留开关与监听，由卡片提示刷新或按需关闭。
         // 用户在途中关过总开关时这里会失败：不能反转用户意图，也**不能**把整链报成成功。
-        if (!enableAdbChannel())
+        String channelFailure = openAdbChannel();
+        if (!channelFailure.isEmpty())
           throw new AdbBootstrapEngine.BootstrapFailure(
-              "ADB_SWITCH_INTENT_CHANGED",
-              "监听已确认打开；但用户已关闭 ADB 总开关，本次不再自动启用通道。");
+              channelFailure,
+              "ADB_SWITCH_INTENT_CHANGED".equals(channelFailure)
+                  ? "监听已确认打开；但用户已关闭 ADB 总开关，本次不再自动启用通道。"
+                  : "监听已确认打开；但本次未能开启 ADB 设备通道（" + channelFailure + "），保留现状待只读刷新。");
         // C（ADR 0007）：刚写完 adb_keys，adbd/系统侧可能还没读到新公钥，而核验按设计**只做一次**。
         // 所以把核验时点后移一个固定短延时 —— 次数仍是 1 次，不轮询、不重试、不换端点、不换通道。
-        settleBeforeSessionVerify();
+        settle.await();
         if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
+        // 等待期间用户仍可能关闭或重新选择总开关：继续核验之前必须回查最初确认的意图（F01），
+        // 否则旧完成回调会把已经撤销的确认报告成"整链完成"。
+        if (!userIntentUnchanged())
+          throw new AdbBootstrapEngine.BootstrapFailure(
+              "ADB_SWITCH_INTENT_CHANGED", "核验前的等待期间用户已改动 ADB 总开关，本次不再继续核验。");
         String session = AdbBridge.verifyBootstrap(HarnessController.get(app).proot());
         if (!authority.valid()) throw new IOException("NATIVE_GRANT_REVOKED");
+        // 只读 `id` 本身也要跑一段窗口，核验返回后必须再回查一次用户意图（F01）：核验返回的
+        // 真实观测只有在本轮确认的总开关意图仍然有效时，才能被当作整链完成的依据。
+        //
+        // 线性化点选在「核验结果被接受为本次成功证据」的这一刻，也就是成功快照产生/落盘**之前**，
+        // 而不是在 advanceChain 里回写已保存的结果。两个理由：
+        //   1) 这里同时覆盖整链的 OPEN 与 standalone OPEN；advanceChain 只处理整链，而且末步
+        //      nextExists=false 时按设计不因之后的总开关改动改写已发布的结果 —— 用户在看到成功
+        //      之后关闭属于他自己的新状态，不能追改成旧链失败。
+        //   2) 每次确认仍只有一次核验：这里只丢弃「已撤销确认下的核验结论」，不重放、不换端点、
+        //      不追加等待；核验原文作为证据保留下来。
+        if (!userIntentUnchanged())
+          throw new AdbBootstrapEngine.BootstrapFailure(
+              "ADB_SWITCH_INTENT_CHANGED",
+              "只读会话核验期间用户已改动 ADB 总开关，本次核验结果不再作为成功依据。核验原文：" + AdbFirewallTool.head(session));
         RootSupportProbe identity = RootSupportProbe.parse(session);
         if (!identity.succeeded() || identity.executionLevel() == AdbdIdentity.Level.UNKNOWN)
           // 会话核验失败也要留下原文（脚本版本不符、模块缺失、超时、握手被拒都在这里现形）。
@@ -488,16 +557,6 @@ public final class AdbBootstrapController {
       }
       return output;
     }
-  }
-
-  /**
-   * 会话核验前的固定等待（ADR 0007 方案 C）。
-   *
-   * <p>只为让刚写入的公钥有机会被 adbd / 系统侧看到；**不轮询、不重试**，等待结束后仍然只核验一次。
-   * 被中断（页面/进程要求停止）时按打断处理，由上层保留现场。
-   */
-  private static void settleBeforeSessionVerify() throws InterruptedException {
-    Thread.sleep(SESSION_SETTLE_MS);
   }
 
   private String clientPublicKey(AdbBootstrapPolicy.Action action) throws Exception {

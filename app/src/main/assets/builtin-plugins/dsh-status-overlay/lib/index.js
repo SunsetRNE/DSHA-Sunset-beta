@@ -3,7 +3,8 @@
  * 像音乐软件的歌词那样流式滚动；工具调用则显示成「正在执行命令」这类人话。
  *
  * 数据流：
- *   session/event → 这里节流合并 → GET 127.0.0.1:3090/app/overlay → App 侧 OverlayController
+ *   session/event → 这里节流合并 → GET 本实例桥 /app/overlay → App 侧 OverlayController
+ *   （端口来自与 .bridge_token 同数据根的 .bridge_port，见下方 bridgeBase）
  *
  * 几个刻意的设计：
  *
@@ -25,12 +26,64 @@
  * 5) **一个异常都不能冒出去**。这是个「顺带好看」的功能，绝不能影响 agent 干活 ——
  *    所有 IO 与解析都包在 try/catch 里，失败就静默降级。
  */
-import { readFileSync } from 'node:fs'
+import { readFileSync, openSync, readSync, closeSync, lstatSync, fstatSync, constants } from 'node:fs'
+import { join } from 'node:path'
 export const name = 'dsh-status-overlay'
 
-/** 桥地址（App 侧只监听回环，容器与宿主共享网络命名空间，所以直接连得上）。 */
-const BRIDGE = 'http://127.0.0.1:3090/app/overlay'
-const TOKEN_PATH = '/root/.dsh/.bridge_token'
+/** 桥端点：端口文件与 .bridge_token 同数据根（DSH_HOME 优先），每次请求重读。
+ *  契约文件是 ≤16 字节的普通文件（同原生 BridgeEndpointFiles.READ_LIMIT），内容只有 ASCII
+ *  十进制 + 一个可选换行。只有真正缺目录项才回退旧默认 3090；0、坏格式、越界、非 ASCII、
+ *  带垃圾尾巴、目录、符号链接（含悬空链接）或读不动一律当「端点未知」——返回空基地址、
+ *  静默停用，绝不改试别的回环端口：同机可能有第二个 DSHA 实例，猜端口等于把本实例 token
+ *  交给它的桥。 */
+const LEGACY_BRIDGE_PORT = 3090
+const BRIDGE_PORT_LIMIT = 16
+function bridgeRoot() {
+  const home = process.env.DSH_HOME
+  return typeof home === 'string' && home.trim() && home.trim() !== '/'
+    ? home.trim().replace(/\/+$/, '')
+    : '/root/.dsh'
+}
+function readBridgePortFile(file) {
+  // 'missing' 只有真正没有这个目录项；悬空符号链接的 ENOENT 也算已存在 → 'invalid'。
+  let entry
+  try { entry = lstatSync(file) }
+  catch (error) { return error && error.code === 'ENOENT' ? 'missing' : 'invalid' }
+  if (!entry.isFile()) return 'invalid'
+  let descriptor
+  try {
+    descriptor = openSync(file, constants.O_RDONLY | (constants.O_NOFOLLOW || 0))
+    const stats = fstatSync(descriptor)
+    if (!stats.isFile() || stats.size < 1 || stats.size > BRIDGE_PORT_LIMIT) return 'invalid'
+    const buffer = Buffer.alloc(stats.size)
+    let filled = 0
+    while (filled < stats.size) {
+      const count = readSync(descriptor, buffer, filled, stats.size - filled, filled)
+      if (count <= 0) break
+      filled += count
+    }
+    if (filled !== stats.size) return 'invalid'
+    // 整份内容必须就是端口：'3091\n' 后面再有空白/垃圾就不是契约文件；不做 Unicode trim。
+    const text = buffer.toString('utf8')
+    if (!/^[0-9]{1,5}\n?$/.test(text)) return 'invalid'
+    const port = Number(text.replace(/\n$/, ''))
+    return port >= 1 && port <= 65535 ? port : 'invalid'
+  } catch {
+    return 'invalid'
+  } finally {
+    try { if (descriptor !== undefined) closeSync(descriptor) } catch {}
+  }
+}
+function bridgePort() {
+  const value = readBridgePortFile(join(bridgeRoot(), '.bridge_port'))
+  if (value === 'missing') return LEGACY_BRIDGE_PORT
+  return value === 'invalid' ? 0 : value
+}
+/** 本实例桥的基地址；空串表示端点未知，调用方直接静默停用。 */
+function bridgeBase() {
+  const port = bridgePort()
+  return port ? 'http://127.0.0.1:' + port : ''
+}
 /** 合并窗口：120ms 一次，肉眼看起来仍是连续流动的。 */
 const FLUSH_MS = 120
 /** 插件侧只做粗截断（防 URL 编码后过长），真正的行数由 App 侧按用户配置决定 ——
@@ -98,7 +151,7 @@ function bridgeToken() {
   if (token !== undefined && Date.now() - tokenReadAt < 5000) return token
   tokenReadAt = Date.now()
   try {
-    token = readFileSync(TOKEN_PATH, 'utf8').trim()
+    token = readFileSync(join(bridgeRoot(), '.bridge_token'), 'utf8').trim()
   } catch {
     token = ''    // 桥没起来 / 桌面环境：整个功能静默停用
   }
@@ -165,8 +218,10 @@ function unwrap(raw) {
 async function send(key, kind, text) {
   const tok = bridgeToken()
   if (!tok) return
+  const base = bridgeBase()
+  if (!base) return
   if (Date.now() < cooldownUntil) return
-  const url = `${BRIDGE}?kind=${encodeURIComponent(kind)}`
+  const url = `${base}/app/overlay?kind=${encodeURIComponent(kind)}`
     + `&session=${encodeURIComponent(key)}`
     + `&text=${encodeURIComponent(text || '')}`
   try {
@@ -322,7 +377,7 @@ export function apply(ctx) {
 
 
 /**
- * 把「插件真实加载状态」报给 App 的 3090 桥。
+ * 把「插件真实加载状态」报给 App 的本实例桥。
  *
  * 为什么需要它：**注册进 profile 不等于加载成功**。cordis 的 PENDING 是最隐蔽的一种状态 ——
  * 插件 inject 的服务没有提供者时它就停在那儿，而且**不报错**（那是合法状态，服务可能稍后
@@ -368,6 +423,7 @@ export function collectPluginStates(ctx) {
 
 export function reportPluginStates(ctx, io = {}) {
   const getToken = io.token || bridgeToken, request = io.fetch || fetch
+  const getBase = io.bridgeBase || bridgeBase
   const later = io.setTimeout || setTimeout, cancel = io.clearTimeout || clearTimeout
   let timer, disposed = false, sending = false, dirty = false, previous
   function schedule(delay = 300) {
@@ -384,10 +440,12 @@ export function reportPluginStates(ctx, io = {}) {
     try {
       const T = getToken()
       if (!T) return
+      const base = getBase()
+      if (!base) return
       const st = collectPluginStates(ctx)
       const snapshot = JSON.stringify(st)
       if (snapshot === previous) return
-      const url = 'http://127.0.0.1:3090/app/plugins'
+      const url = base + '/app/plugins'
         + '?loaded=' + encodeURIComponent(st.loaded.join(','))
         + '&failed=' + encodeURIComponent(st.failed.join(','))
         + '&pending=' + encodeURIComponent(st.pending.join(','))

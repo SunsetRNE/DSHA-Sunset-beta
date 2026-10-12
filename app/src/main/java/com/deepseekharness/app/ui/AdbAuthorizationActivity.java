@@ -42,7 +42,8 @@ public final class AdbAuthorizationActivity extends androidx.appcompat.app.AppCo
             t(
                 "USB 调试、无线调试、Shizuku、Root 自举是同一个 ADB 授权的四条取得路径，任一取得即全局生效。",
                 "USB debugging, wireless debugging, Shizuku and root setup are four paths to one ADB authorization; any one of them activates it globally."));
-    UiNavigation.addHeader(this, page.root, t("ADB 全局授权", "ADB global authorization"), this::finish);
+    UiNavigation.addHeader(
+        this, page.root, t("ADB 全局授权", "ADB global authorization"), this::finish);
 
     LinearLayout summaryCard = page.card();
     summary = page.text("", 13, R.color.text);

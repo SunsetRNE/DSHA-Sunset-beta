@@ -32,8 +32,7 @@ public final class AdbFirewallToolTest {
       List<String> wait = argv.subList(1, argv.size() - 2);
       if (wait.equals(accepted))
         return RootSupportProbe.parse("-P INPUT ACCEPT\n-A INPUT -j DROP\n[EXIT=0]");
-      return RootSupportProbe.parse(
-          "iptables v1.8.9 (legacy): unrecognized option '-w'\n[EXIT=2]");
+      return RootSupportProbe.parse("iptables v1.8.9 (legacy): unrecognized option '-w'\n[EXIT=2]");
     }
   }
 
@@ -44,8 +43,7 @@ public final class AdbFirewallToolTest {
     assertEquals(List.of("-w", "2"), resolved.form.wait);
     assertEquals(TOOL, resolved.form.tool);
     assertEquals("", resolved.evidence);
-    assertEquals(
-        List.of(TOOL, "-w", "2", "-S", "INPUT"), resolved.form.listing());
+    assertEquals(List.of(TOOL, "-w", "2", "-S", "INPUT"), resolved.form.listing());
   }
 
   @Test

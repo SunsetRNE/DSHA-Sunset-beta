@@ -190,7 +190,10 @@ public final class RootBootstrapExecutorTest {
           exit = 1;
           return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
         }
-        if (rejectWaitSeconds && wait >= 0 && wait + 1 < args.size() && args.get(wait + 1).equals("2")) {
+        if (rejectWaitSeconds
+            && wait >= 0
+            && wait + 1 < args.size()
+            && args.get(wait + 1).equals("2")) {
           body = "iptables v1.8.9 (legacy): unrecognized option '-w 2'";
           exit = 2;
           return RootSupportProbe.parse(body + "\n[EXIT=" + exit + "]");
@@ -408,7 +411,8 @@ public final class RootBootstrapExecutorTest {
   }
 
   @Test
-  public void systemWirelessDebuggingGetsItsOwnCodeAndNeverTakesOverForeignPorts() throws Exception {
+  public void systemWirelessDebuggingGetsItsOwnCodeAndNeverTakesOverForeignPorts()
+      throws Exception {
     // 无线调试（ADB TLS 入口）单独一个码，用户才知道该去关哪个开关。
     Device tlsPort = new Device();
     tlsPort.tls = "37123";

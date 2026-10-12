@@ -151,7 +151,8 @@ public class DshaApp extends Application
           public void onActivityStopped(android.app.Activity activity) {}
 
           @Override
-          public void onActivitySaveInstanceState(android.app.Activity activity, android.os.Bundle state) {}
+          public void onActivitySaveInstanceState(
+              android.app.Activity activity, android.os.Bundle state) {}
 
           @Override
           public void onActivityDestroyed(android.app.Activity activity) {}

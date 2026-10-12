@@ -23,7 +23,8 @@ public class AdbKeyTableTest {
   @Test
   public void fingerprintIsStableAndShapedForDisplay() {
     java.util.List<AdbKeyTable.Entry> entries = AdbKeyTable.parse(SAMPLE, "");
-    Assert.assertEquals(entries.get(0).fingerprint, AdbKeyTable.parse(SAMPLE, "").get(0).fingerprint);
+    Assert.assertEquals(
+        entries.get(0).fingerprint, AdbKeyTable.parse(SAMPLE, "").get(0).fingerprint);
     Assert.assertTrue(entries.get(0).fingerprint.matches("([0-9A-F]{2}:){7}[0-9A-F]{2}"));
     Assert.assertNotEquals(entries.get(0).fingerprint, entries.get(1).fingerprint);
   }

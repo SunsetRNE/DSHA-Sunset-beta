@@ -121,15 +121,15 @@
     },
     {
       "path": "tools/test-asset-deployment.py",
-      "stage": "fast",
-      "reason": "Current source behavior regression; explicit platform inputs required",
+      "stage": "runtime",
+      "reason": "完整 APK 资产部署与动态 reader 契约核对真实 app/src/main/assets 成员集：需要已还原的离线输入生成物（ubuntu-tools.bin、glibc-python.bin、adb-wheels.bin、web-integration/gecko-compat.js），干净源码检出没有这些归档，所以登记在完整输入的 runtime 阶段；合成 fixture 契约（未登记脚本 / 未部署 reader / 路径逃逸 / prependAsset / 扩展脚本 / 内置入口 / Java 字面量）与 build156 退役原件摘要在 ci-fast 用 --fixtures-only 照常执行，不跳过完整模式",
       "args": [],
       "timeoutSeconds": 600,
       "requires": [
         "python39"
       ],
       "environment": {},
-      "cli": "no positional arguments; see explicit environment/requirements"
+      "cli": "无参数运行完整核对（要求已还原的离线生成资产）；--fixtures-only 只跑不依赖离线归档的合成 fixture 契约，供 ci-fast 使用"
     },
     {
       "path": "tools/test-attachment-store.mjs",
@@ -162,6 +162,25 @@
       "cli": "no positional arguments; see explicit environment/requirements"
     },
     {
+      "path": "tools/test-bridge-endpoint-native.py",
+      "stage": "runtime",
+      "reason": "Compile the current BridgePortPolicy/BridgeEndpointFiles JVM contract against the locked JUnit 4.13.2/Hamcrest 1.3 in the explicit Gradle cache and execute the real 3090..3109 fallback, 0=unavailable, missing-file-only legacy 3090, stale-generation and token-isolation cases; no Android, device or Gradle",
+      "requires": [
+        "python39",
+        "jdk17",
+        "toolchains"
+      ],
+      "environment": {},
+      "timeoutSeconds": 300,
+      "args": [
+        "--jdk",
+        "{jdk}",
+        "--gradle-home",
+        "{gradleHome}"
+      ],
+      "cli": "--jdk <JDK17> --gradle-home <Gradle user home>; JUnit/Hamcrest must be present in the locked module cache; no positional arguments"
+    },
+    {
       "path": "tools/test-bridge-logic.ps1",
       "stage": "windows",
       "reason": "仅Windows的宿主源级/编译回归，不参与Linux快速层",
@@ -179,6 +198,18 @@
       "platform": [
         "windows"
       ]
+    },
+    {
+      "path": "tools/test-bridge-port-discovery.mjs",
+      "stage": "fast",
+      "reason": "Drive the shipped dsh-computer-use-android/dsh-tool-vscreen/dsh-status-overlay/dsh-task-notifier/device-shell-guide endpoint discovery from an isolated DSH_HOME fixture: ENOENT-only 3090 fallback, fail-closed 0/bad/out-of-range ports, per-request re-read, chosen loopback port and header-only token; no device or real credential",
+      "requires": [
+        "node24"
+      ],
+      "environment": {},
+      "timeoutSeconds": 300,
+      "args": [],
+      "cli": "no positional arguments; isolated DSH_HOME/token fixture; no device operations"
     },
     {
       "path": "tools/test-bridge-routes.py",
@@ -487,6 +518,19 @@
       "cli": "no positional arguments; see explicit environment/requirements"
     },
     {
+      "path": "tools/test-lan-listener-status.py",
+      "stage": "fast",
+      "reason": "Compile the real LanProxyService with explicit Android host stubs and the shared LanListenerStatus registry; verify start/acceptLoop/stop/auth-generation transitions on temporary ports, distinct epoch/generation ownership and redacted bind failures; no device or Gradle, never the real 3081",
+      "requires": [
+        "python39",
+        "jdk17"
+      ],
+      "environment": {},
+      "timeoutSeconds": 300,
+      "args": [],
+      "cli": "no positional arguments; resolves JDK17 javac/java from PATH; binds ephemeral loopback ports only"
+    },
+    {
       "path": "tools/test-legacy-preset-convert.mjs",
       "stage": "runtime",
       "reason": "Current source/verified runtime host fixture; explicit dependencies and sandbox HOME; no Android device operations",
@@ -570,7 +614,7 @@
     {
       "path": "tools/test-mobile-server-patches.mjs",
       "stage": "fast",
-      "reason": "Current source behavior regression; explicit platform inputs required",
+      "reason": "用固定提交 9b16223 的上游字节重建三个移动服务模块：补丁产物幂等、带锚点漂移被拒绝，且上游原始字节先核对锁定 sha256 再重建；固定上游目录是声明的输入（mobile_upstream），缺字节即失败，不再静默跳过，ci-fast 由 tools/prepare-ci-mobile-upstream.mjs 在 host-tests 之前按该提交取回",
       "args": [],
       "timeoutSeconds": 600,
       "requires": [
@@ -580,7 +624,7 @@
       "environment": {
         "DSHA_MOBILE_UPSTREAM_DIR": "{mobileUpstream}"
       },
-      "cli": "no positional arguments; see explicit environment/requirements"
+      "cli": "无参数；固定上游 lib 目录由 --mobile-upstream 提供（默认 app/build/mobile-upstream-a094/lib），准备入口 node tools/prepare-ci-mobile-upstream.mjs"
     },
     {
       "path": "tools/test-mobile-server-streams.mjs",
@@ -593,6 +637,18 @@
       ],
       "environment": {},
       "cli": "no positional arguments; see explicit environment/requirements"
+    },
+    {
+      "path": "tools/test-mobile-tablet.mjs",
+      "stage": "fast",
+      "reason": "Execute the shipped dsh-web-mobile client bundle in an isolated fake-DOM Node context: 16 wide-touch team-chip takeover plus createSheetRiseTask ownership, reduced-motion, replacement and dispose behaviors. The 17th locked-upstream byte-rebuild case is skipped unless DSHA_MOBILE_UPSTREAM_CLIENT points at the hash-matching upstream client.js, so a passing run of this row is 16 behaviors and is not full-rebuild evidence",
+      "requires": [
+        "node24"
+      ],
+      "environment": {},
+      "timeoutSeconds": 300,
+      "args": [],
+      "cli": "no positional arguments; 16 behaviors by default, the optional 17th runs only with DSHA_MOBILE_UPSTREAM_CLIENT=<upstream client.js with the locked hash>"
     },
     {
       "path": "tools/test-mobile-update.mjs",
@@ -1089,6 +1145,18 @@
       "cli": "no positional arguments; see explicit environment/requirements"
     },
     {
+      "path": "tools/test-shizuku-lifecycle.py",
+      "stage": "fast",
+      "reason": "Compile the current ShellService, its destroy-transaction collaborator and the shipped AIDL artifact against minimal Android stubs, then execute the real Shizuku user-service destroy transaction, interface-token, unrelated-code and privileged-uid cases on a host JVM; the real rikka.shizuku shared constant and the ShizukuShell teardown contract are cross-checked when the Gradle cache is present; no device or Gradle",
+      "args": [],
+      "timeoutSeconds": 300,
+      "requires": [
+        "python39",
+        "jdk17"
+      ],
+      "environment": {}
+    },
+    {
       "path": "tools/test-source-text.py",
       "stage": "fast",
       "reason": "Current byte-exact source LF contract in isolated fixtures; no device or publish",
@@ -1264,6 +1332,22 @@
       ],
       "environment": {},
       "cli": "no positional arguments; see explicit environment/requirements"
+    },
+    {
+      "path": "tools/test-web-bridge-port.py",
+      "stage": "fast",
+      "reason": "Compile the production ui/WebPageScripts through the web-bridge-port Android stubs and execute the real generated script against its probe: actual bridge port instead of 3090, explicit 0 when unbound, per-generation re-read, emergency page without the port field, plus the single sameService-guarded re-injection source contract; no device or Gradle",
+      "requires": [
+        "python39",
+        "jdk17"
+      ],
+      "environment": {},
+      "timeoutSeconds": 300,
+      "args": [
+        "--jdk",
+        "{jdk}"
+      ],
+      "cli": "--jdk <JDK17>; fixture Sourcepath provides the Android stubs; no positional arguments"
     },
     {
       "path": "tools/test-web-compat.mjs",
@@ -1582,7 +1666,9 @@
       "reason": "当前脚本与假 ADB 连接器的固定回环端点回归；不访问设备、网络或真实凭据",
       "args": [],
       "timeoutSeconds": 300,
-      "requires": ["python39"],
+      "requires": [
+        "python39"
+      ],
       "environment": {},
       "cli": "no positional arguments; see explicit environment/requirements"
     },
@@ -1590,7 +1676,10 @@
       "path": "tools/test-root-support.py",
       "stage": "support",
       "reason": "离线真实 JUnit/JSON 执行 root 策略、生产事务与授权代次；需锁定 JUnit/Hamcrest/JSON 缓存，双 flavor Gradle 自动发现同一组测试",
-      "requires": ["python39", "jdk17"],
+      "requires": [
+        "python39",
+        "jdk17"
+      ],
       "environment": {},
       "timeoutSeconds": 240,
       "args": [],
@@ -1709,13 +1798,19 @@
       ],
       "environment": {},
       "cli": "requires app/build/test-runtimes/current.json produced by the build; no positional arguments"
-    }
-  ],
-  "historicalExcluded": [
+    },
     {
-      "originalPath": "tools/test-tooltips.mjs",
-      "retainedPath": "tools/history/root-build156/tools/test-tooltips.mjs",
-      "reason": "Exact old 0.1.5 Tooltip fixture; current rc2 behavior has an independent browser test"
+      "path": "tools/test-ci-test-package.py",
+      "stage": "fast",
+      "reason": "SunsetRNE 实验包主机核对；夹具自带签名字节，不跑 Gradle、不装设备、不推送",
+      "args": [],
+      "timeoutSeconds": 900,
+      "requires": [
+        "python39",
+        "jdk17"
+      ],
+      "environment": {},
+      "cli": "no positional arguments; see explicit environment/requirements"
     }
   ]
 }

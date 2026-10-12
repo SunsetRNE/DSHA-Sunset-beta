@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "packageName": "com.dsh.clienu.SunsetRNE",
+  "certificateSha256": "db1fb87a1299746de54d9b06acdea4c48c4c0eec2d0413924542f9ad0ef2cf35",
+  "schemes": ["v2"],
+  "identity": "experimental-debug-test-key",
+  "note": "SunsetRNE 实验测试包固定签名证书摘要；不是正式发布证书 E7E3。工作流 input test_certificate_sha256 可显式覆盖，两者都不接受 E7E3。"
+}

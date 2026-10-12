@@ -14,6 +14,7 @@ import os
 import re
 import shlex
 import socket
+import stat
 import sys
 import threading
 import time
@@ -30,6 +31,19 @@ KEYPUB = KEY + '.pub'
 TRANSPORT_TIMEOUT = 4.0
 CONNECT_TIMEOUT = 25.0
 COMMAND_TIMEOUT = 90.0
+
+# 桥端点发现：端口文件与 .bridge_token 同数据根，容器里由启动器 export DSH_HOME。
+BRIDGE_HOST = '127.0.0.1'
+BRIDGE_PORT_DEFAULT = 3090
+BRIDGE_PORT_NAME = '.bridge_port'
+BRIDGE_TOKEN_NAME = '.bridge_token'
+# 契约文件上限，与原生 BridgeEndpointFiles.READ_LIMIT 一致（端口最多 5 位 + 换行）。
+BRIDGE_PORT_LIMIT = 16
+
+
+class BridgeUnavailable(Exception):
+    """端口发现文件存在但不可用：只允许 fail-closed，不回退旧默认，也不改试别的桥。"""
+
 
 class ConnectFail(Exception):
     """命令尚未发送，允许重新发现地址。"""
@@ -175,17 +189,112 @@ def parse_shell_result(raw, marker):
     return ShellResult(out[:match.start()], int(match.group(1)))
 
 
+def bridge_root():
+    """凭据与端口发现文件必须同源；容器里由启动器 export DSH_HOME。"""
+    try:
+        home = os.environ.get('DSH_HOME')
+    except Exception:
+        home = None
+    if isinstance(home, str) and home.strip() not in ('', '/'):
+        return home.strip().rstrip('/')
+    return '/root/.dsh'
+
+
+def read_bridge_port(path=None):
+    """读取本实例桥端口（每次请求重读，跟上桥重启后的端口变化）。
+
+    契约（同原生 BridgeEndpointFiles）：≤16 字节的普通文件，内容只有 ASCII 十进制端口
+    加一个可选换行。只有真正「目录里没有这一项」才回退旧默认 3090（老 App 不写这个
+    文件）；文件存在但为 0、坏格式、越界、非 ASCII、带垃圾尾巴、是目录/符号链接（含
+    悬空链接）或读不动都算「端点未知」，必须 fail-closed —— 同机可能有第二个 DSHA
+    实例，猜一个端口就等于把 token 交给别人的桥。
+    这里用低层 os.open/lstat/fstat 以便把「缺目录项」与「打开失败、类型不符、超长」
+    分开判定（也被 main() 的隔离测试的 open 补丁绕开）。
+    """
+    target = path or os.path.join(bridge_root(), BRIDGE_PORT_NAME)
+    try:
+        entry = os.lstat(target)
+    except FileNotFoundError:
+        # 只有 lstat 都看不到这一项才是「文件不存在」；悬空符号链接的 ENOENT 有目录项。
+        return BRIDGE_PORT_DEFAULT
+    except OSError as error:
+        raise BridgeUnavailable('桥端口文件不可读（%s）' % type(error).__name__) from error
+    if not stat.S_ISREG(entry.st_mode):
+        raise BridgeUnavailable('桥端口文件不是普通文件')
+    try:
+        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
+        descriptor = os.open(target, flags)
+    except FileNotFoundError as error:
+        # 目录项在但打开拿不到（悬空链接、竞态删除）：不是「文件不存在」，不能回退 3090。
+        raise BridgeUnavailable('桥端口文件不可读（%s）' % type(error).__name__) from error
+    except OSError as error:
+        raise BridgeUnavailable('桥端口文件不可读（%s）' % type(error).__name__) from error
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_size < 1 or info.st_size > BRIDGE_PORT_LIMIT:
+            raise BridgeUnavailable('桥端口文件大小或类型不符合契约')
+        raw = b''
+        while len(raw) < info.st_size:
+            chunk = os.read(descriptor, info.st_size - len(raw))
+            if not chunk:
+                break
+            raw += chunk
+        if len(raw) != info.st_size:
+            raise BridgeUnavailable('桥端口文件读取不完整')
+    except OSError as error:
+        raise BridgeUnavailable('桥端口文件不可读（%s）' % type(error).__name__) from error
+    finally:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+    try:
+        text = raw.decode('ascii')
+    except UnicodeDecodeError as error:
+        raise BridgeUnavailable('桥端口文件不是 ASCII 十进制端口') from error
+    # 整份内容必须就是端口：'3091\n' 之后再有空白/垃圾都不是契约文件；不做 Unicode strip。
+    if re.fullmatch(r'[0-9]{1,5}\n?', text) is None:
+        raise BridgeUnavailable('桥端口文件格式无效')
+    port = int(text.rstrip('\n'))
+    if port == 0:
+        # 原生在启动中 / 绑定失败 / 停止后都会发布 0；那是「明确不可用」，不是坏文件。
+        raise BridgeUnavailable('桥已发布为不可用（0），可能正在启动或已停止')
+    if not 1 <= port <= 65535:
+        raise BridgeUnavailable('桥端口文件不在 1—65535')
+    return port
+
+
+def bridge_credentials():
+    """返回本实例桥的 (X-Token, 端口)：任一步失败都不得回退旧默认或改试别的端口。"""
+    try:
+        port = read_bridge_port()
+    except BridgeUnavailable as error:
+        raise policy.Blocked('桥端点不可用（%s），命令未发送' % error) from error
+    try:
+        with open(os.path.join(bridge_root(), BRIDGE_TOKEN_NAME)) as source:
+            token = source.read().strip()
+    except OSError as error:
+        raise policy.Blocked('设备桥未准备好，请打开 DSHA 后重试') from error
+    if not token:
+        raise policy.Blocked('设备桥未准备好，请打开 DSHA 后重试')
+    return token, port
+
+
+def bridge_url(path, port):
+    """端口只来自已校验的整数，绝不拼接调用方输入。"""
+    if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535:
+        raise BridgeUnavailable('桥端口不在 1—65535')
+    return 'http://' + BRIDGE_HOST + ':' + str(port) + path
+
+
 def request_native_vscreen_commit(ticket):
     """Consume the one-use managed launch authority immediately before the ADB shell send."""
     import urllib.request
     import urllib.parse
     try:
-        with open('/root/.dsh/.bridge_token') as source:
-            token = source.read().strip()
-        if not token:
-            raise ValueError('missing token')
+        token, port = bridge_credentials()
         query = urllib.parse.urlencode({'ticket': ticket})
-        request = urllib.request.Request('http://127.0.0.1:3090/device/vscreen/commit?' + query,
+        request = urllib.request.Request(bridge_url('/device/vscreen/commit', port) + '?' + query,
             headers={'X-Token': token})
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(request, timeout=10) as response:
@@ -298,12 +407,9 @@ def request_device_plan(cmd, use_su=False):
     import urllib.request
     import urllib.parse
     try:
-        with open('/root/.dsh/.bridge_token') as source:
-            token = source.read().strip()
-        if not token:
-            raise ValueError('missing token')
+        token, port = bridge_credentials()
         query = urllib.parse.urlencode({'cmd': cmd, 'su': '1' if use_su else '0'})
-        request = urllib.request.Request('http://127.0.0.1:3090/device/plan?' + query, headers={'X-Token': token})
+        request = urllib.request.Request(bridge_url('/device/plan', port) + '?' + query, headers={'X-Token': token})
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(request, timeout=75) as response:
             value = json.loads(response.read(1024 * 1024)).get('result')
@@ -325,12 +431,9 @@ def request_native_vscreen_start(cmd, ticket):
     import urllib.request
     import urllib.parse
     try:
-        with open('/root/.dsh/.bridge_token') as source:
-            token = source.read().strip()
-        if not token:
-            raise ValueError('missing token')
+        token, port = bridge_credentials()
         query = urllib.parse.urlencode({'cmd': cmd, 'ticket': ticket})
-        request = urllib.request.Request('http://127.0.0.1:3090/device/vscreen/start?' + query,
+        request = urllib.request.Request(bridge_url('/device/vscreen/start', port) + '?' + query,
             headers={'X-Token': token})
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(request, timeout=15) as response:
@@ -402,25 +505,20 @@ def request_native_execution(cmd, use_su=False, force_adb=False):
     """原生层先选 root/Shizuku；仅收到明确的 ADB 计划才连接，不重放未知结果。"""
     import urllib.request
     import urllib.parse
-    try:
-        with open('/root/.dsh/.bridge_token') as source:
-            token = source.read().strip()
-        if not token:
-            raise ValueError('missing token')
-    except (OSError, ValueError) as error:
-        raise policy.Blocked('设备桥未准备好，请打开 DSHA 后重试') from error
+    token, port = bridge_credentials()
     query = urllib.parse.urlencode({'cmd': cmd, 'su': '1' if use_su else '0', 'adb': '1' if force_adb else '0'})
-    request = urllib.request.Request('http://127.0.0.1:3090/device/execute?' + query, headers={'X-Token': token})
+    request = urllib.request.Request(bridge_url('/device/execute', port) + '?' + query, headers={'X-Token': token})
     try:
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with opener.open(request, timeout=155) as response:
             envelope = json.loads(response.read(1024 * 1024))
         raw = envelope.get('result') if isinstance(envelope, dict) else None
         if isinstance(raw, str) and raw.strip() == '[UNAUTHORIZED]':
-            # 3090 桥固定属于启动它的那个实例：同机存在第二个 DSHA 时，本容器的 token 会被
-            # 对端的桥拒掉，而报错过去只剩一个 JSONDecodeError，看不出真正原因。
+            # 桥只属于启动它的那个实例：.bridge_port 指向的是本实例的桥，若它仍拒了本容器的
+            # token，通常是对端进程已换成另一个实例或凭据已轮换，而报错过去只剩一个
+            # JSONDecodeError，看不出真正原因。
             raise policy.Blocked(
-                '3090 桥拒绝了这个 token：本机可能有另一个 DSHA 实例占用着桥（桥只属于启动它的实例）')
+                '本实例桥（.bridge_port 指定的端口）拒绝了这个 token：请确认桥属于当前实例且凭据未轮换')
         value = json.loads(raw)
         if value.get('state') == 'completed':
             code = value.get('exit')

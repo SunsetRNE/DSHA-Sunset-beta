@@ -241,7 +241,9 @@ class PluginDownloadTest(unittest.TestCase):
             code='from pathlib import Path\nimport sys,time\np=Path(sys.argv[1]);p.write_text(p.read_text()+"1" if p.exists() else "1")\n'+('time.sleep(20)' if stall else 'print("ERR_PNPM_FETCH_503",file=sys.stderr);sys.exit(1)')
             def run(args,cwd):
                 calls.append(args)
-                return original([sys.executable,'-c',code,str(counter)],cwd,timeout=.4,idle_timeout=.2)
+                # 此例验证副作用不重放，不测亚秒启动性能；先给解释器启动余量。
+                # stall 仍暂停 20 秒，远大于预算，真实超时和计数断言保持。
+                return original([sys.executable,'-c',code,str(counter)],cwd,timeout=5,idle_timeout=3)
             with patch.object(self.m,'run_package_command',side_effect=run):
                 if stall:
                     with self.assertRaises(self.m.PackageCommandTimeout):n.package_command(['pnpm','install','--no-frozen-lockfile'],str(self.home))

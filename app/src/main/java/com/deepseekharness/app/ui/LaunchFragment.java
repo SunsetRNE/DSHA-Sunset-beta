@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import com.deepseekharness.app.LanProxyService;
 import com.deepseekharness.app.R;
 import com.deepseekharness.app.core.HarnessController;
+import com.deepseekharness.app.util.LanListenerStatus;
 import com.deepseekharness.app.util.Constants;
 
 /**
@@ -623,10 +624,85 @@ public class LaunchFragment extends Fragment {
         lanAddrText.setOnClickListener(null);
       }
     } else {
-      lanAddrText.setText(com.deepseekharness.app.util.UiText.text("局域网代理正在等待本轮认证"));
-      lanAddrText.setOnClickListener(null);
+      LanListenerStatus.Snapshot status = LanProxyService.listenerStatus();
+      if (status.failed()) {
+        // 绑定确实失败：不能再显示「正在等待本轮认证」，也不能让用户复制一个
+        // 连不上的链接。只显示固定分类原因，未知原因如实说明未知。
+        lanAddrText.setText(bindFailureMessage(status));
+        lanAddrText.setOnClickListener(v -> showBindFailureDialog(status));
+      } else if (status.waitingAuth()) {
+        lanAddrText.setText(
+            com.deepseekharness.app.util.UiText.choose(
+                "局域网代理正在等待本轮认证", "The LAN proxy is waiting for this round's authentication"));
+        lanAddrText.setOnClickListener(null);
+      } else {
+        lanAddrText.setText(
+            com.deepseekharness.app.util.UiText.choose(
+                "局域网已开启，但代理尚未开始监听",
+                "LAN sharing is on, but the proxy has not started listening yet"));
+        lanAddrText.setOnClickListener(null);
+      }
     }
     lanAddrText.setVisibility(View.VISIBLE);
+  }
+
+  /**
+   * 绑定失败全文：完整模板 + 格式参数。{@code UiText.choose} 只收整段模板，
+   * 端口作为 {@code %s} 参数插入，失败时不展示也不复制任何连接链接。
+   */
+  private static String bindFailureMessage(LanListenerStatus.Snapshot status) {
+    String reason = bindFailureReason(status);
+    int port = status == null ? LanProxyService.LAN_PORT : status.port();
+    return com.deepseekharness.app.util.UiText.format(
+        com.deepseekharness.app.util.UiText.choose(
+            "局域网代理绑定失败：监听端口 %s 未能绑定，本地连接链接不可用，因此不会提供复制。\n\n原因：%s\n\n处理：确认没有另一个 DSHA 实例占用该端口；若仍失败，关闭局域网访问后重新开启，并查看运行日志。",
+            "The LAN proxy failed to bind: the listening port %s could not be bound, so the local connection link is unusable and is not offered for copying.\n\nReason: %s\n\nFix: make sure no other DSHA instance holds the port; if it still fails, turn LAN sharing off and on again and check the run log."),
+        port,
+        reason);
+  }
+
+  /** 失败原因的固定分类文案（中英同源，避免只翻标题漏掉正文）。 */
+  private static String bindFailureReason(LanListenerStatus.Snapshot status) {
+    String code = status == null ? null : status.causeCode();
+    if (LanListenerStatus.CAUSE_PORT_IN_USE.equals(code)) {
+      return com.deepseekharness.app.util.UiText.choose(
+          "端口已被占用。请关闭另一个 DSHA 实例，或关闭局域网后重试。",
+          "The port is already in use. Close the other DSHA instance, or turn LAN sharing off and retry.");
+    }
+    if (LanListenerStatus.CAUSE_PERMISSION_DENIED.equals(code)) {
+      return com.deepseekharness.app.util.UiText.choose(
+          "系统拒绝了监听权限。请检查局域网访问权限后重试。",
+          "The system denied the listening permission. Check LAN access and retry.");
+    }
+    if (LanListenerStatus.CAUSE_UNAVAILABLE.equals(code)) {
+      return com.deepseekharness.app.util.UiText.choose(
+          "监听地址不可用。请确认网络状态后重试。",
+          "The listening address is unavailable. Check the network and retry.");
+    }
+    return com.deepseekharness.app.util.UiText.choose(
+        "原因未知。请关闭局域网后重新开启；若仍失败，请查看运行日志。",
+        "The reason is unknown. Turn LAN sharing off and on again; if it still fails, check the run log.");
+  }
+
+  /**
+   * 失败态点按只解释原因，不给链接：绑定没成功时复制出来的
+   * http://…:3081/?token=… 一定连不上。token 只在下一次真正绑定成功后展示；
+   * 正文只用固定分类，不回显异常类名等底层细节。
+   */
+  private void showBindFailureDialog(LanListenerStatus.Snapshot status) {
+    if (!isAdded() || status == null || !status.failed()) return;
+    // 正文整段由 bindFailureMessage 组装：端口与固定分类原因都作为格式参数插入，
+    // UiText.choose 只收完整模板，不切词、不做字符串拼接。
+    String message = bindFailureMessage(status);
+    new DshaDialogBuilder(requireContext())
+        .setTitle(
+            com.deepseekharness.app.util.UiText.choose("局域网代理未启动", "The LAN proxy did not start"))
+        .setMessage(message)
+        .setNegativeButton(android.R.string.cancel, null)
+        .setPositiveButton(
+            com.deepseekharness.app.util.UiText.choose("重新检查", "Check again"),
+            (dialog, which) -> refreshLanAddr())
+        .show();
   }
 
   private void showLanAddress(String service) {

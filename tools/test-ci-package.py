@@ -101,4 +101,40 @@ class PackageBinding(unittest.TestCase):
             other=copy.deepcopy(run);other[key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):gate.validate_run(other,'DSH-APP/DSHA','abc')
 
+class LocalAssetInput(unittest.TestCase):
+    def test_local_bundle_requires_exact_digest_and_members_before_writes(self):
+        import hashlib
+        import sys
+        import zipfile
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location('ci_assets', Path(__file__).with_name('ci-assets.py'))
+        assets = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(assets)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'app').mkdir()
+            archive = root / 'inputs.zip'
+            member = 'app/src/main/assets/offline-rootfs.bin'
+            with zipfile.ZipFile(archive, 'w') as output:
+                output.writestr(member, b'verified fixture')
+            checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+            argv = ['ci-assets.py', '--file', str(archive), '--sha256', checksum]
+            with patch.object(assets, 'ROOT', root), patch.object(assets, 'allowed', return_value={member}), \
+                    patch.object(assets, 'verify_sources') as verify, patch.object(sys, 'argv', argv):
+                argv[-1] = '0' * 64
+                with self.assertRaisesRegex(ValueError, 'CI_ASSET_BUNDLE_SHA256'):
+                    assets.main()
+                self.assertFalse((root / member).exists())
+                argv[-1] = checksum
+                assets.main()
+                self.assertEqual(b'verified fixture', (root / member).read_bytes())
+                verify.assert_called_once()
+                with zipfile.ZipFile(archive, 'a') as output:
+                    output.writestr('../unexpected', b'no write')
+                argv[-1] = hashlib.sha256(archive.read_bytes()).hexdigest()
+                with self.assertRaisesRegex(ValueError, 'CI_ASSET_MEMBER_SET'):
+                    assets.main()
+                self.assertEqual(b'verified fixture', (root / member).read_bytes())
+
+
 if __name__=='__main__':unittest.main()

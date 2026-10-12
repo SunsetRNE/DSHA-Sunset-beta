@@ -131,6 +131,7 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
     Bundle pendingHistory;
     androidx.webkit.ScriptHandler compatibilityScript;
     String scriptLanguage;
+    int scriptBridgePort;
     com.deepseekharness.app.util.StartupPageGate pageEvents;
     long pageNavigation;
     WebBlobDownload blobDownload;
@@ -627,6 +628,37 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
             } catch (IllegalStateException ignored) {
             }
           });
+      // 桥端口的窄原生读通道：只回答「当前这一个端口是多少」。网页每次已知桥请求都调一次
+      // startup.js 安装的 provider，provider 再经这个对象问原生；不缓存、不轮询，也不带 token。
+      androidx.webkit.WebViewCompat.removeWebMessageListener(view, "DshaBridgePort");
+      androidx.webkit.WebViewCompat.addWebMessageListener(
+          view,
+          "DshaBridgePort",
+          java.util.Collections.singleton(baseUrl.substring(0, baseUrl.length() - 1)),
+          (source, message, origin, mainFrame, reply) -> {
+            // 来源同 service + 主框架 + 当前代次 + 消息对象仍属本页：任一不符就什么都不回。
+            if (!isCurrentPage(source)
+                || !mainFrame
+                || !WebPreviewPolicy.sameService(baseUrl, source.getUrl())
+                || retained.pageEvents == null
+                || !retained.pageEvents.owns(source)) return;
+            long id;
+            try {
+              id = Long.parseLong(message.getData().trim());
+            } catch (IllegalStateException | NullPointerException | NumberFormatException invalid) {
+              return;
+            }
+            if (id < 1 || id > 2147483000L) return;
+            try {
+              // 每次现取：桥未绑定 / 已停止时是 0，页面 shim 见 0 即 fail-closed，不回退 3090。
+              reply.postMessage(
+                  new org.json.JSONObject()
+                      .put("__dshaBridgePortReply", id)
+                      .put("port", com.deepseekharness.app.HttpShellService.activePort())
+                      .toString());
+            } catch (org.json.JSONException ignored) {
+            }
+          });
     }
     view.setWebViewClient(new PreviewClient());
     view.setWebChromeClient(new PreviewChromeClient(view, microphoneRequests));
@@ -645,12 +677,15 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
         });
   }
 
-  /** 保留网页实例时同步后续文档的启动脚本，避免重载时短暂回到旧语言。 */
+  /** 保留网页实例时同步后续文档的启动脚本：重载不能短暂回到旧语言或旧静态端口快照。 */
   private void updateDocumentLanguage(WebView view) {
     if (!androidx.webkit.WebViewFeature.isFeatureSupported(
         androidx.webkit.WebViewFeature.DOCUMENT_START_SCRIPT)) return;
     String language = new com.deepseekharness.app.core.ConfigStore(this).getUiLanguage();
-    if (retained.compatibilityScript != null && language.equals(retained.scriptLanguage)) return;
+    int bridgePort = com.deepseekharness.app.HttpShellService.activePort();
+    if (retained.compatibilityScript != null
+        && language.equals(retained.scriptLanguage)
+        && bridgePort == retained.scriptBridgePort) return;
     if (retained.compatibilityScript != null) retained.compatibilityScript.remove();
     retained.compatibilityScript =
         androidx.webkit.WebViewCompat.addDocumentStartJavaScript(
@@ -658,6 +693,7 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
             WebPageScripts.compatibility(this, retained.pageEvents),
             java.util.Collections.singleton(baseUrl.substring(0, baseUrl.length() - 1)));
     retained.scriptLanguage = language;
+    retained.scriptBridgePort = bridgePort;
   }
 
   private class PreviewClient extends WebViewClient {
@@ -1039,6 +1075,7 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
     if (retained != null) {
       retained.compatibilityScript = null;
       retained.scriptLanguage = null;
+      retained.scriptBridgePort = 0;
     }
     if (retained != null && retained.blobDownload != null) {
       retained.blobDownload.close();
@@ -1113,7 +1150,11 @@ public class WebPreviewActivity extends PictureInPictureActivity implements WebF
         && isCurrentPage(webView)
         && WebPreviewPolicy.sameService(baseUrl, webView.getUrl())) {
       updateDocumentLanguage(webView);
-      webView.evaluateJavascript(WebPageScripts.language(this), null);
+      // 这只是刷新给「没有 provider 的旧 App / 旧内嵌页」保留的静态快照；它不是安全依据：
+      // 页面持续前台时，正式页的 shim 已经改成每次已知桥请求先经 DshaBridgePort 现取端口，
+      // 所以这里刷不刷新都不影响「token 只会发给当前实例端口」。不新增轮询器或原生接口。
+      webView.evaluateJavascript(
+          WebPageScripts.language(this) + "\n" + WebPageScripts.bridgePort(), null);
     }
     resumePageStreams();
   }

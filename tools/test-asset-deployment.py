@@ -51,13 +51,6 @@ class Deployment(unittest.TestCase):
         self.verify()
         file=self.repo/'manifest.json';bad=dict(self.manifest);bad['sourceTransforms']={'original.tgz':'undeclared.bin'};file.write_text(json.dumps(bad))
         with self.assertRaisesRegex(ValueError,'TRANSFORM'):load_manifest(file)
-    def test_current_project_deployment_and_retirement_boundary(self):
-        manifest=load_manifest();verify_reader_contracts(ROOT/'app/src/main/assets',manifest)
-        selected={p.as_posix() for _,p in selected_assets(ROOT/'app/src/main/assets',manifest)}
-        for name in ['selftest.py','rootfs-confirm-install.sh','pnpm-env-fix.sh','backup-prepare.py','restore-merge.py','startup-checkpoints.py','startup-recovery.py','dsh-deps-heal.sh','fix-stale-bundles.sh','flatten-l2s.py','fs-write-patch.sh','heal-pnpm-shells.py','heal-profile-boot.py','heal-session.sh','heal-sessions.py','migrate-public-data.sh','webserver-auth-patch.sh','webui-degrade-patch.sh','webui-origin-port-patch.sh','webui-polyfill.sh','environment-data.py']:
-            self.assertNotIn(name,selected)
-            self.assertFalse((ROOT/'app/src/main/assets'/name).exists())
-        self.assertIn('bridge-token-compat.cjs',selected);self.assertIn('licenses/GPL-3.0.txt',selected)
     def test_build156_retired_sources_keep_exact_bytes_outside_deployment(self):
         record=json.loads((ROOT/'docs/audits/build156/retired-asset-sources.json').read_text(encoding='utf-8'))
         self.assertEqual(record['schema'],1)
@@ -77,4 +70,21 @@ class Deployment(unittest.TestCase):
             self.assertEqual(hashlib.sha256(saved.read_bytes()).hexdigest(),row['sha256'])
             self.assertFalse((ROOT/row['source']).exists())
 
-if __name__=='__main__':unittest.main()
+class CurrentProjectDeployment(unittest.TestCase):
+    # 真实 app/src/main/assets 的完整成员集核对要求已还原的生成资产
+    # （ubuntu-tools.bin 等不进 git 的打包成员），因此登记在 runtime 阶段；
+    # ci-fast 只跑不带离线归档的合成 fixture 契约（--fixtures-only）。
+    def test_current_project_deployment_and_retirement_boundary(self):
+        manifest=load_manifest();verify_reader_contracts(ROOT/'app/src/main/assets',manifest)
+        selected={p.as_posix() for _,p in selected_assets(ROOT/'app/src/main/assets',manifest)}
+        for name in ['selftest.py','rootfs-confirm-install.sh','pnpm-env-fix.sh','backup-prepare.py','restore-merge.py','startup-checkpoints.py','startup-recovery.py','dsh-deps-heal.sh','fix-stale-bundles.sh','flatten-l2s.py','fs-write-patch.sh','heal-pnpm-shells.py','heal-profile-boot.py','heal-session.sh','heal-sessions.py','migrate-public-data.sh','webserver-auth-patch.sh','webui-degrade-patch.sh','webui-origin-port-patch.sh','webui-polyfill.sh','environment-data.py']:
+            self.assertNotIn(name,selected)
+            self.assertFalse((ROOT/'app/src/main/assets'/name).exists())
+        self.assertIn('bridge-token-compat.cjs',selected);self.assertIn('licenses/GPL-3.0.txt',selected)
+
+if __name__=='__main__':
+    import sys
+    fixtures_only='--fixtures-only' in sys.argv
+    if fixtures_only:
+        sys.argv.remove('--fixtures-only');print('asset-deployment --fixtures-only: 完整项目资产核对留在 runtime 阶段',file=sys.stderr)
+    unittest.main(defaultTest='Deployment' if fixtures_only else None)

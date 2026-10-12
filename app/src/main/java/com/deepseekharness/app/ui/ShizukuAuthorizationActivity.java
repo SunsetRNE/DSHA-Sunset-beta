@@ -54,7 +54,8 @@ public final class ShizukuAuthorizationActivity extends androidx.appcompat.app.A
     action = page.text("", 12, R.color.text_secondary);
     action.setPadding(0, dp(8), 0, 0);
     card.addView(action);
-    page.button(card, t("授权 / 验证 Shizuku", "Authorize or verify Shizuku"), true, this::shizukuAction);
+    page.button(
+        card, t("授权 / 验证 Shizuku", "Authorize or verify Shizuku"), true, this::shizukuAction);
     page.button(card, t("打开 Shizuku 管理器", "Open the Shizuku manager"), false, this::openManager);
     setContentView(page.root);
     render();
@@ -71,8 +72,7 @@ public final class ShizukuAuthorizationActivity extends androidx.appcompat.app.A
     action.setText(
         ShizukuStatus.sourceLabel(
             ShizukuStatus.source(
-                RootShell.enabled(this),
-                "connected".equals(DeviceBridgeService.adbState))));
+                RootShell.enabled(this), "connected".equals(DeviceBridgeService.adbState))));
   }
 
   private void shizukuAction() {
@@ -118,8 +118,7 @@ public final class ShizukuAuthorizationActivity extends androidx.appcompat.app.A
   }
 
   private void openManager() {
-    android.content.Intent launch =
-        com.deepseekharness.app.ShizukuManagerCompat.launchIntent(this);
+    android.content.Intent launch = com.deepseekharness.app.ShizukuManagerCompat.launchIntent(this);
     if (launch == null) {
       toast(t("尚未安装 Shizuku", "Shizuku is not installed"));
       return;

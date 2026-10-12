@@ -29656,6 +29656,7 @@
     ]
   },
   {
+    "id": "build162_workspace_unreadable_3623",
     "zh": "配置的工作目录暂不可读取，已打开个人文件目录。",
     "en": "The configured workspace is temporarily unreadable. The personal files folder is open.",
     "files": [
@@ -30297,6 +30298,47 @@
     "en": "ADB_OFFLINE_READY: Offline dependencies are ready; the connection has not been verified. Enable wireless debugging, then verify again.",
     "source": [
       "app/src/main/java/com/deepseekharness/app/ui/AdbPairActivity.java"
+    ]
+  },
+  {
+    "id": "build162_lan_bind_failure_3699",
+    "zh": "局域网代理绑定失败：监听端口 %s 未能绑定，本地连接链接不可用，因此不会提供复制。\n\n原因：%s\n\n处理：确认没有另一个 DSHA 实例占用该端口；若仍失败，关闭局域网访问后重新开启，并查看运行日志。",
+    "en": "The LAN proxy failed to bind: the listening port %s could not be bound, so the local connection link is unusable and is not offered for copying.\n\nReason: %s\n\nFix: make sure no other DSHA instance holds the port; if it still fails, turn LAN sharing off and on again and check the run log.",
+    "files": [
+      "app/src/main/java/com/deepseekharness/app/ui/LaunchFragment.java"
+    ],
+    "uiFormat": true
+  },
+  {
+    "id": "build162_lan_bind_failure_3700",
+    "zh": "端口已被占用。请关闭另一个 DSHA 实例，或关闭局域网后重试。",
+    "en": "The port is already in use. Close the other DSHA instance, or turn LAN sharing off and retry.",
+    "files": [
+      "app/src/main/java/com/deepseekharness/app/ui/LaunchFragment.java"
+    ]
+  },
+  {
+    "id": "build162_lan_bind_failure_3701",
+    "zh": "系统拒绝了监听权限。请检查局域网访问权限后重试。",
+    "en": "The system denied the listening permission. Check LAN access and retry.",
+    "files": [
+      "app/src/main/java/com/deepseekharness/app/ui/LaunchFragment.java"
+    ]
+  },
+  {
+    "id": "build162_lan_bind_failure_3702",
+    "zh": "监听地址不可用。请确认网络状态后重试。",
+    "en": "The listening address is unavailable. Check the network and retry.",
+    "files": [
+      "app/src/main/java/com/deepseekharness/app/ui/LaunchFragment.java"
+    ]
+  },
+  {
+    "id": "build162_lan_bind_failure_3703",
+    "zh": "原因未知。请关闭局域网后重新开启；若仍失败，请查看运行日志。",
+    "en": "The reason is unknown. Turn LAN sharing off and on again; if it still fails, check the run log.",
+    "files": [
+      "app/src/main/java/com/deepseekharness/app/ui/LaunchFragment.java"
     ]
   }
 ]

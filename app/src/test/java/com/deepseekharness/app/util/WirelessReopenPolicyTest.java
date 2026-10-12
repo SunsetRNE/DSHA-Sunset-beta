@@ -11,8 +11,7 @@ public final class WirelessReopenPolicyTest {
     assertTrue(WirelessReopenPolicy.blocked(false, true, false, "", false));
     assertTrue(WirelessReopenPolicy.blocked(false, false, true, "", false));
     assertTrue(WirelessReopenPolicy.blocked(false, false, false, "", true));
-    assertTrue(
-        WirelessReopenPolicy.blocked(false, false, false, "WIRELESS_DEBUG_IN_USE", false));
+    assertTrue(WirelessReopenPolicy.blocked(false, false, false, "WIRELESS_DEBUG_IN_USE", false));
   }
 
   @Test
@@ -48,6 +47,7 @@ public final class WirelessReopenPolicyTest {
   public void legacyReadOnlyOrCleanupUsersKeepTheirWirelessPath() {
     // 只做过只读刷新 / 清理，或压根没有自举记录的普通无线配对用户不被拦住。
     for (String action : new String[] {"", "STATUS", "CLOSE", "REVOKE", "UNKNOWN", null})
-      assertFalse(String.valueOf(action), WirelessReopenPolicy.persistedBlock(false, false, action));
+      assertFalse(
+          String.valueOf(action), WirelessReopenPolicy.persistedBlock(false, false, action));
   }
 }

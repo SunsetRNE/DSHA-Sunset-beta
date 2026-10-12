@@ -35,8 +35,10 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
   private boolean keysBusy;
   private boolean sessionBusy;
   private int tick;
+
   /** 每次只读核验的请求代次：页面销毁 / 再次发起都让旧回调的 UI 交付失效（F07）。 */
   private int keysGeneration;
+
   private int sessionGeneration;
   private androidx.appcompat.app.AlertDialog sessionDialog;
   private final Handler main = new Handler(Looper.getMainLooper());
@@ -60,7 +62,8 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
             t(
                 "四个来源里唯一能建立系统级 ADB 授权的一条：借 root 写入本应用公钥并开启监听。",
                 "The only path that establishes system-level ADB authorization: via root it registers this app's key and opens a listener."));
-    UiNavigation.addHeader(this, page.root, t("Root 自举 ADB 授权", "ADB setup via root"), this::finish);
+    UiNavigation.addHeader(
+        this, page.root, t("Root 自举 ADB 授权", "ADB setup via root"), this::finish);
     LinearLayout head = page.card();
     line = page.text("", 13, R.color.text);
     head.addView(line);
@@ -72,7 +75,8 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
 
     page.label(t("自举操作", "Bootstrap actions"));
     LinearLayout card =
-        (LinearLayout) getLayoutInflater().inflate(R.layout.card_root_bootstrap, page.content, false);
+        (LinearLayout)
+            getLayoutInflater().inflate(R.layout.card_root_bootstrap, page.content, false);
     page.content.addView(card);
     card.setBackgroundResource(R.drawable.bg_card);
     rootBootstrap = new RootBootstrapCard(card);
@@ -141,7 +145,10 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
                     if (generation != keysGeneration || !live()) return;
                     if (keysLine == null) return;
                     if (!root) {
-                      keysLine.setText(t("需要 Root 授权才能只读查看授权表", "Root authorization is required to read the table"));
+                      keysLine.setText(
+                          t(
+                              "需要 Root 授权才能只读查看授权表",
+                              "Root authorization is required to read the table"));
                       keysDetail.setText("");
                       return;
                     }
@@ -161,13 +168,13 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
                       builder.append(fingerprint);
                       builder.append(" · ");
                       builder.append(
-                          entry.comment.isEmpty()
-                              ? t("无备注", "no comment")
-                              : entry.comment);
+                          entry.comment.isEmpty() ? t("无备注", "no comment") : entry.comment);
                       if (entry.appOwned) builder.append(t("（本应用）", " (this app)"));
                     }
                     keysDetail.setText(
-                        builder.length() == 0 ? t("授权表为空", "The table is empty") : builder.toString());
+                        builder.length() == 0
+                            ? t("授权表为空", "The table is empty")
+                            : builder.toString());
                   });
             },
             "adb-key-table")
@@ -179,14 +186,13 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
     if (sessionBusy || sessionLine == null) return;
     sessionBusy = true;
     final int generation = ++sessionGeneration;
-    sessionLine.setText(t("正在核验 ADB 会话（只跑一次 id）…", "Checking the ADB session (single read-only id)…"));
+    sessionLine.setText(
+        t("正在核验 ADB 会话（只跑一次 id）…", "Checking the ADB session (single read-only id)…"));
     new Thread(
             () -> {
               String output;
               try {
-                output =
-                    AdbBridge.verifyBootstrap(
-                        HarnessController.get(getApplication()).proot());
+                output = AdbBridge.verifyBootstrap(HarnessController.get(getApplication()).proot());
               } catch (Throwable error) {
                 output = SensitiveData.redact(String.valueOf(error));
               }
@@ -234,7 +240,9 @@ public final class BootstrapAuthorizationActivity extends androidx.appcompat.app
       // 明确降级：至少告诉用户在哪里。
       android.widget.Toast.makeText(
               this,
-              t("请在设置 → 设备能力授权 → Root 授权里操作", "Use Settings → Device capabilities → Root authorization"),
+              t(
+                  "请在设置 → 设备能力授权 → Root 授权里操作",
+                  "Use Settings → Device capabilities → Root authorization"),
               android.widget.Toast.LENGTH_LONG)
           .show();
     }

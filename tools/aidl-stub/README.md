@@ -4,8 +4,10 @@
 （三个方法），这里存的是它的人工核对等价产物。`execVirtualScreen` 是独立事务，只接受
 当前已安装 DSHA APK 中的受管 `VirtualScreenCore --launch` 启动参数；通用 `exec` 不授予
 `app_process` 权限。AIDL 声明 ID 会加 `FIRST_CALL_TRANSACTION`（1）成为 Binder 事务码：
-`exec` 声明 ID 0、typed 启动声明 ID 1，`destroy` 声明 ID 16777113 映射到既有实际事务码
-16777114。人工 stub 按生成后的事务码保存，两个编译路径必须一致。
+`exec` 声明 ID 0、typed 启动声明 ID 1，`destroy` 声明 ID 16777114 加一得到 Shizuku 服务端实际
+发送的事务码 16777115（`ShizukuApiConstants.USER_SERVICE_TRANSACTION_destroy`，官方说明为
+「use 16777114 in aidl」）。生成的 `Stub` 里前两个常量写成 `FIRST_CALL_TRANSACTION + N`、销毁
+常量是字面量 16777115，所以这里的手工文件必须与该字面量保持一致，两个编译路径才等价。
 
 ## 什么时候需要
 

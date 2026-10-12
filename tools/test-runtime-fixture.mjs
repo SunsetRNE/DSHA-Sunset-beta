@@ -61,14 +61,26 @@ export function verifyRuntimeSession(directory,proof){
   if(!record)return false;
   if(record.directory!==selected||sha(path.join(selected,'dsha-test-runtime.json'))!==record.markerSha256)throw Error('TEST_FIXTURE_SESSION_MARKER_CHANGED');
   if(proof.kind!==record.kind||proof.contentProof?.digest!==record.contentDigest)throw Error('TEST_FIXTURE_SESSION_CONTENT_BINDING');
+  // The creator interpreter is a producer-created identity on every host, not only Windows:
+  // a receipt may not name a foreign Python, bytes that no longer match, or a different version.
+  const runtimeChanged=()=>Error('TEST_FIXTURE_SESSION_METADATA_RUNTIME_CHANGED');
+  const runtime=data.metadataRuntime;
+  if(!runtime||typeof runtime.python!=='string'||typeof runtime.pythonSha256!=='string'||typeof runtime.pythonVersion!=='string'||process.env.DSHA_PYTHON!==runtime.python)throw runtimeChanged();
+  const samePath=(left,right)=>process.platform==='win32'?String(left).toLowerCase()===String(right).toLowerCase():String(left)===String(right);
+  let pythonStat=null,pythonReal=null;
+  try{pythonStat=fs.lstatSync(runtime.python);pythonReal=fs.realpathSync(runtime.python);}catch{}
+  if(!pythonStat||!pythonReal||pythonStat.isSymbolicLink()||!pythonStat.isFile()||!samePath(pythonReal,runtime.python)||sha(runtime.python)!==runtime.pythonSha256)throw runtimeChanged();
+  // The version exists only in the creator interpreter's own sys.version; ask the exact
+  // SHA-256-bound executable instead of trusting the claimed string.
+  const marker='DSHA_CREATOR_PYTHON_VERSION=';
+  const creator=spawnSync(runtime.python,['-B','-c',`import sys;print('${marker}'+sys.version.split()[0])`],{env:process.env,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:1048576});
+  const creatorVersion=(creator.stdout||'').split(/\r?\n/).filter(line=>line.startsWith(marker)).pop();
+  if(creator.error||creator.status!==0||creatorVersion!==marker+runtime.pythonVersion)throw runtimeChanged();
   if(process.platform==='win32'){
     // libuv exposes a 32-bit volume ID, while Python 3.12 preserves all 64 bits;
     // Windows file IDs may also exceed libuv's inode width. Never truncate either.
     // The same creator interpreter checks the full IDs and live Node -> owner chain.
-    const runtime=data.metadataRuntime;
-    if(!runtime||process.env.DSHA_PYTHON!==runtime.python||fs.realpathSync(process.execPath).toLowerCase()!==runtime.node?.toLowerCase()||sha(process.execPath)!==runtime.nodeSha256)throw Error('TEST_FIXTURE_SESSION_METADATA_RUNTIME_CHANGED');
-    const pythonStat=fs.lstatSync(runtime.python);
-    if(pythonStat.isSymbolicLink()||!pythonStat.isFile()||fs.realpathSync(runtime.python).toLowerCase()!==runtime.python.toLowerCase()||sha(runtime.python)!==runtime.pythonSha256)throw Error('TEST_FIXTURE_SESSION_METADATA_RUNTIME_CHANGED');
+    if(fs.realpathSync(process.execPath).toLowerCase()!==runtime.node?.toLowerCase()||sha(process.execPath)!==runtime.nodeSha256)throw runtimeChanged();
     const worker=spawnSync(runtime.python,['-B',path.join(root,'tools/runtime_fixture_session.py'),'--verify-node-receipt',file,selected],{env:process.env,encoding:'utf8',windowsHide:true,timeout:120000,maxBuffer:1048576});
     if(worker.error||worker.status!==0||worker.stdout.trim()!=='PASS_WINDOWS_FULL_PRECISION_METADATA'){
       const code=/TEST_FIXTURE_SESSION_[A-Z_]+/.exec(worker.stderr||'')?.[0]||'TEST_FIXTURE_SESSION_METADATA_WORKER_FAILED';

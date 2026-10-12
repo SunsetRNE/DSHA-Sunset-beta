@@ -137,11 +137,11 @@ public class DeviceAuthorizationTest {
         DeviceAuthorization.plan(snapshot, false, false, "device.exec");
     Assert.assertEquals("none", decision.transport);
     Assert.assertEquals(DeviceAuthorization.Reason.ADB_GLOBAL_OFF, decision.reason);
-    Assert.assertEquals(DeviceAuthorization.Authority.NONE, DeviceAuthorization.authority(snapshot));
+    Assert.assertEquals(
+        DeviceAuthorization.Authority.NONE, DeviceAuthorization.authority(snapshot));
     // 强制 ADB 也不能绕过总开关。
     Assert.assertEquals(
-        "none",
-        DeviceAuthorization.plan(snapshot, false, true, "device.exec").transport);
+        "none", DeviceAuthorization.plan(snapshot, false, true, "device.exec").transport);
   }
 
   @Test
@@ -186,7 +186,10 @@ public class DeviceAuthorizationTest {
     Assert.assertEquals(
         DeviceAuthorization.State.GRANTED,
         DeviceAuthorization.globalState(
-            DeviceAuthorization.builder().adb(true, "", false, false).usbDebugDetected(true).build()));
+            DeviceAuthorization.builder()
+                .adb(true, "", false, false)
+                .usbDebugDetected(true)
+                .build()));
   }
 
   @Test
@@ -209,8 +212,7 @@ public class DeviceAuthorizationTest {
   public void adbSourcesAreTheFourSectionsInOrder() {
     java.util.List<DeviceAuthorization.Pipe> pipes = new java.util.ArrayList<>();
     for (DeviceAuthorization.PipeStatus status :
-        DeviceAuthorization.adbSources(snapshot(false, false, true, true)))
-      pipes.add(status.pipe);
+        DeviceAuthorization.adbSources(snapshot(false, false, true, true))) pipes.add(status.pipe);
     Assert.assertEquals(
         java.util.List.of(
             DeviceAuthorization.Pipe.ADB_USB,
@@ -223,8 +225,7 @@ public class DeviceAuthorizationTest {
   @Test
   public void sensitiveReadOnRootChannelRestrictsToTheAppUser() {
     DeviceAuthorization.Snapshot snapshot = snapshot(true, true, true, true);
-    DeviceAuthorization.Decision sms =
-        DeviceAuthorization.plan(snapshot, false, false, "sms.read");
+    DeviceAuthorization.Decision sms = DeviceAuthorization.plan(snapshot, false, false, "sms.read");
     Assert.assertEquals("root", sms.transport);
     Assert.assertEquals(DeviceAuthorization.Pipe.ROOT_SU, sms.pipe);
     Assert.assertTrue(sms.restrictToAppUser);
@@ -331,8 +332,7 @@ public class DeviceAuthorizationTest {
         DeviceAuthorization.State.GRANTED, DeviceAuthorization.keepalive(available).state);
     DeviceAuthorization.Snapshot off =
         DeviceAuthorization.builder().adb(false, "", false, false).build();
-    Assert.assertEquals(
-        DeviceAuthorization.State.ABSENT, DeviceAuthorization.keepalive(off).state);
+    Assert.assertEquals(DeviceAuthorization.State.ABSENT, DeviceAuthorization.keepalive(off).state);
   }
 
   @Test

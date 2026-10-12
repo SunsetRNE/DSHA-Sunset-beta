@@ -50,8 +50,10 @@ final class RootBootstrapExecutor implements AdbBootstrapEngine.Host {
   private final JSONObject state;
   private String publicKey;
   private boolean dispatched;
+
   /** 本事务解析出来的防火墙调用形式；同一事务内查询与增删必须一致。 */
   private AdbFirewallTool.Form v4Form, v6Form;
+
   /** 本事务解析出来的 `ps` 上下文列形式（LABEL / CONTEXT）。 */
   private List<String> psContextArgv;
 

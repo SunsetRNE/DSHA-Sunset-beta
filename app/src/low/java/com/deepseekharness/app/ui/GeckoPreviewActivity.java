@@ -898,6 +898,24 @@ public final class GeckoPreviewActivity extends PictureInPictureActivity
                           }
                           return;
                         }
+                        if ("bridge-port-request".equals(value.optString("type"))) {
+                          // 页面 provider 每次已知桥请求都问一次；只回端口数字，不带 token。
+                          // 上面的守卫已经核对过当前页代次 / 主框架 / sameService，这里只校验 id。
+                          int id = value.optInt("id", 0);
+                          if (id <= 0 || id > 2147483000) return;
+                          // 每次现取：桥未绑定 / 已停止时是 0，页面 shim 见 0 即 fail-closed。
+                          try {
+                            source.postMessage(
+                                new org.json.JSONObject()
+                                    .put("type", "bridge-port-reply")
+                                    .put("id", id)
+                                    .put(
+                                        "port",
+                                        com.deepseekharness.app.HttpShellService.activePort()));
+                          } catch (org.json.JSONException ignored) {
+                          }
+                          return;
+                        }
                         if (!backPending
                             || !"back".equals(value.optString("type"))
                             || value.optInt("id") != backSequence) return;

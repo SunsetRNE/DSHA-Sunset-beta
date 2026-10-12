@@ -185,6 +185,10 @@ public final class ShizukuShell {
 
           @Override
           public void onServiceDisconnected(ComponentName name) {
+            // 库只在它缓存的那条连接失效时回调；remove=true 解绑后旧连接可能一直留到旧 Binder
+            // 死亡才回调，此时新连接的 Binder 还是好的 —— 不能用旧回调拆掉新连接。
+            IShellService current = service;
+            if (current != null && current.asBinder().pingBinder()) return;
             lost(this, com.deepseekharness.app.util.UiText.text("设备 Shell 连接断开"));
           }
 
@@ -233,8 +237,16 @@ public final class ShizukuShell {
       LOCK.notifyAll();
     }
     if (unbind && old != null && oldArguments != null) {
+      // remove=false 只让 Shizuku 服务端注销回调：记录与特权进程都留着；本进程若随后退出，被注销的
+      // 回调不再产生死亡事件，那个记录就永远没人回收（再次绑定会另起一个进程）。所以先 remove=false
+      // 清掉本库的连接缓存，再 remove=true 让服务端移除记录并发出销毁事务。
+      // 两次各自 try/catch：Shizuku 已死时第一条会抛，第二条不该被连带跳过。
       try {
         Shizuku.unbindUserService(oldArguments, old, false);
+      } catch (Throwable ignored) {
+      }
+      try {
+        Shizuku.unbindUserService(oldArguments, old, true);
       } catch (Throwable ignored) {
       }
     }

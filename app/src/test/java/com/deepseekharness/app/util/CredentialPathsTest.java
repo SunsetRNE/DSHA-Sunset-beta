@@ -21,6 +21,24 @@ public class CredentialPathsTest {
   }
 
   @Test
+  public void bridgePortEndpointIsMachineStateAndDerivedAtomicsStayPrivate() {
+    assertEquals(".bridge_port", CredentialPaths.BRIDGE_PORT);
+    for (String name :
+        new String[] {".bridge_port", ".bridge_port.atomic-9", ".bridge_port.previous"}) {
+      assertTrue(name, CredentialPaths.machine(name));
+      assertTrue(name, CredentialPaths.backupMachine(name));
+      assertTrue(name, BridgePathPolicy.denied("/root/work/" + name));
+    }
+    // 端口端点是机器状态（因此凭据判据也拒绝导出），但不是 externalCredentials
+    // 里的用户凭据记录；也不能把同名项目内路径误判成机器状态。
+    assertTrue(CredentialPaths.credentialName(".bridge_port"));
+    assertFalse(CredentialPaths.credentialName(".bridge-port"));
+    assertFalse(CredentialPaths.machine(".bridge-port"));
+    assertFalse(CredentialPaths.backupMachine(".bridge-port"));
+    assertFalse(CredentialPaths.machine("my-project/.bridge_port"));
+  }
+
+  @Test
   public void consumerScopesRemainDistinctAfterGeneratedTableAdoption() {
     assertTrue(CredentialPaths.backupMachine(".dsha-web.identity"));
     assertFalse(CredentialPaths.machine(".dsha-web.identity"));

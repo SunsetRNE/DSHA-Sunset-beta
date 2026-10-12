@@ -195,8 +195,7 @@ public final class AdbdIdentityTest {
     // 真机 Android 16：`ps -A -o PID,LABEL,NAME` 里存在名字带空格的内核线程
     // （如 [irq/207-8804000.sdhci cd] / [irq/261-q6v5 wdog]）。按空白切满会把整张表
     // 判成不可信，于是 daemonIdentity() 报 ADBD_IDENTITY_UNVERIFIED、AUTHORIZE 全线失败。
-    String uid =
-        "PID UID NAME\n1 0 init\n692 0 [irq/207-8804000.sdhci cd]\n2241 0 adbd\n";
+    String uid = "PID UID NAME\n1 0 init\n692 0 [irq/207-8804000.sdhci cd]\n2241 0 adbd\n";
     String label =
         "PID LABEL NAME\n1 u:r:init:s0 init\n692 u:r:kernel:s0 [irq/207-8804000.sdhci cd]\n"
             + "2241 u:r:adbd:s0 adbd\n";

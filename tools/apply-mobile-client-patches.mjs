@@ -107,6 +107,41 @@ function restoreConversationScroll() {
     "            for (const record of records) {\n                // 历史消息和流式文本不改变 shell；flow 外的插入仍可唤醒布局。\n                const target = record.target instanceof Element ? record.target : record.target.parentElement;\n                if (target?.closest('[data-chat-flow]')) continue;\n                keys.add(");
   replace('            core.note(keys);', '            if (keys.size) core.note(keys);');
 
+  // 平板 / 宽触屏：团队 chip「再点关闭」的接管原按 MOBILE_QUERY（≤1023px + coarse）
+  // 安装，平板宽度恒不命中，而平板没有鼠标 hover 兜底 ⇒ 点开后只能点空白处关闭。
+  // 改为全宽度触屏门控 TOUCH_QUERY = '(pointer: coarse)'：宽触屏（平板 / 折叠屏展开）
+  // 也安装，鼠标窗口（pointer: fine）在任意宽度仍完全不命中。
+  // workspace-chip-toggle 与 team-chip-toggle 的收尾字节相同（全文件 24 处），因此按
+  // 模块边界定位，只在团队模块内改这一处。
+  {
+    const header = '__modules["effects/team-chip-toggle.js"] = function (require, module, exports) {';
+    const start = source.indexOf(header);
+    const end = source.indexOf('\n};\n__modules[', start + 1);
+    if (start < 0 || end < 0 || source.split(header).length !== 2)
+      throw new Error('缺失团队 chip 模块边界');
+    const body = source.slice(start, end);
+    const tail = '    });\n}';
+    if (body.split(
+          "    (0, phone_chrome_ts_1.installMobileEffect)(ctx, 'dsh-web-mobile: team chip toggle', () => {").length !== 2
+        || body.split(tail).length !== 2)
+      throw new Error('团队 chip 接管锚点缺失或不唯一');
+    source = source.slice(0, start)
+      + body.replace(tail, '    }, phone_chrome_ts_1.TOUCH_QUERY);\n}')
+      + source.slice(end);
+  }
+
+  // 列升起动画：上游把 Animation 丢掉、不读 prefers-reduced-motion，关闭 / 元素替换
+  // 后旧动画无人取消。整段替换 createSheetRiseTask（权威文本在 tools/ 下的 helper）。
+  {
+    const signature = 'function createSheetRiseTask() {';
+    const start = source.indexOf(signature);
+    const end = source.indexOf('\n};\n__modules["effects/stats-line.js"]', start + 1);
+    if (start < 0 || end < 0 || source.split(signature).length !== 2)
+      throw new Error('列升起动画函数锚点缺失或不唯一');
+    const replacement = readFileSync(path.join(project, 'tools/mobile-sheet-rise-task.js'), 'utf8').trim();
+    source = source.slice(0, start) + replacement + source.slice(end);
+  }
+
   // 两个焦点守卫共享上游管理器；保留 DSHA 对锁定原型和第三方包装的归属检查。
   for (const [name, local] of [
     ['core/prototype-focus-shadow.js', 'mobile-focus-shadow.js'],

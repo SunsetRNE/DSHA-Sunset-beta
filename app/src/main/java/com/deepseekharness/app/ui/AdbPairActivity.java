@@ -146,8 +146,7 @@ public class AdbPairActivity extends androidx.appcompat.app.AppCompatActivity {
         .setOnClickListener(
             v -> {
               // 用户的显式关闭：走唯一受管写入口，递增意图代次，使在途自举的自动启用失效。
-              com.deepseekharness.app.core.AdbSwitch.userSet(
-                  getApplicationContext(), false);
+              com.deepseekharness.app.core.AdbSwitch.userSet(getApplicationContext(), false);
               stopService(new Intent(this, DeviceBridgeService.class));
               model.message(
                   com.deepseekharness.app.util.UiText.choose(

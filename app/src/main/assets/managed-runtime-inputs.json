@@ -348,6 +348,8 @@
     "queue-agent-patch.json",
     "queue-dock-patch.json",
     "pnpm-runtime.bin",
+    "python-support.bin",
+    "adb-wheels.tar.gz",
     "profile-settings-review.js",
     "rc1-settings-migration-patch.json",
     "runtime-trial-entry.js",
@@ -389,6 +391,7 @@
     "core/RuntimeTasks.java",
     "core/MaintenanceCoordinator.java",
     "core/ConfigStore.java",
+    "core/ColdSetupTiming.java",
     "core/HarnessController.java",
     "core/TerminalSessionOwner.java",
     "core/SimpleTerminalBackend.java",
@@ -519,7 +522,10 @@
     "vscreen/VirtualScreenAccessibility.java",
     "util/AdbWheelPaths.java",
     "util/AdbDependencyPreparation.java",
-    "util/AdbWheelCache.java"
+    "util/AdbWheelCache.java",
+    "util/BridgePortPolicy.java",
+    "util/BridgeEndpointFiles.java",
+    "util/ShizukuUserServiceProtocol.java"
   ],
   "generatorSources": [
     "tools/mobile-server/compress.js",
@@ -535,6 +541,9 @@
     "tools/prepare-standard-assets.py",
     "tools/verify-asset-deployment.py",
     "tools/source_text.py",
-    "tools/backup-dependencies.lock.json"
+    "tools/backup-dependencies.lock.json",
+    "tools/mobile-sheet-rise-task.js",
+    "app/src/main/aidl/com/deepseekharness/app/IShellService.aidl",
+    "tools/aidl-stub/com/deepseekharness/app/IShellService.java"
   ]
 }

@@ -34,7 +34,9 @@ public final class UsbAuthorizationActivity extends androidx.appcompat.app.AppCo
         new CardPage(
             this,
             t("USB 调试授权", "USB debugging"),
-            t("系统调试授权的一条取得路径；本应用只做只读检测。", "One path to system debugging authorization; this app only reads it."));
+            t(
+                "系统调试授权的一条取得路径；本应用只做只读检测。",
+                "One path to system debugging authorization; this app only reads it."));
     UiNavigation.addHeader(this, page.root, t("USB 调试授权", "USB debugging"), this::finish);
     LinearLayout card = page.card();
     line = page.text("", 13, R.color.text);
@@ -48,8 +50,7 @@ public final class UsbAuthorizationActivity extends androidx.appcompat.app.AppCo
             R.color.text_secondary);
     hint.setPadding(0, dp(10), 0, 0);
     card.addView(hint);
-    page.button(
-        card, t("打开开发者选项", "Open developer options"), false, this::openDeveloperOptions);
+    page.button(card, t("打开开发者选项", "Open developer options"), false, this::openDeveloperOptions);
     setContentView(page.root);
     render();
   }
@@ -68,7 +69,9 @@ public final class UsbAuthorizationActivity extends androidx.appcompat.app.AppCo
     } catch (RuntimeException error) {
       Toast.makeText(
               this,
-              t("无法打开开发者选项，请在系统设置里手动进入", "Cannot open developer options; open it in system settings"),
+              t(
+                  "无法打开开发者选项，请在系统设置里手动进入",
+                  "Cannot open developer options; open it in system settings"),
               Toast.LENGTH_LONG)
           .show();
     }

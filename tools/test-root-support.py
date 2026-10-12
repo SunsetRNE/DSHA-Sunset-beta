@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""用真实 JUnit/JSON 执行 root 策略与生产事务，假 I/O 不启动 Android 或设备命令。"""
+"""用真实 JUnit/JSON 执行 root 策略、生产事务与控制器 I/O 粘合层，假 I/O 不启动 Android 或设备命令。"""
 import argparse
 import hashlib
 import os
@@ -30,6 +30,13 @@ TESTS = [
     "com.deepseekharness.app.util.RootShellCandidatesTest",
     "com.deepseekharness.app.util.SelfPackageIdentityTest",
 ]
+# 控制器 I/O 粘合层的组合回归（F01/F04）：真实控制器 + 最小 Android/设备替身，
+# 用可控执行器、等待时点与只读核验内部钩子重现「请求/结果保存失败、OPEN 推进后被拒、
+# 等待期间撤销、核验执行期间撤销 / 关闭再开启、standalone OPEN、并发 STATUS、旧步骤迟到」。
+# 替身源码在 tools/fixtures/bootstrap-controller/ 下，
+# 只在这个脚本里经 sourcepath 生效，不进任何 Gradle source set。
+CONTROLLER_FIXTURE = ROOT / "tools/fixtures/bootstrap-controller"
+CONTROLLER_TESTS = ["com.deepseekharness.app.core.AdbBootstrapControllerTest"]
 # 构建锁中已有的公开 Maven 依赖；不从网络下载，不使用伪造的 JUnit 类。
 JARS = {
     "org.json/json/20240303": ("json-20240303.jar", "0ebb88e8fb5122b7506d5cf1d69f1ccdb790d22a"),
@@ -82,7 +89,23 @@ def main():
             [java, "-cp", os.pathsep.join([str(classes), classpath]),
              "org.junit.runner.JUnitCore", *TESTS], cwd=ROOT, check=True, timeout=60
         )
-    print("PASS root policy and production executor tests; fake I/O, no Android SDK or device execution", flush=True)
+        # 控制器 I/O 粘合层：最小 Android / 设备替身排在源码之前，单独编译、单独 JVM 运行，
+        # 避免替身影响上面那批直接使用真实 RootShell / RootBootstrapAuthority 的生产测试。
+        controller_classes = temporary / "controller-classes"
+        controller_classes.mkdir()
+        fixture = CONTROLLER_FIXTURE
+        subprocess.run(
+            [javac, "-encoding", "UTF-8", "--release", "17", "-cp", classpath,
+             "-d", str(controller_classes), "-sourcepath",
+             os.pathsep.join(map(str, [fixture, sources, ROOT / "app/src/test/java", generated])),
+             str(fixture / "test/com/deepseekharness/app/core/AdbBootstrapControllerTest.java")],
+            cwd=ROOT, check=True, timeout=90
+        )
+        subprocess.run(
+            [java, "-cp", os.pathsep.join([str(controller_classes), classpath]),
+             "org.junit.runner.JUnitCore", *CONTROLLER_TESTS], cwd=ROOT, check=True, timeout=60
+        )
+    print("PASS root policy, production executor and controller I/O glue tests; fake I/O, no Android SDK or device execution", flush=True)
     return 0
 
 

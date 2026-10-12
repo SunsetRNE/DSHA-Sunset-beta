@@ -20,7 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      # 用与仓库其他 workflow 相同的已核实 commit pin（同 fbc6f399…，v5 / Node 24）。
+      # 本 job 要提交并推送曲线，必须保留 checkout 默认的凭据持久化，不要照抄 ci-fast 的 persist-credentials: false。
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: 生成 SVG
         env:

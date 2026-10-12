@@ -1,4 +1,41 @@
 'use strict';
+const fsSync=require('node:fs');
+const path=require('node:path');
+// 桥端点：端口文件与 .bridge_token 同数据根（DSH_HOME 优先），每次请求重读。
+// 契约文件是 ≤16 字节的普通文件（同原生 BridgeEndpointFiles.READ_LIMIT），内容只有 ASCII
+// 十进制 + 一个可选换行。只有真正缺目录项才回退旧默认 3090；0、坏格式、越界、非 ASCII、
+// 带垃圾尾巴、目录、符号链接（含悬空链接）或读不动一律 fail-closed。
+const LEGACY_BRIDGE_PORT=3090;
+const BRIDGE_PORT_LIMIT=16;
+const BRIDGE_ENDPOINT_UNAVAILABLE='BRIDGE_ENDPOINT_UNAVAILABLE';
+function bridgeRoot(){const home=process.env.DSH_HOME;return typeof home==='string'&&home.trim()&&home.trim()!=='/'?home.trim().replace(/\/+$/,''):'/root/.dsh';}
+function readBridgePortFile(file){
+  // 'missing' 只有真正没有这个目录项；悬空符号链接的 ENOENT 也算已存在 → 'invalid'。
+  let entry;try{entry=fsSync.lstatSync(file);}catch(error){return error&&error.code==='ENOENT'?'missing':'invalid';}
+  if(!entry.isFile())return 'invalid';
+  let descriptor;
+  try{
+    descriptor=fsSync.openSync(file,(fsSync.constants.O_RDONLY|(fsSync.constants.O_NOFOLLOW||0)));
+    const stats=fsSync.fstatSync(descriptor);
+    if(!stats.isFile()||stats.size<1||stats.size>BRIDGE_PORT_LIMIT)return 'invalid';
+    const buffer=Buffer.alloc(stats.size);let filled=0;
+    while(filled<stats.size){const count=fsSync.readSync(descriptor,buffer,filled,stats.size-filled,filled);if(count<=0)break;filled+=count;}
+    if(filled!==stats.size)return 'invalid';
+    // 整份内容必须就是端口：'3091\n' 后面再有空白/垃圾就不是契约文件；不做 Unicode trim。
+    const text=buffer.toString('utf8');
+    if(!/^[0-9]{1,5}\n?$/.test(text))return 'invalid';
+    const port=Number(text.replace(/\n$/,''));
+    return port>=1&&port<=65535?port:'invalid';
+  }catch(ignored){return 'invalid';}
+  finally{try{if(descriptor!==undefined)fsSync.closeSync(descriptor);}catch(ignored){}}
+}
+function bridgePort(){
+  const value=readBridgePortFile(path.join(bridgeRoot(),'.bridge_port'));
+  if(value==='missing')return LEGACY_BRIDGE_PORT;
+  if(value==='invalid')throw Error(BRIDGE_ENDPOINT_UNAVAILABLE);
+  return value;
+}
+function bridgeTokenPath(){return path.join(bridgeRoot(),'.bridge_token');}
 const definitions=[
  ['android_vscreen_create','创建或复用虚拟屏。',{orientation:{type:'string',enum:['portrait','landscape']}}],
  ['android_vscreen_status','读取显示尺寸、方向、通道和最新 frameSeq。',{}],
@@ -51,12 +88,12 @@ function validate(def,args){
  if(name==='android_vscreen_editor'&&args.op==='edit')for(const key of ['start','end'])if(args[key]!==undefined&&args[key]>args.text.length)throw Error('INVALID_'+key);
 }
 function bridgeFailed(value){return !value||value.ok!==true;}
-function requestFor(name,args){
+function requestFor(name,args,port){
  const def=definitions.find(x=>x[0]===name);if(!def)throw Error('UNKNOWN_TOOL');validate(def,args);
  let route={android_vscreen_create:'create',android_vscreen_status:'status',android_vscreen_launch:'launch',android_vscreen_see:'see',android_vscreen_tap:'tap',android_vscreen_swipe:'swipe',android_vscreen_touch:'touch',android_vscreen_type:'type',android_vscreen_key:'key',android_vscreen_tree:'tree',android_vscreen_node:'node',android_vscreen_close:'close'}[name];
  const parameters={...args};
  if(name==='android_vscreen_editor'){route={get:'editor',edit:'edit',submit:'submit'}[args.op];delete parameters.op;}
- const url='http://127.0.0.1:3090/app/vscreen/'+route;
+ const url='http://127.0.0.1:'+(port===undefined?bridgePort():port)+'/app/vscreen/'+route;
  if(['edit','submit','node','type'].includes(route)){
   const body=JSON.stringify(parameters);if(Buffer.byteLength(body,'utf8')>128*1024)throw Error('BRIDGE_BODY_LIMIT');
   return{url,method:'POST',body,headers:{'Content-Type':'application/json; charset=utf-8'}};
@@ -72,7 +109,7 @@ function decodeBridge(raw){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('INVALID_BRIDGE_RESPONSE');return value;
 }
 async function call(name,args,signal){
- const request=requestFor(name,args);const token=(await require('node:fs/promises').readFile('/root/.dsh/.bridge_token','utf8')).trim();
+ const port=bridgePort();const request=requestFor(name,args,port);const token=(await require('node:fs/promises').readFile(bridgeTokenPath(),'utf8')).trim();
  const response=await fetch(request.url,{...request,signal,headers:{...request.headers,'X-Token':token}});
  const value=decodeBridge(await response.text());const{previewB64,...metadata}=value;const content=[{type:'text',text:JSON.stringify(metadata)}];
  if(name==='android_vscreen_see'&&previewB64)content.push({type:'image',mimeType:'image/jpeg',data:previewB64});
@@ -80,5 +117,5 @@ async function call(name,args,signal){
 }
 function start(){const active=new Map(),cancelled=new Set();let buffer='',queue=Promise.resolve(),ended=false,pending=0;const send=m=>process.stdout.write(JSON.stringify({jsonrpc:'2.0',...m})+'\n');async function receive(m){const{id,method,params={}}=m;if(method==='notifications/cancelled'){if(active.has(params.requestId))active.get(params.requestId).abort();else cancelled.add(params.requestId);return;}if(id===undefined)return;if(ended||cancelled.delete(id)){send({id,error:{code:-32800,message:'Request cancelled'}});return;}try{let result;if(method==='initialize')result={protocolVersion:params.protocolVersion||'2025-03-26',capabilities:{tools:{listChanged:false}},serverInfo:{name:'DSHA Virtual Screen',version:'0.2.0'},instructions:'Observe before input. Use logical display coordinates. Touch supports down/move/up. Use accessibility tree/editor for app controls and Unicode text. Reobserve after every action; never replay an unknown result.'};else if(method==='ping')result={};else if(method==='tools/list')result={tools};else if(method==='tools/call'){const ac=new AbortController();active.set(id,ac);try{result=await call(params.name,params.arguments||{},ac.signal);}finally{active.delete(id);}}else{send({id,error:{code:-32601,message:'Method not found'}});return;}send({id,result});}catch(error){send({id,result:{content:[{type:'text',text:'Virtual screen unavailable: '+(error.message||'OPERATION_UNAVAILABLE')}],isError:true}});}}
 process.stdin.setEncoding('utf8');process.stdin.on('data',chunk=>{buffer+=chunk;if(buffer.length>1024*1024)process.exit(1);let end;while((end=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,end);buffer=buffer.slice(end+1);if(!line.trim())continue;let value;try{value=JSON.parse(line);}catch{send({id:null,error:{code:-32700,message:'Parse error'}});continue;}if(pending>=32){send({id:value.id??null,error:{code:-32000,message:'Request queue full'}});continue;}pending++;queue=queue.then(()=>receive(value)).finally(()=>pending--);}});process.stdin.on('end',()=>{ended=true;for(const ac of active.values())ac.abort();});process.stdout.on('error',e=>{if(e.code==='EPIPE')process.exit(0);});}
-if(require.main===module)start();module.exports={definitions,tools,validate,call,requestFor,decodeBridge,bridgeFailed};
+if(require.main===module)start();module.exports={definitions,tools,validate,call,requestFor,decodeBridge,bridgeFailed,bridgePort,bridgeTokenPath};
 

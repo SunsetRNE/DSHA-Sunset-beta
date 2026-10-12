@@ -23,8 +23,10 @@ public final class RootAuthorizationActivity extends androidx.appcompat.app.AppC
   private MaterialSwitch toggle;
   private TextView status;
   private androidx.appcompat.app.AlertDialog dialog;
+
   /** 每次验证的请求代次：页面销毁或再次发起都让旧回调的 UI 交付失效（F07）。 */
   private int verifyGeneration;
+
   private final Handler main = new Handler(Looper.getMainLooper());
   private final Runnable refresh =
       new Runnable() {

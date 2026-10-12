@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.deepseekharness.app.util.Constants;
+import com.deepseekharness.app.util.LanListenerStatus;
 import com.deepseekharness.app.util.SensitiveData;
 
 import java.io.IOException;
@@ -95,6 +96,32 @@ public final class LanProxyService {
 
   private static volatile ProxyRun activeRun;
   private static long nextRunEpoch;
+
+  /**
+   * The externally visible listener state. It is intentionally separate from
+   * {@link ProxyRun#bound}: the launch screen must be able to tell "still
+   * waiting for this round's authentication/bind" from "the bind actually
+   * failed" instead of showing one generic waiting message forever. All
+   * publication goes through {@link LanListenerStatus.Registry}, which binds
+   * every snapshot to both its round epoch and its dsh generation.
+   */
+  private static final LanListenerStatus.Registry LISTENER = new LanListenerStatus.Registry();
+
+  /**
+   * 宿主 fixture 的端口注入接缝（包内可见，仅同包宿主测试使用）。生产进程从不调用它，
+   * 监听端口恒为 {@link #LAN_PORT}（3081）；它只让真实 acceptLoop/start/stop 路径能在
+   * 临时端口上被验证，从而不必占用或依赖真实 3081。没有任何端口扫描或回退。
+   */
+  static synchronized void useHostBindPort(int port) {
+    hostBindPort = port > 0 && port <= 65535 ? port : LAN_PORT;
+  }
+
+  /** 监听端口来源：生产恒为 {@link #LAN_PORT}。 */
+  static int listenerPort() {
+    return hostBindPort;
+  }
+
+  private static volatile int hostBindPort = LAN_PORT;
   /* Retained for the package-private rewriteResponse(String) test helper. */
   private static volatile int backendPort = DEFAULT_BACKEND_PORT;
   private static volatile String logPath = "";
@@ -139,15 +166,24 @@ public final class LanProxyService {
     if (!isValidDshCookie(cookie) || generation <= 0) return false;
     String normalized = cookie.trim();
     ProxyRun run = activeRun;
+    long previousGeneration = dshAuth.generation;
     // A different dsh generation must never reuse the old listener. A
     // same-generation cookie refresh is safe: existing workers retain an
     // old AuthState snapshot and fail the identity check below, while new
     // requests receive only the replacement cookie.
     if (run != null && run.generation != generation) {
+      // 换代：只作废属于旧代次的监听状态，等新轮次 start() 重新发布为「等待中」。
+      // 按 generation 匹配，绝不与轮次 epoch 比较。
+      LISTENER.stopGeneration(run.generation);
       deactivateRunLocked(run);
       closeRunSockets(run);
     }
     dshAuth = new AuthState(normalized, generation);
+    // 旧代次即使轮次已退出（activeRun 为空）也不能把失败状态留给新代次；只按代次匹配，
+    // 不触碰任何更新的轮次。
+    if (previousGeneration > 0 && previousGeneration != generation) {
+      LISTENER.stopGeneration(previousGeneration);
+    }
     return true;
   }
 
@@ -159,6 +195,7 @@ public final class LanProxyService {
       dshAuth = NO_DSH_AUTH;
       ProxyRun run = activeRun;
       if (run != null && (generation == 0 || run.generation == generation)) {
+        LISTENER.stopGeneration(generation);
         deactivateRunLocked(run);
         closeRunSockets(run);
       }
@@ -263,6 +300,8 @@ public final class LanProxyService {
   /** Start the LAN bridge only after a current BrowserAuth cookie is available. */
   public static synchronized void start(
       String rootfsDir, Context ctx, int backend, long generation) {
+    // 没有上下文是调用方用法错误：不得开始监听，也不误伤已有的正常监听。
+    if (ctx == null) return;
     if (!com.deepseekharness.app.bridge.LocalNetworkAccess.granted(ctx)) {
       stopLanListener();
       return;
@@ -279,18 +318,53 @@ public final class LanProxyService {
     // handling always uses the immutable port captured by ProxyRun.
     backendPort = resolvedBackend;
     activeRun = run;
+    // 认证与授权都已通过；从现在到 bind 返回结果之前是「等待中」，不是「已绑定」。
+    // 快照同时绑定轮次 epoch 与 dsh generation，停止/换代只按 generation 匹配。
+    LISTENER.begin(run.epoch, generation, listenerPort());
     Thread accept = new Thread(() -> acceptLoop(run), "dsha-lan-accept-" + run.epoch);
     accept.setDaemon(true);
     run.acceptThread = accept;
     accept.start();
   }
 
+  /**
+   * Publish a bind failure only for a run that is still the current live attempt.
+   * A superseded run (stop, generation change, or a newer start) must never
+   * overwrite the newer state with its own late failure; the registry rejects
+   * it by epoch.
+   *
+   * @return true when this failure is now the published listener state
+   */
+  private static boolean publishBindFailure(ProxyRun run, IOException error) {
+    synchronized (LanProxyService.class) {
+      if (!isActiveRunLocked(run)) return false;
+      if (!LISTENER.fail(run.epoch, listenerPort(), error)) return false;
+    }
+    logFailure(LISTENER.snapshot());
+    return true;
+  }
+
+  /** Failure detail: fixed classification plus a port, never the raw exception text. */
+  private static void logFailure(LanListenerStatus.Snapshot failure) {
+    log(
+        com.deepseekharness.app.util.UiText.format(
+            "LAN 代理绑定失败：端口 %s（%s）",
+            failure.port(),
+            failure.causeDetail() == null
+                ? failure.causeCode()
+                : failure.causeCode() + "/" + failure.causeDetail()));
+  }
+
+  /** Current listener state for the UI: idle, waiting, bound, or a real bind failure. */
+  public static LanListenerStatus.Snapshot listenerStatus() {
+    return LISTENER.snapshot();
+  }
+
   private static void acceptLoop(ProxyRun run) {
     ServerSocket ss = null;
+    boolean bindPublished = false;
     try {
-      ss = new ServerSocket();
-      ss.setReuseAddress(true);
-      ss.bind(new InetSocketAddress("0.0.0.0", LAN_PORT));
+      ss = LanListenerStatus.bindTcp(listenerPort());
       synchronized (LanProxyService.class) {
         if (!isActiveRunLocked(run)) {
           closeQuietly(ss);
@@ -298,10 +372,12 @@ public final class LanProxyService {
         }
         run.server = ss;
         run.bound = true;
+        LISTENER.bound(run.epoch, listenerPort());
+        bindPublished = true;
       }
       log(
           com.deepseekharness.app.util.UiText.format(
-              "LAN 代理已启动：0.0.0.0:%s -> 127.0.0.1:%s", LAN_PORT, run.backendPort));
+              "LAN 代理已启动：0.0.0.0:%s -> 127.0.0.1:%s", listenerPort(), run.backendPort));
       while (isActiveRun(run)) {
         try {
           Socket client = ss.accept();
@@ -325,10 +401,8 @@ public final class LanProxyService {
         }
       }
     } catch (IOException e) {
-      if (isActiveRun(run))
-        log(
-            com.deepseekharness.app.util.UiText.format(
-                "LAN 代理绑定失败：%s", e.getClass().getSimpleName()));
+      // 真实绑定失败：必须让界面看见，不能只写日志后静默停在「等待认证」。
+      publishBindFailure(run, e);
     } finally {
       synchronized (LanProxyService.class) {
         closeQuietly(ss);
@@ -339,6 +413,9 @@ public final class LanProxyService {
           activeRun = null;
         }
       }
+      // 只有「曾经绑定成功」的轮次在这里清状态。真实绑定失败保留 FAILED 供界面显示；
+      // 被 stop()/换代打断的轮次由 stop 路径清，且旧轮次不得覆盖新轮次。
+      if (bindPublished) LISTENER.ended(run.epoch);
       closeRunSockets(run);
       run.dispatch.close();
     }
@@ -360,6 +437,8 @@ public final class LanProxyService {
     synchronized (LanProxyService.class) {
       LAN_TOKEN.revoke();
       run = activeRun;
+      // 用户关闭局域网访问：界面必须立刻回到「没有进行中的监听」。
+      LISTENER.stopAll();
       if (run != null) deactivateRunLocked(run);
     }
     if (run != null) {
@@ -382,6 +461,9 @@ public final class LanProxyService {
       if (generation <= 0
           || run != null && run.generation == generation
           || dshAuth.generation == generation) LAN_TOKEN.revoke();
+      // 按快照里显式绑定的 dsh 代次清理监听状态：轮次号恰好等于代次号也不会误清，
+      // 绑定失败后轮次已退出（activeRun 为空）时也不会漏清。generation <= 0 无条件清空。
+      LISTENER.stopGeneration(generation);
       if (generation > 0) {
         if (run == null || run.generation != generation) run = null;
         else deactivateRunLocked(run);

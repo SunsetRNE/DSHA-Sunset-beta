@@ -185,30 +185,84 @@ public final class BridgeAuditInstrumentation extends Instrumentation {
     }
   }
 
+  /** 占用回环端口；已被别的监听占用时返回 null（对该端口而言同样是不可用）。 */
+  private static ServerSocket occupyLoopback(int port) throws Exception {
+    ServerSocket socket = new ServerSocket();
+    socket.setReuseAddress(true);
+    try {
+      socket.bind(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), port));
+      return socket;
+    } catch (java.io.IOException busy) {
+      socket.close();
+      return null;
+    }
+  }
+
   private void bindingCases() throws Exception {
-    report("真实 3090：占用端口 → 撤销假就绪 → 释放端口 → 同实例恢复监听");
-    // 若端口已被真实服务占用，bind 会失败并退出，不驱逐服务或轮换其 token。
-    try (ServerSocket occupied = new ServerSocket()) {
-      occupied.setReuseAddress(true);
-      occupied.bind(
-          new InetSocketAddress(InetAddress.getByName("127.0.0.1"), HttpShellService.PORT));
+    report("真实回环桥：首选端口被占仍回退，范围耗尽则明确不可用，停止发布 0");
+    List<ServerSocket> occupied = new ArrayList<>();
+    try {
+      occupied.add(occupyLoopback(HttpShellService.PORT));
       bridge.start();
-      until(() -> !HttpShellService.isStarting(), 5000, "绑定失败未释放启动占位");
-      check(!HttpShellService.isReady() && HttpShellService.instance() == null, "绑定失败不得发布就绪实例");
-      check(!HttpShellService.bindError().isEmpty(), "绑定失败有可见原因");
+      awaitReady();
+      int fallback = HttpShellService.activePort();
+      check(
+          fallback > HttpShellService.PORT
+              && fallback <= com.deepseekharness.app.util.BridgePortPolicy.LAST,
+          "首选端口被占时回退到有界范围: " + fallback);
+      check(HttpShellService.bindError().isEmpty(), "真实绑定成功不报失败");
+      check(
+          Compat.readAll(new File(fixture.base, ".bridge_status"))
+              .trim()
+              .equals("ok port=" + fallback),
+          "桥状态写实际端口");
+      check(
+          Compat.readAll(new File(fixture.base, ".bridge_port"))
+              .trim()
+              .equals(Integer.toString(fallback)),
+          "端点契约写实际端口");
+      check("OK".equals(health(fixtureToken)), "回退端口上真实提供健康端点");
+      bridge.stop();
+      check(Compat.readAll(new File(fixture.base, ".bridge_port")).trim().equals("0"), "停止发布不可用端点");
+
+      // 把整个回退范围占满：桥必须明确不可用，而不是换到范围外的端口或放宽鉴权。
+      for (int port = com.deepseekharness.app.util.BridgePortPolicy.PREFERRED;
+          port <= com.deepseekharness.app.util.BridgePortPolicy.LAST;
+          port++) {
+        ServerSocket held = occupyLoopback(port);
+        if (held != null) occupied.add(held);
+      }
+      bridge.start();
+      until(() -> !HttpShellService.isStarting(), 5000, "端口耗尽未释放启动占位");
+      check(!HttpShellService.isReady() && HttpShellService.instance() == null, "范围耗尽不得发布就绪实例");
+      check(!HttpShellService.bindError().isEmpty(), "范围耗尽有可见原因");
       check(
           Compat.readAll(new File(fixture.base, ".bridge_status")).startsWith("fail "),
-          "绑定失败写入隔离桥状态");
+          "范围耗尽写入隔离桥状态");
+      check(
+          Compat.readAll(new File(fixture.base, ".bridge_port")).trim().equals("0"), "范围耗尽发布不可用端点");
       check(
           Compat.readAll(new File(fixture.getFilesDir(), "diagnostic-events.txt"))
               .contains("BRIDGE_BIND"),
-          "绑定失败进入诊断记录");
+          "范围耗尽进入诊断记录");
+    } finally {
+      for (ServerSocket held : occupied)
+        if (held != null)
+          try {
+            held.close();
+          } catch (java.io.IOException ignored) {
+          }
     }
     bridge.start();
     awaitReady();
+    check(
+        HttpShellService.activePort() == HttpShellService.PORT,
+        "端口释放后回到首选端口: " + HttpShellService.activePort());
     check(HttpShellService.bindError().isEmpty(), "重试成功清除旧失败状态");
     check(
-        Compat.readAll(new File(fixture.base, ".bridge_status")).startsWith("ok port=3090"),
+        Compat.readAll(new File(fixture.base, ".bridge_status"))
+            .trim()
+            .equals("ok port=" + HttpShellService.PORT),
         "恢复后状态为真实绑定成功");
     check("[UNAUTHORIZED]".equals(health("audit_wrong_token")), "错误 token 仍被拒绝");
     check("OK".equals(health(fixtureToken)), "恢复后正确 token 可以访问健康端点");
@@ -225,10 +279,13 @@ public final class BridgeAuditInstrumentation extends Instrumentation {
         "首个入口退出后其它需求仍持有真实监听");
     duplicate.stop();
     check(!HttpShellService.isReady() && !HttpShellService.isStarting(), "最后一份需求释放才关闭监听");
+    check(
+        Compat.readAll(new File(fixture.base, ".bridge_port")).trim().equals("0"),
+        "释放监听后端点契约回到不可用");
     bridge.start();
     awaitReady();
     try (Socket idle = new Socket()) {
-      idle.connect(new InetSocketAddress("127.0.0.1", HttpShellService.PORT), 2000);
+      idle.connect(new InetSocketAddress("127.0.0.1", HttpShellService.activePort()), 2000);
       idle.setSoTimeout(2000);
       // 等 accept 已登记这个连接后再停止，覆盖线程池内阻塞读请求的关闭。
       until(() -> activeClients() > 0, 3000, "测试连接未进入桥工作池");
@@ -236,11 +293,13 @@ public final class BridgeAuditInstrumentation extends Instrumentation {
       check(idle.getInputStream().read() == -1, "停止桥应关闭正在等请求头的连接");
     }
     check(!HttpShellService.isReady() && !HttpShellService.isStarting(), "停止撤销全部就绪标志");
+    check(
+        Compat.readAll(new File(fixture.base, ".bridge_port")).trim().equals("0"), "停止后端点契约回到不可用");
     bridge.start();
     awaitReady();
     check("OK".equals(health(fixtureToken)), "主动停止后还可再次启动与处理请求");
     passed.add(
-        "HttpShellService: occupied 3090 recovery, diagnostics, token gate, owner isolation, socket cleanup");
+        "HttpShellService: bounded port fallback, exhaustion, endpoint contract, token gate, owner isolation, socket cleanup");
   }
 
   private int activeClients() {
@@ -346,7 +405,7 @@ public final class BridgeAuditInstrumentation extends Instrumentation {
   private String bridgeRequest(String target, String token, int readTimeoutMillis)
       throws Exception {
     try (Socket client = new Socket()) {
-      client.connect(new InetSocketAddress("127.0.0.1", HttpShellService.PORT), 2000);
+      client.connect(new InetSocketAddress("127.0.0.1", HttpShellService.activePort()), 2000);
       client.setSoTimeout(readTimeoutMillis);
       String request =
           "GET " + target + " HTTP/1.1\r\nHost: 127.0.0.1\r\nX-Token: " + token + "\r\n\r\n";

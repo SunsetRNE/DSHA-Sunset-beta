@@ -117,7 +117,9 @@ def main():
     if any(sha256(repo / name) != digest for name, digest in compat_meta['inputs'].items()) \
             or sha256(source / 'web-integration/es-compat.js') != compat_meta['sha256']:
         raise ValueError('网页兼容代码与依赖锁不一致，请运行 tools/prepare-web-compat.mjs')
-    compatibility = (source / 'web-integration/es-compat.js').read_text(encoding='utf-8')
+    # 在 shim 之前声明新 App 契约；后续 provider 尚未安装或初始化失败时也不得退回 3090。
+    compatibility = 'window.__DSHA_BRIDGE_PORT_REQUIRED__=true;\n'
+    compatibility += (source / 'web-integration/es-compat.js').read_text(encoding='utf-8')
     compatibility += '\n' + (source / 'web-integration/compat.js').read_text(encoding='utf-8')
     compatibility += '\n' + (source / 'bridge-token-compat.cjs').read_text(encoding='utf-8')
     compatibility += '\n' + (source / 'web-integration/startup.js').read_text(encoding='utf-8')

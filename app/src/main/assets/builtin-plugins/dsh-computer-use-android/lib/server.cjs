@@ -1,7 +1,45 @@
 'use strict';
 // MCP 只桥接已存在的 Android 设备接口；不暴露 shell、凭据读取或任意文件访问。
 const fs=require('node:fs/promises');
+const fsSync=require('node:fs');
+const path=require('node:path');
 const MAX_SCREENSHOT_BYTES=16*1024*1024;
+// 桥端点：端口文件与 .bridge_token 同数据根（DSH_HOME 优先），每次请求重读。
+// 契约文件是 ≤16 字节的普通文件（同原生 BridgeEndpointFiles.READ_LIMIT），内容只有 ASCII
+// 十进制 + 一个可选换行。只有真正缺目录项才回退旧默认 3090；0、坏格式、越界、非 ASCII、
+// 带垃圾尾巴、目录、符号链接（含悬空链接）或读不动都算「端点未知」，必须 fail-closed ——
+// 同机可能有第二个 DSHA 实例。
+const LEGACY_BRIDGE_PORT=3090;
+const BRIDGE_PORT_LIMIT=16;
+const BRIDGE_ENDPOINT_UNAVAILABLE='BRIDGE_ENDPOINT_UNAVAILABLE';
+function bridgeRoot(){const home=process.env.DSH_HOME;return typeof home==='string'&&home.trim()&&home.trim()!=='/'?home.trim().replace(/\/+$/,''):'/root/.dsh';}
+function readBridgePortFile(file){
+  // 'missing' 只有真正没有这个目录项；悬空符号链接的 ENOENT 也算已存在 → 'invalid'。
+  let entry;try{entry=fsSync.lstatSync(file);}catch(error){return error&&error.code==='ENOENT'?'missing':'invalid';}
+  if(!entry.isFile())return 'invalid';
+  let descriptor;
+  try{
+    descriptor=fsSync.openSync(file,(fsSync.constants.O_RDONLY|(fsSync.constants.O_NOFOLLOW||0)));
+    const stats=fsSync.fstatSync(descriptor);
+    if(!stats.isFile()||stats.size<1||stats.size>BRIDGE_PORT_LIMIT)return 'invalid';
+    const buffer=Buffer.alloc(stats.size);let filled=0;
+    while(filled<stats.size){const count=fsSync.readSync(descriptor,buffer,filled,stats.size-filled,filled);if(count<=0)break;filled+=count;}
+    if(filled!==stats.size)return 'invalid';
+    // 整份内容必须就是端口：'3091\n' 后面再有空白/垃圾就不是契约文件；不做 Unicode trim。
+    const text=buffer.toString('utf8');
+    if(!/^[0-9]{1,5}\n?$/.test(text))return 'invalid';
+    const port=Number(text.replace(/\n$/,''));
+    return port>=1&&port<=65535?port:'invalid';
+  }catch(ignored){return 'invalid';}
+  finally{try{if(descriptor!==undefined)fsSync.closeSync(descriptor);}catch(ignored){}}
+}
+function bridgePort(){
+  const value=readBridgePortFile(path.join(bridgeRoot(),'.bridge_port'));
+  if(value==='missing')return LEGACY_BRIDGE_PORT;
+  if(value==='invalid')throw Error(BRIDGE_ENDPOINT_UNAVAILABLE);
+  return value;
+}
+function bridgeTokenPath(){return path.join(bridgeRoot(),'.bridge_token');}
 const definitions=[
   ['android_get_state','读取当前 Android 页面结构。操作前读取，操作后再次验证。','/app/ui/dump',{}],
   ['android_screenshot','截取当前屏幕并返回图片。需要系统截屏能力和 DSHA 授权。','/app/ui/screenshot',{}],
@@ -27,8 +65,9 @@ function screenshotContent(result){let shot;try{shot=JSON.parse(result);}catch{t
   return [{type:'text',text},{type:'image',mimeType:'image/png',data:shot.data}];
 }
 async function call(name,args,signal,dependencies={fs,fetch:globalThis.fetch}){const def=definitions.find(t=>t[0]===name);if(!def)throw Error('UNKNOWN_TOOL');validate(def,args);
-  const token=(await dependencies.fs.readFile('/root/.dsh/.bridge_token','utf8')).trim();if(!token)throw Error('BRIDGE_NOT_READY');
-  const url=new URL('http://127.0.0.1:3090'+def[2]);for(const [k,v]of Object.entries(args))url.searchParams.set(k,String(v));
+  const port=(dependencies.bridgePort||bridgePort)();
+  const token=(await dependencies.fs.readFile(bridgeTokenPath(),'utf8')).trim();if(!token)throw Error('BRIDGE_NOT_READY');
+  const url=new URL('http://127.0.0.1:'+port+def[2]);for(const [k,v]of Object.entries(args))url.searchParams.set(k,String(v));
   if(name==='android_screenshot')url.searchParams.set('format','mcp');
   const response=await dependencies.fetch(url,{signal,headers:{'X-Token':token}});if(!response.ok)throw Error('BRIDGE_HTTP_'+response.status);
   const raw=await readBridgeResponse(response,name==='android_screenshot'?24*1024*1024:2*1024*1024);let result=raw;try{const parsed=JSON.parse(raw);result=typeof parsed.result==='string'?parsed.result:raw;}catch{}
@@ -63,4 +102,4 @@ process.stdin.on('end',()=>{ended=true;for(const controller of active.values())c
 process.stdout.on('error',error=>{if(error.code==='EPIPE')process.exit(0);});
 }
 if(require.main===module)startServer();
-module.exports={validate,definitions,tools,bridgeFailed,screenshotContent,readBridgeResponse,call};
+module.exports={validate,definitions,tools,bridgeFailed,screenshotContent,readBridgeResponse,call,bridgePort,bridgeTokenPath};

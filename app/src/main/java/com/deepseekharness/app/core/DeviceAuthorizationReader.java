@@ -76,9 +76,7 @@ public final class DeviceAuthorizationReader {
     DeviceAuthorization.Reason reason = DeviceAuthorization.globalReason(snapshot);
     DeviceAuthorization.Pipe source = DeviceAuthorization.grantedSource(snapshot);
     if (state == DeviceAuthorization.State.GRANTED && source != null)
-      return UiText.format(
-          "%s · 来源=%s",
-          UiText.text("已授权"), pipeLabel(source));
+      return UiText.format("%s · 来源=%s", UiText.text("已授权"), pipeLabel(source));
     if (!snapshot.adbEnabled)
       return UiText.format(
           "%s · %s", UiText.text("未授权"), reasonLabel(DeviceAuthorization.Reason.ADB_GLOBAL_OFF));
@@ -105,10 +103,7 @@ public final class DeviceAuthorizationReader {
     }
     DeviceAuthorization.PipeStatus keepalive = DeviceAuthorization.keepalive(snapshot);
     out.append('\n')
-        .append(
-            UiText.format(
-                "%s：%s",
-                UiText.text("无线调试自动恢复凭据"), stateLabel(keepalive.state)));
+        .append(UiText.format("%s：%s", UiText.text("无线调试自动恢复凭据"), stateLabel(keepalive.state)));
     if (keepalive.state != DeviceAuthorization.State.GRANTED)
       out.append(UiText.format("（%s）", reasonLabel(keepalive.reason)));
     return out.toString();
@@ -236,7 +231,8 @@ public final class DeviceAuthorizationReader {
         return UiText.choose("自举需要 Root", "Bootstrap requires Root");
       case WIRELESS_DEBUG_IN_USE:
         return UiText.choose(
-            "系统无线调试占用中，自举按设计拒绝接管", "System wireless debugging is in use; bootstrap refuses to take over");
+            "系统无线调试占用中，自举按设计拒绝接管",
+            "System wireless debugging is in use; bootstrap refuses to take over");
       case WIRELESS_REOPEN_BLOCKED:
         return UiText.choose(
             "自举期间禁止自动重开无线调试", "Auto-reopening wireless debugging is blocked during bootstrap");

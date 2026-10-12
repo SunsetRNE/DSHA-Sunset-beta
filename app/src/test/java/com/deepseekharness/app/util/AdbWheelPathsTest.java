@@ -189,14 +189,28 @@ public class AdbWheelPathsTest {
     File link = new File(data, "files/linux/ubuntu/root/.dsh");
     for (String target :
         new String[] {
-          "/sdcard/Documents/dshdata",
-          "../sdcard/dshdata",
-          "/data/user/0/other.app/files/data",
-          new File(data.getParentFile(), "other-app").getPath()
+          "/sdcard/Documents/dshdata", "../sdcard/dshdata", "/data/user/0/other.app/files/data"
         }) {
       fs.links.put(link, target);
       assertThrows(target, IOException.class, () -> bind(fs, data));
     }
+    assertFalse(new File(link, "wheels").exists());
+    assertFalse(new File(data, "files/linux/ubuntu/sdcard").exists());
+    // 不带 /data/ 前缀的绝对目标没有「宿主别名」语义，按 guest 绝对链接解析到本次运行根里
+    // （与 guestAbsoluteAndRelativeHomeLinksResolveInsideSameRuntime 同一契约），所以这里不该
+    // 期望拒绝：同一个字符串在设备上就是 guest 路径，拒绝它等于拒绝 /root/.dsh、/home/dsh。
+    // 真正不许越界的是「解析结果必须落在应用私有根内」，由 verify() 的 checked(home) 兜住
+    // （越界抛 ADB_WHEEL_PATH_OUTSIDE_AUTHORITY），这里连同缓存位置一起核对。
+    fs.links.put(link, "/opt/dshdata");
+    AdbWheelPaths guest = bind(fs, data);
+    assertTrue(
+        guest.home.getPath(),
+        DocumentPaths.within(new File(data, "files/linux/ubuntu/opt"), guest.home));
+    assertTrue(guest.home.getPath(), DocumentPaths.within(new File(data, "files"), guest.home));
+    // 方法名承诺「绝不创建缓存」：被接受的目标同样不得留下 wheels。cacheState() 会先 verify()
+    // 再如实报告缓存位置，所以这一条同时证明「路径合法」与「没有偷偷建出缓存目录」两件事；
+    // 只断言文件不存在证明不了后者（NOFOLLOW 发布器会为合法路径逐级创建中间目录）。
+    assertEquals("CACHE_MISSING", guest.cacheState());
     assertFalse(new File(link, "wheels").exists());
     assertFalse(new File(data, "files/linux/ubuntu/sdcard").exists());
   }

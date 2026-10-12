@@ -2,9 +2,9 @@
 
 DSHA 的 AI / 新贡献者入口。本文让你不扫全库就能上手 —— 读它之前先读 [README.md](README.md)。
 
-**仓库事实速览**：单 Gradle 模块 `:app`，纯 Java 17、无 Kotlin；`applicationId com.dsh.client`，Java 包 `com.deepseekharness.app`；两个 flavor（`standard` / `low`，共用功能代码）；**arm64-v8a only**。APK 用 proot/proroot 把 Ubuntu rootfs 搬进应用私有目录，在里面跑 Node 24 + pnpm + `@deepseek-ai/dsh`（0.2.0-rc.2）的 Web UI（`:3080`）。当前正式版 v0.2.0-rc2 / build170，APK 版本 0.2.21-20261009.0750-dsh0.2.0-rc.2 / versionCode 170。
+**仓库事实速览**：单 Gradle 模块 `:app`，纯 Java 17、无 Kotlin；`applicationId com.dsh.client`，Java 包 `com.deepseekharness.app`；两个 flavor（`standard` / `low`，共用功能代码）；**arm64-v8a only**。APK 用 proot/proroot 把 Ubuntu rootfs 搬进应用私有目录，在里面跑 Node 24 + pnpm + `@deepseek-ai/dsh`（0.2.0-rc.2）的 Web UI（`:3080`）。**源码树当前版本是 build190**：`app/build.gradle` 为 versionCode 190 / versionName `0.2.38-20261012.0415-dsh0.2.0-rc.2`，属实验分支的工程 / 测试包（独立包名 `com.dsh.clienu.SunsetRNE` + debug 签名，未公开发布）。**最新公开 Release 仍是 v0.2.0-rc2 / build170**（tag `v0.2.0-rc2` @ `8362bba`，APK 版本 0.2.21-20261009.0750-dsh0.2.0-rc.2 / versionCode 170）——两者不是同一个包，别互相替换。
 
-**build170 当前策略（覆盖下文同项历史说明）**：移动 UI 3.0.5；第三方插件检查后自动提交/启用，允许依赖生命周期脚本和 pnpmfile；新导出为无密码 tar.gz，内部自动副本及旧加密原件读取保留。两版各45项关联检查和 Android13 非破坏性正式包验收范围见[当前发布说明](docs/releases/v0.2.0-rc2-notes.md)与[build170](docs/releases/v0.2.21-build170-20261009.md)。下方目录数量为历史索引，不代表当前源码统计。
+**最新公开 Release（v0.2.0-rc2 / build170）当前策略（覆盖下文同项历史说明）**：移动 UI 3.0.5；第三方插件检查后自动提交/启用，允许依赖生命周期脚本和 pnpmfile；新导出为无密码 tar.gz，内部自动副本及旧加密原件读取保留。两版各45项关联检查和 Android13 非破坏性正式包验收范围见[该版发布说明](docs/releases/v0.2.0-rc2-notes.md)与[build170](docs/releases/v0.2.21-build170-20261009.md)。源码树已推进到 build190（171–190 是 `com.dsh.clienu.SunsetRNE` 的工程 / 测试包），逐版记录见 [CHANGELOG.md](CHANGELOG.md)，最新发布说明见 [build190](docs/releases/v0.2.38-build190-20261012.md)。下方目录数量为历史索引，不代表当前源码统计。
 
 ## Agent skills
 
@@ -76,7 +76,7 @@ app/src/main/java/com/deepseekharness/app/
 
 ## 测试布局
 
-`app/src/test/java/com/deepseekharness/app/` 共 172 个测试类，分布：`util/` 112、`backup/` 45、`core/` 6、`runtime/` 6、`vscreen/` 1、`ui/` 1、根包 1（`LanAuthTest`）。
+`app/src/test/java/com/deepseekharness/app/` 共 **305** 个测试类（截至 build190 实测：`find app/src/test -name '*Test.java' | wc -l`），分布：`util/` 199、`backup/` 48、`runtime/` 25、`core/` 21、根包 3（`LanAuthTest` / `LanListenerStatusTest` / `RootBootstrapExecutorTest`）、`vscreen/` 2、`ui/` 2、`data/` 2、`recovery/` 2、`skills/` 1；另有 6 个非测试支撑类在 `backup/`（`*CrashProcess`、`JvmBackupFileSystem`）。源码改动频繁，**数量以实际为准**，重算用上面那条 `find`。
 
 ```bash
 bash build.sh :app:testStandardDebugUnitTest   # 全量单测
@@ -110,7 +110,7 @@ bash build.sh :app:testStandardDebugUnitTest   # 全量单测
 
 ### 版本与构建
 
-- **当前本地交付版本为 0.1.7-rc2 / 147**：E7E3 发布证书（完整指纹见 build 131 记录）用于正式 APK；A3F4 仅保留为历史手机验收规则。验收交付流程见下文「交付与验收」。
+- **当前本地交付版本为 build190 / `0.2.38-20261012.0415-dsh0.2.0-rc.2` / versionCode 190**（实验分支的工程 / 测试包，见 [build190 发布说明](docs/releases/v0.2.38-build190-20261012.md)）；公开正式版仍是 v0.2.0-rc2 / build170。E7E3 发布证书（完整指纹见 build 131 记录）用于正式 APK；A3F4 仅保留为历史手机验收规则。验收交付流程见下文「交付与验收」。
 - `standard`：minSdk 30，系统 WebView；`low`：minSdk 23，内置 GeckoView 143。构建任务 `assembleStandardRelease` / `assembleLowRelease`。兼容版 proot / loader / 终端 JNI 以 API 23 重编（`tools/build-low-proot.py`、`tools/termux-jni/`），**不要把标准版 proot 当 Android 6 可执行文件**。
 - 离线 rootfs（`assets/offline-rootfs.bin`）**不提交**，由准备脚本生成；APK 用 `offline-rootfs.layout=split-runtime-v1` 标记 Ubuntu 与 `dsh-runtime.bin` 分包，构建核验两份摘要。
 - 新 dsh 依赖由 `tools/dsh-runtime/package-lock.json` 锁定；`tools/prepare-runtime-descriptor.py` 生成独立受管契约描述，APK 版本仅作诊断来源。相同基础版本更新受管树，个人数据保持原位；**不因 UI-only APK 更新替换环境，不因普通 dsh 更新递增 Ubuntu 基础环境版本**。
@@ -156,7 +156,7 @@ bash build.sh :app:testStandardDebugUnitTest   # 全量单测
 - **ADB 通道经验**：保持 Root → Shizuku → ADB 的发送前选择，显式 `--host`/`--port` 强制 ADB 计划。daemon UID/域与客户端会话分别取证，固定列捕获须有真实退出码、完整性和 PID 出生身份；不能由 daemon UID 0 推导所有会话同权。属性回显不证明 loopback 绑定，IPv4 规则不证明 IPv6 防护。自举默认关闭、双栈先防护后授权/监听，撤销仅移除本应用拥有的公钥。已接通固定原生命名入口、短期授权与 UI，通用命令白名单不放宽；历史脚本已停用，设备矩阵仍须独立验收；修订设计与本轮验证见 [root 支持评估](docs/audits/root-adb-bringup-20261009/README.md)。**无线调试与自举互斥**：系统无线调试是独立的 ADB TLS 入口，自举按设计拒绝接管（`WIRELESS_DEBUG_IN_USE`），保活在自举期间及刚被拒后不得自动重开它（`AdbBootstrapController.blocksWirelessReopen`）；卡片负责把用户指到开发者选项，改设置仍由用户自己确认。
 - **ADB 自举修复入口**：改授权撤销/续链、未决事务、无线保活、首次建表或自举界面时，先读[审查与修复交接计划](docs/audits/root-adb-bringup-20261009/remediation-plan-20261011.md) §7。**F01–F05、F07、F08 的生产路径已实施（2026-10-11 第二轮）；F06 只完成 D1 前置拒绝，首次建表（D2）未实施。** 判定逻辑都有 `util/` 主机测试，但控制器级并发用例、开机广播写入计数和界面仪器验收仍未交付；不能把主机测试通过或文档修订当成设备验收/代码修复完成。
 - Shizuku 必须注册 `rikka.shizuku.ShizukuProvider`；标准版 13.1.5 / 兼容版 12.2.0（不用 overrideLibrary 掩盖 minSdk 24）。回调严格核对管理器 UID、Binder 描述符、单次请求与超时。
-- 内置移动插件 `dsh-web-mobile` 标 3.0.3，源码固定到 `a094288883b343e848d7f9cf302d73ad8ed4794b`；`tools/apply-mobile-client-patches.mjs` 管理本地差异，不恢复上游已撤回的整批改动；上游已接管的 rc1 导航补丁不要重新套回。
+- 内置移动插件 `dsh-web-mobile` 标 **3.0.5**（随包 `package.json`），源码固定到 `9b16223e6c5ee8209c25034b24fb790990967b3f`（`tools/apply-mobile-client-patches.mjs` 的 `upstreamCommit`）；该脚本管理本地差异，不恢复上游已撤回的整批改动；上游已接管的 rc1 导航补丁不要重新套回。
 
 ---
 

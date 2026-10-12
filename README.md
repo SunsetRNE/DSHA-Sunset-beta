@@ -61,8 +61,8 @@ SELinux 挡住、沙箱起不来、前端按桌面布局排版。
 
 ## 下载
 
-当前正式版 **v0.2.0-rc2 · build170**（[发布说明](https://github.com/DSH-APP/DSHA/releases/tag/v0.2.0-rc2) ·
-[完整更新记录](CHANGELOG.md)），两个版本共享 `com.dsh.client` 包名与数据，**不能并排安装**：
+当前**公开 Release** 是 **v0.2.0-rc2 · build170**（[GitHub Release / Latest](https://github.com/DSH-APP/DSHA/releases/tag/v0.2.0-rc2)，
+tag `v0.2.0-rc2` @ `8362bba`；[完整更新记录](CHANGELOG.md)），两个版本共享 `com.dsh.client` 包名与数据，**不能并排安装**：
 
 | 版本 | 适用设备 | 内核 | 下载 | 大小 |
 |---|---|---|---|---:|
@@ -73,7 +73,9 @@ SELinux 挡住、沙箱起不来、前端按桌面布局排版。
 - **本次下载**：APK 与对应 SHA-256 以上表 GitHub Release 为准；[校验方法](docs/download-verification.md)。应用内更新另读取官网 [`dsha.cc`](https://dsha.cc) 的发布清单。
 - **历史版本**：[Releases](https://github.com/DSH-APP/DSHA/releases)。
 
-本次为 **GitHub 正式版 / Latest**，不标记预发布；版本码 **170**，Ubuntu 基础环境编号仍为 **10**。[对应源码](https://github.com/DSH-APP/DSHA/tree/v0.2.0-rc2)。
+上表与 Releases 徽章对应的**公开 Release** 是 build170：**GitHub 正式版 / Latest**，不标记预发布；版本码 **170**，Ubuntu 基础环境编号仍为 **10**，源码快照是 tag [`v0.2.0-rc2`](https://github.com/DSH-APP/DSHA/tree/v0.2.0-rc2)（commit `8362bba`）。
+
+> **本仓库（实验分支 `SunsetRNE/DSHA-Sunset-beta`）的源码树不是这个版本。** `app/build.gradle` 当前是 `versionCode 190` / `0.2.38-20261012.0415-dsh0.2.0-rc.2`（build190），对应独立包名 `com.dsh.clienu.SunsetRNE`、debug 签名的**工程 / 测试包**，尚未公开发布，也不在上表的下载里；171–190 的逐版记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ### 本版更新与旧版对比
 
@@ -88,7 +90,7 @@ SELinux 挡住、沙箱起不来、前端按桌面布局排版。
 | [v0.1.5-rc2 / 129](https://github.com/DSH-APP/DSHA/releases/tag/v0.1.5-rc2) | 还累积加入自动备份、独立应急、按需录音、PiP、Standard 实验性虚拟屏及受管更新改进。 |
 | [v1.1.10 及更早版本](https://github.com/DSH-APP/DSHA/releases/tag/v1.1.10) | 已转为双 APK、受管 Ubuntu/DSH 更新与宿主备份恢复；完整直接升级矩阵尚未重新验证，原版说明保留在历史标签。 |
 
-两版各 **45 项关联单测与 Release Lint** 通过；Android13 真机验证正式包覆盖、两种网页内核附件/图片草稿、15 个离线 ADB 依赖准备及最终启动。完整无线配对、原 vivo Android16、Android6/7、16KiB 真机和原生 SAF 最终保存未在本轮覆盖。[正式版完整说明](docs/releases/v0.2.0-rc2-notes.md) · [build170 验收](docs/releases/v0.2.21-build170-20261009.md)。
+build170 两版各 **45 项关联单测与 Release Lint** 通过；Android13 真机验证正式包覆盖、两种网页内核附件/图片草稿、15 个离线 ADB 依赖准备及最终启动。完整无线配对、原 vivo Android16、Android6/7、16KiB 真机和原生 SAF 最终保存未在本轮覆盖。[正式版完整说明](docs/releases/v0.2.0-rc2-notes.md) · [build170 验收](docs/releases/v0.2.21-build170-20261009.md)。
 
 ### 开始使用
 

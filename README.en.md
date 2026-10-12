@@ -1,5 +1,12 @@
 # DSHA
 
+> **This repository is an experimental branch**: `SunsetRNE/DSHA-Sunset-beta` (**not a GitHub fork**,
+> and unrelated to the mainline by fork lineage). The mainline (and only main branch) is
+> [`DSH-APP/DSHA`](https://github.com/DSH-APP/DSHA): feature work and official releases live there.
+> This branch carries on-device testing, fix batches and acceptance evidence. Syncing is described in
+> [docs/upstream-and-remotes.md](docs/upstream-and-remotes.md); the current handover is
+> [docs/handover-20261012.md](docs/handover-20261012.md).
+
 <p align="center">
   <b>DeepSeek Harness launcher for Android</b><br>
   Run the full <a href="https://github.com/deepseek-ai/deepseek-harness">deepseek-harness</a> on your phone — no root, no Termux, nothing to type
@@ -59,8 +66,8 @@ original author [@qiannianhuanxiang](https://github.com/qiannianhuanxiang) and a
 
 ## Download
 
-Current release: **v0.2.0-rc2 · build170** ([release notes](https://github.com/DSH-APP/DSHA/releases/tag/v0.2.0-rc2) ·
-[full changelog](CHANGELOG.md)). Both builds share the `com.dsh.client` package and app data —
+The current **public release** is **v0.2.0-rc2 · build170** ([GitHub Release / Latest](https://github.com/DSH-APP/DSHA/releases/tag/v0.2.0-rc2),
+tag `v0.2.0-rc2` @ `8362bba`; [full changelog](CHANGELOG.md)). Both builds share the `com.dsh.client` package and app data —
 **they cannot be installed side by side**:
 
 | Build | Devices | Web engine | Download | Size |
@@ -72,7 +79,9 @@ Current release: **v0.2.0-rc2 · build170** ([release notes](https://github.com/
 - **This download**: use the APK and matching SHA-256 links above; see [verification](docs/download-verification.en.md). In-app updates separately read the release manifest from [dsha.cc](https://dsha.cc).
 - **Older versions**: [Releases](https://github.com/DSH-APP/DSHA/releases).
 
-This is a **regular GitHub release / Latest**, not a prerelease. Version code **170**; the Ubuntu base remains **10**. [Matching source](https://github.com/DSH-APP/DSHA/tree/v0.2.0-rc2).
+The table above and the Releases badge describe the **public release**, build170: a **regular GitHub release / Latest**, not a prerelease. Version code **170**; the Ubuntu base remains **10**. Its source snapshot is tag [`v0.2.0-rc2`](https://github.com/DSH-APP/DSHA/tree/v0.2.0-rc2) (commit `8362bba`).
+
+> **This repository's source tree (experimental branch `SunsetRNE/DSHA-Sunset-beta`) is not that version.** `app/build.gradle` currently reads `versionCode 190` / `0.2.38-20261012.0415-dsh0.2.0-rc.2` (build190) — an engineering/test package under the separate package name `com.dsh.clienu.SunsetRNE` with a debug signature. It is not publicly released and is not what the download table above points at; see [CHANGELOG.md](CHANGELOG.md) for the per-build 171–190 record.
 
 ### Changes and previous releases
 
@@ -87,7 +96,7 @@ This is a **regular GitHub release / Latest**, not a prerelease. Version code **
 | [v0.1.5-rc2 / 129](https://github.com/DSH-APP/DSHA/releases/tag/v0.1.5-rc2) | Also includes automatic backups, independent recovery, requested microphone access, PiP, the experimental Standard virtual display and managed-update improvements. |
 | [v1.1.10 and earlier](https://github.com/DSH-APP/DSHA/releases/tag/v1.1.10) | Two APK editions, managed Ubuntu/DSH updates and host-side backup/restore replace the old architecture. The complete direct-upgrade matrix has not been revalidated; original documentation remains in historical tags. |
 
-Both editions passed **45 targeted unit checks and Release Lint**. Android 13 checks cover signed overlay installs, attachment/image-draft behavior in both web engines, 15 offline ADB dependencies and final startup. Full wireless pairing, the reported vivo Android 16 device, Android 6/7, 16 KiB devices and final native SAF saving were not checked in this round. [Release notes](docs/releases/v0.2.0-rc2-notes.md) · [build170 acceptance](docs/releases/v0.2.21-build170-20261009.md).
+build170 passed **45 targeted unit checks and Release Lint** in both editions. Android 13 checks cover signed overlay installs, attachment/image-draft behavior in both web engines, 15 offline ADB dependencies and final startup. Full wireless pairing, the reported vivo Android 16 device, Android 6/7, 16 KiB devices and final native SAF saving were not checked in this round. [Release notes](docs/releases/v0.2.0-rc2-notes.md) · [build170 acceptance](docs/releases/v0.2.21-build170-20261009.md).
 
 ### Getting started
 

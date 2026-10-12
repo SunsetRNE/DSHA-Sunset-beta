@@ -1,5 +1,108 @@
 # 更新记录
 
+**范围说明**：下面的 171–190 是实验分支 `SunsetRNE/DSHA-Sunset-beta` 的工程 / 测试包（独立包名 `com.dsh.clienu.SunsetRNE` + debug 签名，与公开正式版 v0.2.0-rc2 / build170 并排安装），不上传 GitHub Release；每条按各自发布说明的实际验证范围如实标注，未验证的不写成已验收。
+
+## 0.2.38-20261012.0415-dsh0.2.0-rc.2 / 190（2026-10-12，测试包）
+
+- 修复 `main` 上一直红的 Source checks：新增 `tools/ci-android-sdk.sh` 按 `ANDROID_HOME`/`ANDROID_SDK_ROOT` 逐级解析真正可执行的 `sdkmanager`（解析不到就带实值退出，不猜版本、不改走别的通道），四个工作流统一使用，仓库里不再有裸 `sdkmanager`；`androidTest` 里 `HarnessService.refreshPowerMode` 两处过期调用点改为传 `Context`。
+- `tools/test-shizuku-lifecycle.py` 不再让一个不可读的候选 SDK 根目录（EACCES）带走整条已有候选的测试；补上 `gradle/verification-metadata.xml` 缺的 `aapt2-9.1.1-14792394-linux.jar` 摘要（与 Google Maven 官方 `.sha256` 两处独立来源逐字节一致，不是拿下载字节自证）。
+- 新增 `tools/test-ci-android-sdk.py` 6 项并登记进 fast 阶段（宿主清单 137 → 138 项）；`tools/test-ci-test-package.py` 22 项守住「两个 APK 各自直下、回执仍压缩」的 artifact 契约。
+- 包身份 `install-190-buildfix.apk`（`com.dsh.clienu.SunsetRNE` / 190 · `0.2.38-20261012.0415-dsh0.2.0-rc.2`），`runtimeId` 因 `bede35e` 的受管输入变化而变为 `3511203…90e0f`，覆盖安装仍会跑一次环境维护。**未做设备验收**；本地全量单测卡在既有 `JvmBackupFileSystem` 用例未跑完，双 flavor 全量结果以 CI 实际运行为准。详见[build190](docs/releases/v0.2.38-build190-20261012.md)。
+
+## 0.2.37-20261012.0100-dsh0.2.0-rc.2 / 189（2026-10-12，测试包）
+
+- 环境维护门禁覆盖所有入口：新增 `ui/EnvironmentGate` 作为判据唯一来源（未决事务 → 未就绪 → 运行身份与 APK 不一致），`DshaApp` 注册应用级 `ActivityLifecycleCallbacks`，任意 Activity 回到前台先过门禁，堵住「从最近任务 / MT 管理器打开已存在任务 → `MainActivity.onCreate` 不跑 → 门禁整段跳过」。
+- 豁免范围明确写出（维护页 / 欢迎页 / 启动恢复 / 首次设置 / 应急 DSH / 维护相关任务页 / Web 预览与 PiP，以及带 `limited_entry`、`skip_extract`、`review_only` 的意图）；用户已选「受限主界面」时不强制跳转。安全性本来就不依赖该跳转，Web 启动仍由同一运行时门禁挡住，补的是入口可见性与可达性。
+- 链状态机抽到 `util/AdbBootstrapChainSession`（带主机测试）；每次派发下一步前回查最初确认的总开关意图，用户中途改动即停在 `ADB_SWITCH_INTENT_CHANGED` 并立未决屏障。
+- `tools/test-root-support.py` 130 项通过；`runtimeId` 变为 `40a470c4…`，覆盖安装后跑一次环境维护。**未做设备验收**。详见[build189](docs/releases/v0.2.37-build189-20261012.md)。
+
+## 0.2.36-20261012.0025-dsh0.2.0-rc.2 / 188（2026-10-12，测试包）
+
+- 按[审查与修复交接计划](docs/audits/root-adb-bringup-20261009/remediation-plan-20261011.md)实施 ADB 自举 F01–F08 的生产路径（F06 只做 D1 前置拒绝，首次建表 D2 未实施）：原生响应新增 `pendingVerified` / `networkPending` / `keyPending`，未决屏障只在两阶段结束、观测完整、结果落盘后解除；无操作 REVOKE 不再清除别的未完成事务。
+- ADB 总开关收敛到唯一受管写入口并记录用户意图代次；整链确认只捕获一次。开机、覆盖升级与保活共用同一无副作用无线互斥判据；保活探活强制 ADB 计划，不再把 Root / Shizuku 成功冒充 ADB 已连接。
+- 首次写入系统授权表前先做零设备写入的预检；会话核验与授权表读取带请求代次，页面销毁即让旧回调失效。顺带修好 `AdbFirewallTool.neutralize` 只替换 `[EXIT=` 左半段的旧红灯。
+- 受管输入新增 5 个协作者，`runtimeId` 变为 `91d7f91a…`，覆盖安装会跑一次维护与 `RuntimeTrial`。软件验证仅主机侧（`tools/test-root-support.py` 123 项、定向单测各 13 类 / 110 项），**全量单测未跑完、未做设备验收**。详见[build188](docs/releases/v0.2.36-build188-20261012.md)。
+
+## 0.2.35-20261011.2030-dsh0.2.0-rc.2 / 187（2026-10-11，工程包）
+
+- 横幅在 build183 的「存在未完成事务」之外再补「运行身份不是最新」（`EnvironmentAccess.requiresMaintenanceBeforeStart`），统一文案「环境维护待处理 · 点击处理」，两处都在 `onResume` 探测，**热启动也能看见并点进维护页**。
+- 新增 [环境维护文档](docs/environment-maintenance.md)：触发条件、四阶段实测、可中断可恢复语义、冷 / 热启动可见性、交付纪律与处置表、未验证范围，并加入 AGENTS.md 文档索引。
+- `runtimeId` 未变（只改 `ui/` 与文档），装本包不会再触发一次维护；`util` 定向单测 901 项（2 项为 main 上先于本轮存在的失败，1 跳过）。详见[build187](docs/releases/v0.2.35-build187-20261011.md)。
+
+## 0.2.34-20261011.2020-dsh0.2.0-rc.2 / 186（2026-10-11，工程包）
+
+- **保活在「结果未知」窗口不得重开无线调试**：链最后一步以结果未知收场后保活探活失败，会把用户刚关掉的无线调试又打开（实测 `adb_wifi_enabled=1`），下一次自举必被 `WIRELESS_DEBUG_IN_USE` 拒绝；旧的 `blocksWirelessReopen()` 只拦「正在跑 / 上次正因无线调试被拒」，漏了这个窗口。现在 `unresolved` 也拦停，直到用户显式只读刷新确认结果——这是单实例生产环境同样会中的缺陷，不只是双实例问题。
+- 该修复改了受管文件（`AdbBootstrapController`），`runtimeId` 变为 `7d6c660c…148aea`，装 186 会再走一次环境维护。详见[build185 / 186](docs/releases/v0.2.33-build185-186-20261011.md)。
+
+## 0.2.33-20261011.2015-dsh0.2.0-rc.2 / 185（2026-10-11，工程包）
+
+- 用失败原文定位出「前三步成功、最后一步在本机不可能成功」：授权表已含本应用公钥、`service.adb.tcp.port=5555` 且 `[::]:5555` LISTEN、真 ADB 客户端 `id` → `uid=0(root) [EXIT=0]`；只有会话核验要经容器里的 `adb-shell.py` 申请 3090 桥，而同机正式包 `com.dsh.client` 占着 3090，测试包的 token 必被拒。与[自举可见性审计](docs/audits/root-adb-bringup-20261009/guard-visibility-20261011.md)的真因 4 一致。
+- 修掉密钥表把设备 shell 协议标记 `[EXIT=0]` 当成第三把钥匙的 bug（跳过 `[...]` 行并加单测）；失败原文命中「桥拒绝了这个 token」时自动附解释。详见[build185 / 186](docs/releases/v0.2.33-build185-186-20261011.md)。
+
+## 0.2.32-20261011.2005-dsh0.2.0-rc.2 / 184（2026-10-11，工程包）
+
+- 前置拦截从滞后快照改读**实时系统设置** `Settings.Global.getInt(cr, "adb_wifi_enabled", 0)`（公开只读），开着就直接弹窗，不再让用户吃一次 `WIRELESS_DEBUG_IN_USE` 拒绝；弹窗补上根因（可能被 ADB 保活自己开回来，同源另一个包也会）与解法。
+- 记录已知边界：同机安装两个同源 DSHA 包时，两个包的保活 / 自举互斥互不相识；正式发布只有一个包时本包互斥有效，跨包协调需要产品层决策。`runtimeId` 未变。详见[build184](docs/releases/v0.2.32-build184-20261011.md)。
+
+## 0.2.31-20261011.1955-dsh0.2.0-rc.2 / 183（2026-10-11，工程包）
+
+- 查清「覆盖安装后用户看不到环境维护、虚拟屏却能触发」是**入口差异**而非环境状态差异：跳维护页只在**新建 `MainActivity`** 时判断，用户从任务切回属热启动，不重跑 `onCreate`；而横幅只在「维护正在跑」或「受限模式」显示，「有待处理维护但没在跑」什么都不显示。
+- `MainActivity.onResume` 探一次 `MaintenanceCoordinator.pending`（异常降级 false），横幅新增「环境维护待处理 · 点击恢复」。只改 `ui/`，`runtimeId` 未变，装本包不会再触发新的运行时维护。详见[build183](docs/releases/v0.2.31-build183-20261011.md)。
+
+## 0.2.30-20261011.1727-dsh0.2.0-rc.2 / 182（2026-10-11，工程包）
+
+- `REQUEST_OUTCOME_UNKNOWN` 分支不再丢 evidence：异常原文经 `SensitiveData.redact` 脱敏、限长后写进回执，卡片出现可点的「查看失败原文」，补上「既没有原因也没有原文」的诊断盲点。
+- 点一键自举前先查 `MaintenanceCoordinator.isEnvironmentTaskBusy()`，环境正在维护就弹窗说明「现在提交只会得到一个无法归因的失败」，不再产生一次无码失败。
+- 改了受管文件，`runtimeId` 变为 `812c2d96…`，装本包会再走一次环境维护（也再次说明正式发布前必须补真实 `RuntimeTrial`）。详见[build182](docs/releases/v0.2.30-build182-20261011.md)。
+
+## 0.2.29-20261011.1722-dsh0.2.0-rc.2 / 181（2026-10-11，工程包）
+
+- `core/AdbBootstrapController.execute()` 在开启监听之后、会话核验之前插入固定 2.5 秒等待并复核授权代次，让刚写入的公钥有机会被 adbd / 系统侧看到；**核验次数仍是 1 次**：不轮询、不重试、不换端点、不换通道、不重放写操作。
+- `RootBootstrapCard` 对 `ADB_SESSION_UNVERIFIED` 的说明改为引导用户用「核验当前 ADB 会话（只读）」再核一次（只跑 `id`，不再写设备）。
+- 改了受管文件，`runtimeId` 由 `03ba9894…` 变为 `7943e060…`，装本包会触发一次环境维护。详见[build181](docs/releases/v0.2.29-build181-20261011.md)。
+
+## 0.2.28-20261011.1712-dsh0.2.0-rc.2 / 180（2026-10-11，工程包）
+
+- Root 自举页补「设备 ADB 授权表（只读）」：行数 + 本应用公钥是否在表内，每把钥匙一行给 `SHA-256` 前 8 字节与备注并标出本应用那把；解析与指纹抽到纯逻辑 `util/AdbKeyTable`，配 3 项单测（稳定、可辨认归属、坏行不猜）。
+- 新增只读的「ADB 会话核验」按钮：固定端点 `127.0.0.1:5555`、只跑一次 `id`、不写设备、不发现别的端点、不重放，结果给一行摘要 + 含 `[EXIT=n]` 的原文弹窗（[ADR 0007](docs/adr/0007-bootstrap-session-verification.md) 方案 D 的用户显式入口）。
+- `runtimeId` 未变；`util` 定向单测 900 项（2 项为 main 上先于本轮存在的失败，1 跳过）。详见[build180](docs/releases/v0.2.28-build180-20261011.md)。
+
+## 0.2.27-20261011.1703-dsh0.2.0-rc.2 / 179（2026-10-11，工程包）
+
+- 一键自举改为**先自动做一次只读刷新**（不写设备）再决定下一步，不拿旧观测去执行；刷新后若观测到 `WIRELESS_DEBUG_IN_USE`，直接弹窗解释「两者互斥、DSHA 拒绝接管也不会替你关」并给「打开开发者选项」直达，**不再产生失败提交**；「只读刷新状态」移入「高级操作」。
+- 遗留（未擅自改动）：自举链最后一步会话核验按设计只试一次、不重放，密钥表在 adbd 侧尚未即时生效时会停在 `ADB_SESSION_UNVERIFIED`，修复涉及「同端点是否允许受控重试一次」的安全取舍。详见[build179](docs/releases/v0.2.27-build179-20261011.md)。
+
+## 0.2.26-20261011.1700-dsh0.2.0-rc.2 / 178（2026-10-11，工程包）
+
+- Root 自举一键化（[ADR 0006](docs/adr/0006-root-bootstrap-one-button.md)）：主按钮一次确认后自动跑完「授权公钥 → 收窄双栈 → 开启监听 → 会话核验」；前置条件由程序处理——未开「允许 Root Shell」给直达 Root 授权页的弹窗、未开「允许 Root 自举 ADB」在同一次确认里问清并继续、上次结果未知提示先只读刷新且不自动重放、无线调试在跑只指路不代改、有任务在跑则禁用按钮。
+- 危险动作（授权公钥 / 收窄 / 开启 / 关闭监听 / 撤销公钥）收进默认折叠的「高级操作」，只降低误触面；原生门禁（ticket / 120s / 进程存活 / APK 身份 / Requirement 集合）一个不少，失败即停、保留现场。详见[build178](docs/releases/v0.2.26-build178-20261011.md)。
+
+## 0.2.25-20261011.1652-dsh0.2.0-rc.2 / 177（2026-10-11，工程包）
+
+- ADB 授权页改为四个入口并复用既有页面：① USB 调试授权（新增只读检测 + 打开开发者选项）② 无线调试授权（沿用既有 `AdbPairActivity`，未重画）③ Shizuku 调试授权（新增状态与授权 / 验证页）④ Root 自举 ADB 授权（自举卡整体迁入）。
+- 每个入口行只显示一行状态（已取得 / 状态（原因）），由同一份授权快照每 1s 重算，不再把动态明细铺在索引页上；`CardPage` 增加 `entryRow(...)`。页面渲染与四入口跳转待安装后在虚拟屏复验。详见[build177](docs/releases/v0.2.25-build177-20261011.md)。
+
+## 0.2.24-20261011.1634-dsh0.2.0-rc.2 / 176（2026-10-11，工程包）
+
+- 修复 build175 引入的**白屏缺陷**：新增的 `AdbAuthorizationActivity` / `RootAuthorizationActivity` 只搭了 `CardPage` 视图树，却没调用 `setContentView(page.root)`；两处已补，并写明「CardPage 不自动挂载」。
+- `runtimeId` 与 175 相同，不会再触发第二次运行时维护。详见[build176](docs/releases/v0.2.24-build176-20261011.md)。
+
+## 0.2.23-20261011.1628-dsh0.2.0-rc.2 / 175（2026-10-11，工程包）
+
+- 依据 [ADR 0005](docs/adr/0005-adb-global-authorization.md) 增加「ADB 全局授权」语义：USB 调试 / 无线调试 / Shizuku / Root 自举任一 GRANTED 即 `globalState() == GRANTED`，`globalReason()` 给「最接近可用」的原因；`plan()` 改为 Root → 总开关 → Shizuku → ADB，修掉「总开关关着、Shizuku 分支却先于它执行」的语义缺口（新增 128 组语义矩阵与对照用例）。
+- `HttpShellService.deviceExecute` 不再自己写 if 链，只问 `DeviceAuthorization.plan()`。本包改过受管文件（`HttpShellService`），`runtimeId` 由 `273e3648…` 变为 `03ba9894…`，安装后触发了一次**未经 `RuntimeTrial`** 的运行时更新。详见[build175](docs/releases/v0.2.23-build175-20261011.md)。
+
+## 0.2.22-20261011.1552-dsh0.2.0-rc.2 / 174（2026-10-11，工程包）
+
+- 依据 [ADR 0004](docs/adr/0004-unified-adb-authority.md) 阶段 0+1 统一设备授权：新增 `util/DeviceAuthorization`（权威 / 凭据 / 管道三类分开，`plan()` 与历史 if 链逐项等价）与 `util/ShizukuStatus`；新增 `core/DeviceAuthorizationReader`，设置页与诊断页共用同一份授权快照，每条管道给可用性与阻塞原因而不是布尔。
+- 设置页从「四张并列卡」改成「一张授权卡 + 来源分节」（① App 自举 ② 系统调试 ③ Root ④ Shizuku），Shizuku 明确标注为中间层。
+- 首次交付 `com.dsh.clienu.SunsetRNE` 独立包名 + debug 签名的**工程验证包**（与正式包并排安装，不触碰用户数据）；`util` 定向单测 892 项（2 项为 main 上先于本轮存在的失败，1 跳过），全量单测受容器 FUSE 限制未跑完，**未做设备验收**。详见[build174](docs/releases/v0.2.22-build174-20261011.md)。
+
+## 171–173：无发布说明（构建号缺口说明）
+
+- 仓库里没有 build171–173 的发布说明，`app/build.gradle` 的版本号也是从 170 直接跳到 174；171、172 在 git 提交、文档与产物摘要里都查不到痕迹，本记录不为它们编造内容。
+- 173 有可核验的痕迹：[自举可见性验证记录](docs/audits/root-adb-bringup-20261009/guard-visibility-20261011.md) 里的**真机验证包** `install-173-verify.apk`（`com.dsh.clienu.SunsetRNE`，versionCode 173 / `0.2.21-verify.173`，sha256 `46478041be6f84d658bb77d2c9468893f25e527d1aa700d747fc9079f14526fa`），用于验证 Root 自举的授权公钥 / 5555 监听 / 双栈防护可见性；其版本号只在本地 init 脚本里上调，仓库版本未动。同轮 `tools/test-root-support.py` 99 项与设备策略 / 桥测试通过。
+
 ## 0.2.0-rc2 正式版 · build170（2026-10-09）
 
 - 由贡献者 [@ym2025szz](https://github.com/ym2025szz) 发布正式 Release / Latest；内置 DSH 0.2.0-rc.2、移动 UI 3.0.5，沿用包名和 E7E3 历史签名。对比上一正式版及下载见[发布说明](docs/releases/v0.2.0-rc2-notes.md)。

@@ -201,7 +201,8 @@ jobs:
           platform=$(python3 tools/ci-toolchain.py --field androidPlatform)
           buildtools=$(python3 tools/ci-toolchain.py --field buildTools)
           ndk=$(python3 tools/ci-toolchain.py --field ndk)
-          sdkmanager "platforms;$platform" "build-tools;$buildtools" "ndk;$ndk"
+          # 解析入口与其余工作流共用：runner 不保证 cmdline-tools 的 bin 在 PATH 上。
+          source tools/ci-android-sdk.sh "platforms;$platform" "build-tools;$buildtools" "ndk;$ndk"
           echo "$ANDROID_HOME/build-tools/$buildtools" >> "$GITHUB_PATH"
 
       - name: Set the experimental application ID in the CI checkout

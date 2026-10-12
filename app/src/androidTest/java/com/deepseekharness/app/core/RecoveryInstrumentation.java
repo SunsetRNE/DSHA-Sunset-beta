@@ -192,7 +192,8 @@ public final class RecoveryInstrumentation extends Instrumentation {
       check(service != null && held(service), "持续模式未持有 Web 锁");
       controller.config().setEcoMode(true);
       shell("input keyevent KEYCODE_SLEEP");
-      HarnessService.refreshPowerMode();
+      // refreshPowerMode 需要 Context 才能取到本进程的服务实例；不能再按无参静态调用。
+      HarnessService.refreshPowerMode(base);
       until(() -> !held(service), 85000, "持续空闲后 Web 锁仍未释放");
       phase("熄屏省电通过：确认空闲后释放 Web 锁");
       try (RuntimeTasks task = RuntimeTasks.begin()) {
@@ -200,7 +201,7 @@ public final class RecoveryInstrumentation extends Instrumentation {
         PowerManager.WakeLock taskLock =
             (PowerManager.WakeLock) field(RuntimeTasks.class, "lock").get(null);
         check(taskLock != null && taskLock.isHeld(), "原生工作未立即取得任务锁");
-        HarnessService.refreshPowerMode();
+        HarnessService.refreshPowerMode(base);
         check(held(service), "任务开始后未恢复 Web 保活");
       }
       check(!RuntimeTasks.isBusy(), "任务结束后未清理工作状态");

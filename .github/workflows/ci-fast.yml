@@ -33,7 +33,9 @@ jobs:
           set -euo pipefail
           platform=$(python3 tools/ci-toolchain.py --field androidPlatform)
           buildtools=$(python3 tools/ci-toolchain.py --field buildTools)
-          sdkmanager "platforms;$platform" "build-tools;$buildtools"
+          # runner 不保证 cmdline-tools 的 bin 在 PATH 上；解析入口见 tools/ci-android-sdk.sh
+          # （2026-10-12 裸 sdkmanager 曾以 exit 127 让后面所有检查一起被跳过）。
+          source tools/ci-android-sdk.sh "platforms;$platform" "build-tools;$buildtools"
       - name: Verify checked-in contracts
         run: |
           python3 tools/prepare-runtime-tools.py --check

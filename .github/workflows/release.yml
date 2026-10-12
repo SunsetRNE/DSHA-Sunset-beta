@@ -46,7 +46,7 @@ jobs:
         id: package
         run: python3 tools/verify-ci-package.py --run "$RUNNER_TEMP/package-run.json" --artifacts "$RUNNER_TEMP/verified-package"
       - name: Android signing tools
-        run: sdkmanager "build-tools;${{ steps.toolchain.outputs.buildTools }}"
+        run: source tools/ci-android-sdk.sh "build-tools;${{ steps.toolchain.outputs.buildTools }}"
       - name: Historical certificate and all three signing schemes
         env:
           KEY_BASE64: ${{ secrets.DSHA_PUBLISH_KEYSTORE_BASE64 }}

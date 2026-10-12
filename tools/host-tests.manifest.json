@@ -276,6 +276,18 @@
       "cli": "no positional arguments; see explicit environment/requirements"
     },
     {
+      "path": "tools/test-ci-android-sdk.py",
+      "stage": "fast",
+      "reason": "CI SDK 解析入口的假目录树回归；不联网、不安装 SDK 组件、不碰设备",
+      "args": [],
+      "timeoutSeconds": 120,
+      "requires": [
+        "python39"
+      ],
+      "environment": {},
+      "cli": "no positional arguments; see explicit environment/requirements"
+    },
+    {
       "path": "tools/test-ci-package.py",
       "stage": "fast",
       "reason": "Current isolated source fixture; no Android device operations",

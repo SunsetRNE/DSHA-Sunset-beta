@@ -324,14 +324,25 @@ def java_tools(explicit):
 
 def android_jar(explicit):
     candidates = []
+    tried = []
     for root in (explicit, os.environ.get('ANDROID_SDK_ROOT'), os.environ.get('ANDROID_HOME'),
-                 '/root/Android', '/opt/android-sdk', '/usr/lib/android-sdk'):
-        if root:
+                 '/usr/local/lib/android/sdk', '/root/Android', '/opt/android-sdk',
+                 '/usr/lib/android-sdk'):
+        if not root or root in tried:
+            continue
+        tried.append(root)
+        try:
             candidates.extend(Path(root).glob('platforms/android-3*/android.jar'))
+        except OSError:
+            # 列不出来的候选只是列不出来，不能让一个不可读的目录把已经找到的候选一起带走。
+            # 实测（2026-10-12，Source checks run 38234296182）：GitHub ubuntu-24.04 runner 上
+            # ANDROID_SDK_ROOT 已经命中 android-37.0，随后遍历到硬编码的本机开发路径
+            # /root/Android 时抛 PermissionError（/root 是 0700 root 所有），整个测试直接崩。
+            continue
     for jar in sorted(candidates, key=lambda path: version_key(str(path)), reverse=True):
         if jar.is_file():
             return jar
-    fail('ANDROID_JAR_MISSING: set ANDROID_SDK_ROOT or pass --sdk')
+    fail('ANDROID_JAR_MISSING: set ANDROID_SDK_ROOT or pass --sdk; tried ' + ', '.join(tried))
 
 
 def gradle_homes(explicit):
